@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8"/>
+ </head>
+ <body>
+  <div class="page" data-page-id="0">
+   <p>
+    <img src="_page_0_Picture_0.jpeg"/>
+   </p>
+   <h2>
+    AdEx Network
+   </h2>
+   <h1>
+    <b>
+     AdEx Protocol - Solidity Security Review
+    </b>
+   </h1>
+   <p block-type="Text">
+    <i>
+     Version: 2.0
+    </i>
+   </p>
+  </div>
+  <div class="page" data-page-id="1">
+   <h2>
+    <b>
+     Contents
+    </b>
+   </h2>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+      </th>
+      <th>
+       Introduction
+       <br/>
+       Disclaimer
+       <br/>
+       <br/>
+       Document Structure
+       <br/>
+       <br/>
+       Overview
+      </th>
+      <th>
+       2
+       <br/>
+       2
+       <br/>
+       2
+       <br/>
+       2
+      </th>
+     </tr>
+     <tr>
+      <th>
+      </th>
+      <th>
+       Review Summary
+       <br/>
+       Per-Contract Vulnerability Summary
+      </th>
+      <th>
+       4
+       <br/>
+       5
+      </th>
+     </tr>
+     <tr>
+      <th>
+      </th>
+      <th>
+       Detailed Findings
+      </th>
+      <th>
+       5
+      </th>
+     </tr>
+     <tr>
+      <th>
+      </th>
+      <th>
+       Summary of Findings
+       <br/>
+       Tokens Can Be Locked if Channel Creators Lose Their Keys
+       <br/>
+       Publishers Unable to Withdraw from Fast Expiring Channels
+       <br/>
+       Inadequate and Misleading On-chain Channel State
+       <br/>
+       Miscellanenous Comments and Gas Optimisation Suggestions
+      </th>
+      <th>
+       6
+       <br/>
+       7
+       <br/>
+       8
+       <br/>
+       9
+       <br/>
+       10
+      </th>
+     </tr>
+     <tr>
+      <th>
+       A
+      </th>
+      <th>
+       Edge Cases (non-exhaustive list)
+      </th>
+      <th>
+       12
+      </th>
+     </tr>
+     <tr>
+      <td>
+       B
+      </td>
+      <td>
+       Vulnerability Severity Classification
+      </td>
+      <td>
+       14
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="2">
+   <h2>
+    <span id="page-2-0">
+    </span>
+    <b>
+     Introduction
+    </b>
+   </h2>
+   <p block-type="Text">
+    Sigma Prime was commercially engaged to perform a time-boxed security review of the current Ethereum implementation of the AdEx Protocol. AdEx is a blockchain-powered advertisement exchange aiming at disrupting the existing online advertising landscape and addressing its significant problems, including advertising fraud, privacy, and consent to receiving sponsored messages.
+   </p>
+   <p block-type="Text">
+    This review focused on AdEx's payment channel implementation named
+    <a href="https://github.com/AdExNetwork/adex-protocol/blob/master/OUTPACE.md">
+     OUTPACE
+    </a>
+    via AdExCore , libraries ChannelLibrary , SignatureValidator , MerkleProof , and the SafeERC20 token wrapper.
+   </p>
+   <p block-type="Text">
+    The review focused solely on the security aspects of the Solidity implementation of the smart contracts, but also includes general recommendations and informational comments relating to minimising gas usage, along with general code quality observations.
+   </p>
+   <h4>
+    <span id="page-2-1">
+    </span>
+    <b>
+     Disclaimer
+    </b>
+   </h4>
+   <p block-type="Text">
+    Sigma Prime makes all effort but holds no responsibility for the findings of this security review. Sigma Prime does not provide any guarantees relating to the function of the smart contract. Sigma Prime makes no judgements on, or provides any security review regarding, the underlying business model or the individuals involved in the project.
+   </p>
+   <h4>
+    <span id="page-2-2">
+    </span>
+    <b>
+     Document Structure
+    </b>
+   </h4>
+   <p block-type="Text">
+    The first section provides an overview of the functionality of the AdEx protocol contained within the scope of the security review. A summary followed by a detailed review of the discovered vulnerabilities is then given which assigns each vulnerability a severity rating (see
+    <a href="#page-14-0">
+     Vulnerability Severity Classification)
+    </a>
+    , an open/closed status and a recommendation. Additionally, findings which do not have direct security implications (but are potentially of interest) are marked as "informational".
+   </p>
+   <p block-type="Text">
+    The appendix provides additional documentation, including the severity matrix used to classify vulnerabilities within the AdEx contracts under review, along with a list of edge-cases that were verified as passing spec (see
+    <a href="#page-12-0">
+     Edge Cases (non-exhaustive list))
+    </a>
+    .
+   </p>
+   <h4>
+    <span id="page-2-3">
+    </span>
+    <b>
+     Overview
+    </b>
+   </h4>
+   <p block-type="Text">
+    The Ethereum implementation of the AdEx protocol performs multiple functions, namely it:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Allows advertisers to use ERC20 tokens to create state-based payment channels. Each channel represents an ad campaign, where publishers can subsequently withdraw payment upon fulfilling the advertiser's specifications.
+     </li>
+     <li block-type="ListItem">
+      Optimizes for scale and cost by allowing all supply-side bidding and end-user fulfillment events to transact and to be observed by validators off-chain.
+     </li>
+     <li block-type="ListItem">
+      Ensures these off-chain events are then aggregated (see OCEAN
+      <a href="https://medium.com/the-adex-blog/introducing-ocean-alternative-layer-2-scalability-7d24bb22ebe4">
+       introduction)
+      </a>
+      and signed off by a committee of designated validators with a 2/3
+      <i>
+       supermajority
+      </i>
+      .
+     </li>
+     <li block-type="ListItem">
+      Governs on-chain payouts to approved users through the use of merkle tree proofs, where the
+      <i>
+       leaves
+      </i>
+      contains account addresses and the approved amounts.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_2_Picture_17.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="3">
+   <p block-type="Text">
+    • Allows advertisers to withdraw remaining campaign balance upon channel expiry.
+   </p>
+   <p block-type="Text">
+    AdEx's SafeERC20 aims to be compatible with all major versions of ERC20
+    <a href="#page-14-1">
+     [1]
+    </a>
+    tokens. Specifically, this particular implementation aims to (
+    <i>
+     i
+    </i>
+    ) prevent tokens from being stuck when sent to incompatible, older ERC20 contracts, and (
+    <i>
+     ii
+    </i>
+    ) to accurately assess the transaction success state from newer ERC20 contracts.
+   </p>
+   <p block-type="Text">
+    AdEx acknowledges that validator consensus can break, in the event that all parties or the majority of validators become malicious. It is emphasized that such scenarios can be mitigated through publisher consortiums, reputation monitoring, and adding 3rd party tie-breakers as additional validators.
+   </p>
+   <p block-type="Text">
+    AdEx acknowledges that with AdEx Protocol, traditional digital advertising fraud and Sybil attacks would still be possible. It is emphasized that future development will include anti-fraud tooling, end-user level proof of work requirements, identify verification, and other mitigations. The current implementation of the AdEx protocol heavily relies on off-chain components as part of its security model (particularly the AdEx SDK).
+   </p>
+   <p>
+    <img src="_page_3_Picture_6.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="4">
+   <h2>
+    <span id="page-4-0">
+    </span>
+    <b>
+     Review Summary
+    </b>
+   </h2>
+   <p block-type="Text">
+    This review was initially conducted on commit
+    <a href="https://github.com/AdExNetwork/adex-protocol-eth/commit/98c65a3e05262638e3ff2da28b873b7f7ca44982">
+     98c65a3,
+    </a>
+    which contains the contracts folder. This folder contains a number of contracts, all of which are inherited (directly or indirectly) by the main AdExCore contract. The complete list of contracts is as follows:
+   </p>
+   <h4>
+    Contracts AdExCore.sol libs ChannelLibrary.sol MerkleProof.sol SafeERC20.sol SafeMath.sol (Out of Scope) SignatureValidator.sol Migrations.sol (Out of Scope)
+   </h4>
+   <p block-type="Text">
+    Retesting activities targeted commit
+    <a href="https://github.com/AdExNetwork/adex-protocol-eth/commit/caa872ce982cd09a342b42d10281bf82038e6070">
+     caa872c.
+    </a>
+   </p>
+   <p block-type="Text">
+    This security assessment targeted exclusively the following contracts:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      AdExCore
+     </li>
+     <li block-type="ListItem">
+      ChannelLibrary
+     </li>
+     <li block-type="ListItem">
+      MerkleProof
+     </li>
+     <li block-type="ListItem">
+      SafeERC20
+     </li>
+     <li block-type="ListItem">
+      SignatureValidator
+     </li>
+    </ul>
+   </p>
+   <p block-type="Text">
+    To support this review, the testing team used the following automated testing tools:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Rattle:
+      <a href="https://github.com/trailofbits/rattle">
+       https://github.com/trailofbits/rattle
+      </a>
+     </li>
+     <li block-type="ListItem">
+      Mythril:
+      <a href="https://github.com/ConsenSys/mythril">
+       https://github.com/ConsenSys/mythril
+      </a>
+     </li>
+     <li block-type="ListItem">
+      Slither:
+      <a href="https://github.com/trailofbits/slither">
+       https://github.com/trailofbits/slither
+      </a>
+     </li>
+     <li block-type="ListItem">
+      Surya:
+      <a href="https://github.com/ConsenSys/surya">
+       https://github.com/ConsenSys/surya
+      </a>
+     </li>
+    </ul>
+   </p>
+   <p block-type="Text">
+    Output for these automated tools is available upon request.
+   </p>
+  </div>
+  <div class="page" data-page-id="5">
+   <h4>
+    <span id="page-5-0">
+    </span>
+    <b>
+     Per-Contract Vulnerability Summary
+    </b>
+   </h4>
+   <p block-type="Text">
+    The testing team identified a total of five (5) issues during this assessment, all of which are classified as informational. These findings have all been acknowledged by the development team.
+   </p>
+   <h4>
+    <b>
+     AdExCore (
+    </b>
+    AdExCore.sol
+    <b>
+     )
+    </b>
+   </h4>
+   <p block-type="Text">
+    Some informational notes are given. Some gas-saving modifications are suggested. No potential vulnerabilities have been identified.
+   </p>
+   <h4>
+    <b>
+     ChannelLibrary (
+    </b>
+    ChannelLibrary.sol
+    <b>
+     )
+    </b>
+   </h4>
+   <p block-type="Text">
+    Some informational notes are given. Some gas-saving modifications are suggested. No potential vulnerabilities have been identified.
+   </p>
+   <h4>
+    <b>
+     SignatureValidator (
+    </b>
+    SignatureValidator.sol
+    <b>
+     )
+    </b>
+   </h4>
+   <p block-type="Text">
+    Some informational notes are given. No potential vulnerabilities have been identified.
+   </p>
+   <h4>
+    <b>
+     MerkleProof (
+    </b>
+    MerkleProof.sol
+    <b>
+     )
+    </b>
+   </h4>
+   <p block-type="Text">
+    Some informational notes are given. Some gas-saving modifications are suggested. No potential vulnerabilities have been identified.
+   </p>
+   <h4>
+    <b>
+     SafeERC20 (
+    </b>
+    SafeERC20.sol
+    <b>
+     )
+    </b>
+   </h4>
+   <p block-type="Text">
+    Some informational notes are given. No potential vulnerabilities have been identified.
+   </p>
+   <h2>
+    <span id="page-5-1">
+    </span>
+    <b>
+     Detailed Findings
+    </b>
+   </h2>
+   <p block-type="Text">
+    This section provides a detailed description of the vulnerabilities identified within the AdEx Protocol's smart contracts. Each vulnerability has a severity classification which is determined from the likelihood and impact of each issue by the matrix given in the Appendix:
+    <a href="#page-14-0">
+     Vulnerability Severity Classification.
+    </a>
+   </p>
+   <p block-type="Text">
+    A number of additional properties of the contracts, including gas optimisations, are also described in this section and are labelled as "informational".
+   </p>
+   <p block-type="Text">
+    Each vulnerability is also assigned a
+    <b>
+     status
+    </b>
+    :
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      <i>
+       Open:
+      </i>
+      the issue has not been addressed by the project team.
+     </li>
+     <li block-type="ListItem">
+      <i>
+       Resolved:
+      </i>
+      the issue was acknowledged by the project team and updates to the affected contract(s) have been made to mitigate the related risk.
+     </li>
+     <li block-type="ListItem">
+      <i>
+       Closed:
+      </i>
+      the issue was acknowledged by the project team but no further actions have been taken.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_5_Picture_21.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="6">
+   <h2>
+    <b>
+     Summary of Findings
+    </b>
+   </h2>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       ID
+      </th>
+      <th>
+       Description
+      </th>
+      <th>
+       Severity
+      </th>
+      <th>
+       Status
+      </th>
+     </tr>
+     <tr>
+      <td>
+       ADX-01
+      </td>
+      <td>
+       Tokens Can Be Locked if Channel Creators Lose Their Keys
+      </td>
+      <td>
+       Informational
+      </td>
+      <td>
+       Closed
+      </td>
+     </tr>
+     <tr>
+      <td>
+       ADX-02
+      </td>
+      <td>
+       Publishers Unable to Withdraw from Fast Expiring Channels
+      </td>
+      <td>
+       Informational
+      </td>
+      <td>
+       Closed
+      </td>
+     </tr>
+     <tr>
+      <td>
+       ADX-03
+      </td>
+      <td>
+       Inadequate and Misleading On-chain Channel State
+      </td>
+      <td>
+       Informational
+      </td>
+      <td>
+       Closed
+      </td>
+     </tr>
+     <tr>
+      <td>
+       ADX-04
+      </td>
+      <td>
+       Miscellanenous Comments and Gas Optimisation Suggestions
+      </td>
+      <td>
+       Informational
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="7">
+   <span id="page-7-0">
+   </span>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       ADX-01
+      </th>
+      <th>
+       Tokens Can Be Locked if Channel Creators Lose Their Keys
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Asset
+      </td>
+      <td>
+       AdExCore.sol
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Status
+      </td>
+      <td>
+       Closed: See Resolution
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Rating
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p block-type="Text">
+    In the event that a channel becomes stale and cannot update/progress its state (for example, the
+    <i>
+     supermajority
+    </i>
+    cannot be reached, or more than
+    <sup>
+     1
+    </sup>
+    3 lose their keys or fail to participate) the tokens can only be withdrawn once the channel expires. In such an event, only the channel creator can withdraw the original deposited tokens.
+   </p>
+   <p block-type="Text">
+    It can be the case that a creator creates a channel and disposes or loses the related private key over time, not expecting to have to withdraw the channel's tokens. In this scenario, tokens are lost forever in the AdExCore contract.
+   </p>
+   <p block-type="Text">
+    This is simply an informational point and may be the intentional design of the related smart contract.
+   </p>
+   <h4>
+    <b>
+     Recommendations
+    </b>
+   </h4>
+   <p block-type="Text">
+    A safety mechanism could be easily implemented which allows anyone to withdraw lost tokens using a timeoutbased approach. For example, on line [
+    <b>
+     55
+    </b>
+    ] the require could be modified as follows:
+   </p>
+   <pre>require ( msg . sender == channel . creator || now &gt; channel . validUntil + 1 year );</pre>
+   <h2>
+    <span id="page-7-2">
+    </span>
+    <b>
+     Resolution
+    </b>
+   </h2>
+   <p block-type="Text">
+    The development team acknowledges this issue, see below response:
+   </p>
+   <p block-type="Text">
+    <span id="page-7-1">
+    </span>
+    <i>
+     "After review, we decided to pass on implementing the recommendation, since it constitutes unintuitive behavior for us; the recommendation would allow anyone to claim the tokens after a period; in terms of decision making, this is the same debate as whether lost coins should be "recycled" from bitcoin/ethereum. In our protocol papers, we mention that using an arbitor validator is a helpful, since if one of them loses the keys, the channel can still be drained".
+    </i>
+   </p>
+   <p>
+    <img src="_page_7_Picture_13.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="8">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       ADX-02
+      </th>
+      <th>
+       Publishers Unable to Withdraw from Fast Expiring Channels
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Asset
+      </td>
+      <td>
+       ChannelLibrary.sol
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Status
+      </td>
+      <td>
+       Closed: See Resolution
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Rating
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p block-type="Text">
+    The AdEx Protocol documentation states
+    <a href="#page-14-2">
+     [2]
+    </a>
+    ,
+    <i>
+     "OUTPACE channel should have 2-3 times as long of a duration, in order to allow extra time for publishers to withdraw their revenue."
+    </i>
+   </p>
+   <p block-type="Text">
+    However, in the current core implementation, there is no minimum time requirement for each channel's validUntil duration. Thus, publishers have to rely on the
+    <i>
+     Market
+    </i>
+    (a RESTful service) to compute and communicate all time constraints. This Market layer cannot be entirely trusted.
+   </p>
+   <p block-type="Text">
+    Assuming the time interval is erroneously communicated to publishers, or simply not accounted for by publishers, there exists a realistic edge case where channels expire before publishers are able to withdraw earned revenues.
+   </p>
+   <p block-type="Text">
+    Similarly, a malicious advertiser can also create a channel with a small active time window, with just enough time for publishers to confirm a bid, but not enough time to allow payment withdrawal. After the channel expires, the advertiser is able to withdraw the remaining balance without paying publishers.
+   </p>
+   <h4>
+    <b>
+     Recommendations
+    </b>
+   </h4>
+   <p block-type="Text">
+    AdEx acknowledges this potential
+    <b>
+     stuck revenue
+    </b>
+    problem. The current implementation suggests publishers will reliably check for expiration times off-chain and will account for this potential issue.
+   </p>
+   <p block-type="Text">
+    Another recommendation is to impose a reasonable MIN_VALIDITY time interval (as a constant in ChannelLibrary ) for each channel upon channel creation. This constant could be used to restrict channels to have minimum lengths.
+   </p>
+   <h4>
+    <span id="page-8-1">
+    </span>
+    <b>
+     Resolution
+    </b>
+   </h4>
+   <p block-type="Text">
+    The development team acknowledges this issue, see below response:
+   </p>
+   <p block-type="Text">
+    <span id="page-8-0">
+    </span>
+    <i>
+     "Again, we consider this to be a defined behavior, although we will consider implementing the recommendation of a minimum channel duration. However, as with many things in the AdEx ecosystem (token used, who are the validators) this is one of the things that will be governed on-chain: short lived channels would be excluded/filtered".
+    </i>
+   </p>
+   <p>
+    <img src="_page_8_Picture_14.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="9">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       ADX-03
+      </th>
+      <th>
+       Inadequate and Misleading On-chain Channel State
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Asset
+      </td>
+      <td>
+       ChannelLibrary.sol
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Status
+      </td>
+      <td>
+       Closed: See Resolution
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Rating
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p block-type="Text">
+    The AdEx Protocol documentation specifies that
+    <a href="#page-14-2">
+     [2]
+    </a>
+    :
+    <i>
+     "the market needs to track all on-chain OUTPACE channels and needs to constantly monitor their liveness (&gt;=2/3 validators online and producing new states) and state."
+    </i>
+    .
+   </p>
+   <p block-type="Text">
+    Furthermore, the AdexCore maintains a public states mapping that signals whether channels are Unknown , Active , or Expired .
+   </p>
+   <p block-type="Text">
+    Current design and implementation seem to permit clumsy providers or market-builders to mistake states for a reliable source of channel
+    <i>
+     state
+    </i>
+    . It is possible that users will rely on the getChannelState getter function to read this information on-chain and see if the channel has expired.
+   </p>
+   <p block-type="Text">
+    This is problematic since the states mapping does not accurately describe the latest actual channel state. For example, the only way for a channel state to become Expired is if the advertiser withdraws their balance upon channel expiry. Expired channels, whose advertisers have not yet withdrawn, will show up as Active in the related on-chain states .
+   </p>
+   <h4>
+    <b>
+     Recommendations
+    </b>
+   </h4>
+   <p block-type="Text">
+    A getter function could be implemented, which would leverage the isValid() function on Active states with the current blocktime to return a more accurate description of whether a channel's state is truly active and valid.
+   </p>
+   <h4>
+    <span id="page-9-1">
+    </span>
+    <b>
+     Resolution
+    </b>
+   </h4>
+   <p block-type="Text">
+    The development team acknowledges this issue, see below response:
+   </p>
+   <p block-type="Text">
+    <span id="page-9-0">
+    </span>
+    <i>
+     "We acknowledge this issue and it's a very good point, however we think it's an issue of naming. There is a separate system to track the overall channel state (the validator stack), which is also aware of campaign health and whether all funds in the channel are distributed (Exchausted state) that takes care of that. Our internal recommendation would be to rename the state getter".
+    </i>
+   </p>
+   <p>
+    <img src="_page_9_Picture_13.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="10">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       ADX-04
+      </th>
+      <th>
+       Miscellanenous Comments and Gas Optimisation Suggestions
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Asset
+      </td>
+      <td>
+       All Contracts in Scope
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Status
+      </td>
+      <td>
+       Resolved: See inline comments and Resolution
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Rating
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p block-type="Text">
+    This section outlines miscellaneous comments and suggestions that were found as a by-product of this review. We include this section as it may be useful for the authors to improve readability of the code.
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      <b>
+       Gas Saving
+      </b>
+      In ChannelLibrary.sol on lines [
+      <b>
+       9
+      </b>
+      ] and [
+      <b>
+       10
+      </b>
+      ], a uint8 is used. The EVM prefers type sizes of 32 bits (i.e. uint256 ). In order to read/write smaller types the EVM uses masks which costs more gas. Setting these to uint types will reduce computation and save gas. ✓ Resolved in commit
+      <a href="https://github.com/AdExNetwork/adex-protocol-eth/commit/da725ba15a77712cd8b5d175097114432d920174">
+       [da725ba]
+      </a>
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Gas Saving  For-loop Convention
+      </b>
+      In MerkleProof.sol line [8], the for-loop terminates when i!=proof.length . It may be better to terminate the for-loop as of i &lt; proof.length for better readability. This would also save gas, as the EVM takes one additional opcode to perform a "not equals" check than it takes to perform a "less than" check. ✓ Resolved in commit
+      <a href="https://github.com/AdExNetwork/adex-protocol-eth/commit/46a8e48ec2817e1b0f6b333a0f075d8a318e6761">
+       [46a8e48]
+      </a>
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Gas Saving  Public Functions
+      </b>
+      In AdExCore.sol , the following functions can be declared external instead of public to save gas: channelOpen , channelWithdraw and channelWithdrawExpired .
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Comment Inaccuracy
+      </b>
+      In MerkleProof.sol line [7], developer comment notes the future need to
+      <i>
+       "compare valueHash == root if the proof is empty?"
+      </i>
+      . This is not necessary as this base case is already handled by the function. A merkle tree with only 1 leaf uses the leaf as the root itself. ✓ Resolved in commit
+      <a href="https://github.com/AdExNetwork/adex-protocol-eth/commit/caa872ce982cd09a342b42d10281bf82038e6070">
+       [caa872c]
+      </a>
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Comment Inaccuracy
+      </b>
+      In SafeERC20.sol line [10], developer comment suggests the checkSuccess() function is
+      <i>
+       "definitely not a pure fn but the compiler complains otherwise"
+      </i>
+      . This function is indeed a pure function as the assembly doesn't include any impure opcode (see a non-exhaustive list
+      <a href="#page-14-3">
+       [3]
+      </a>
+      ). ✓ Resolved in commit
+      <a href="https://github.com/AdExNetwork/adex-protocol-eth/commit/caa872ce982cd09a342b42d10281bf82038e6070">
+       [caa872c]
+      </a>
+     </li>
+    </ul>
+   </p>
+   <h3>
+    <b>
+     Recommendations
+    </b>
+   </h3>
+   <p block-type="Text">
+    Ensure these are as expected.
+   </p>
+   <h4>
+    <span id="page-10-0">
+    </span>
+    <b>
+     Resolution
+    </b>
+   </h4>
+   <p block-type="Text">
+    The items listed above have been resolved, with the exception of the "Gas Saving - Public Functions". See related response below from the development team:
+   </p>
+   <p block-type="Text">
+    <i>
+     "Everything addressed in latest master except "gas saving - public functions". Using "external" causes various types of issues related to the new ABIEncoderv2 within the solidity/ethereum ecosystem; the most prominent one we encountered was the C++ version of solc v0.4.25 crashing with a segfault when the functions are external; this has not
+    </i>
+   </p>
+   <p>
+    <img src="_page_10_Picture_15.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="11">
+   <p block-type="Text">
+    <i>
+     happened ever since we simplified a particular function signature, but still, truffle test fails with an obscure solc JS error when we try to change it now; should be investigated further".
+    </i>
+   </p>
+   <p>
+    <img src="_page_11_Picture_3.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="12">
+   <h2>
+    <span id="page-12-0">
+    </span>
+    <b>
+     Appendix A Edge Cases (non-exhaustive list)
+    </b>
+   </h2>
+   <p block-type="Text">
+    A non-exhaustive list of edge cases were identified to support this security review and are given along with this document. Each edge case was manually stepped-through and validated, with the expected behaviors listed below.
+   </p>
+   <h2>
+    <b>
+     AdExCore: function
+    </b>
+    channelOpen()
+   </h2>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Advertisers cannot override existing campaign channels with new channels, regardless of the state of existing channels ✓
+     </li>
+     <li block-type="ListItem">
+      The channel creator must be the msg.sender , i.e. malicious users cannot designate a random address to the campaign creator ✓
+     </li>
+     <li block-type="ListItem">
+      Advertisers can stake token amounts in the range [0
+      <i>
+       ,
+      </i>
+      2
+      <sup>
+       256
+      </sup>
+      − 1] ✓
+     </li>
+     <li block-type="ListItem">
+      Advertisers can input any bytes32 value to represent the campaign spec ✓
+     </li>
+     <li block-type="ListItem">
+      Advertisers using non-malicious, correctly-implemented ERC20 tokens can expect failed token transfers to revert ✓
+     </li>
+     <li block-type="ListItem">
+      Advertisers can use malicious ERC20 tokens and successfully create channels. This leaves it to the network, publishers, and other users to verify the token standards used for a each campaign ✓
+     </li>
+    </ul>
+   </p>
+   <h4>
+    <b>
+     AdExCore: function
+    </b>
+    channelWithdraw()
+   </h4>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Users except channel creators can only withdraw from active campaigns ✓
+     </li>
+     <li block-type="ListItem">
+      Given honest validators and the correct channel hash, users cannot spoof the signatures array to withdraw from channel. ✓
+     </li>
+     <li block-type="ListItem">
+      Given honest validators and the correct channel hash, users cannot spoof the stateroot to withdraw from channel. ✓
+     </li>
+     <li block-type="ListItem">
+      Given honest validators and the correct channel hash, users cannot spoof the withdrawal amount (used to calculate balanceleaf ) such that it correctly points back to the stateroot ✓
+     </li>
+    </ul>
+   </p>
+   <h4>
+    <b>
+     AdExCore: function
+    </b>
+    channelWithdrawExpired
+   </h4>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Given correct timestamps, advertisers can only withdraw from expired channels that they created ✓
+     </li>
+     <li block-type="ListItem">
+      Advertisers are only able to successfully withdraw remaining funds from each expired channel once ✓
+     </li>
+     <li block-type="ListItem">
+      Expired (in real time) channels can have active states if advertisers failed to withdraw or have not yet withdrawn funds ✓
+     </li>
+    </ul>
+   </p>
+   <h4>
+    <b>
+     ChannelLibrary: function
+    </b>
+    isValid
+   </h4>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Advertisers have to provide at least 2 validators addresses (honest or not) upon channel creation ✓
+     </li>
+     <li block-type="ListItem">
+      Advertisers have to provide at most 25 validators addresses (honest or not) upon channel creation ✓
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_12_Picture_23.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="13">
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Given correct block timestamps, advertisers can only create channels which expire after channel creation, but before 365 days from channel creation ✓
+     </li>
+     <li block-type="ListItem">
+      Channel variables that should not change throughout the campaign are used to calculate the channel hash, i.e. channelID ✓
+     </li>
+    </ul>
+   </p>
+   <h2>
+    <b>
+     ChannelLibrary: function
+    </b>
+    isSignedBySupermajority
+   </h2>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Given honest validators and the correct input state, the two thirds majority vote rule is enforced ✓
+     </li>
+     <li block-type="ListItem">
+      Validation fails if users submitted a different number of signatures than the number of channel validators ✓
+     </li>
+    </ul>
+   </p>
+   <h4>
+    <b>
+     SignatureValidator: function
+    </b>
+    isValidSignature
+   </h4>
+   <p block-type="Text">
+    • Function validates that a hash was signed by the input signer address, given AdEx's specifications ✓
+   </p>
+   <h2>
+    <b>
+     MerkleProof: function
+    </b>
+    isContained
+   </h2>
+   <p block-type="Text">
+    • Given a valid proof array and valueHash , function returns true upon traversing a valid balanceleaf to its merkle root ✓
+   </p>
+   <h4>
+    <b>
+     SafeERC20: function
+    </b>
+    checkSuccess
+   </h4>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Advertisers can use previous, potentially non-compliant versions of ERC20 tokens that do not return success/failure states on token transfer ✓
+     </li>
+     <li block-type="ListItem">
+      In the event that ERC20 tokens return a value upon transfer, function only checks 32 bytes of the returned values for a boolean response ✓
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_13_Picture_14.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="14">
+   <h2>
+    <span id="page-14-0">
+    </span>
+    <b>
+     Appendix B Vulnerability Severity Classification
+    </b>
+   </h2>
+   <p block-type="Text">
+    This security review classifies vulnerabilities based on their potential impact and likelihood of occurance. The total severity of a vulnerability is derived from these two metrics based on the following matrix.
+   </p>
+   <p>
+    <img src="_page_14_Figure_4.jpeg"/>
+   </p>
+   <p>
+    Table 1: Severity Matrix - How the severity of a vulnerability is given based on the
+    <i>
+     impact
+    </i>
+    and the
+    <i>
+     likelihood
+    </i>
+    of a vulnerability.
+   </p>
+   <h2>
+    <b>
+     References
+    </b>
+   </h2>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      <span id="page-14-1">
+      </span>
+      [1] ERC-20 Token Standard. Github, Available:
+      <a href="https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md">
+       https://github.com/ethereum/EIPs/blob/master/EIPS/
+      </a>
+      <a href="https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md">
+       eip-20.md
+      </a>
+      .
+     </li>
+     <li block-type="ListItem">
+      <span id="page-14-2">
+      </span>
+      [2] AdEx. AdEx Protocol. Github, 2018, Available:
+      <a href="https://github.com/AdExNetwork/adex-protocol">
+       https://github.com/AdExNetwork/adex-protocol
+      </a>
+      . [Accessed 2018].
+     </li>
+     <li block-type="ListItem">
+      <span id="page-14-3">
+      </span>
+      [3] Sigma Prime. Purity in the EVM. Blog, 2018, Available:
+      <a href="https://blog.sigmaprime.io/evm-purity.html">
+       https://blog.sigmaprime.io/evm-purity.html
+      </a>
+      . [Accessed 2018].
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_14_Picture_10.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="15">
+   <p>
+    <img src="_page_15_Picture_0.jpeg"/>
+   </p>
+  </div>
+ </body>
+</html>

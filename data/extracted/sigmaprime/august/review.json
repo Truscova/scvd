@@ -1,0 +1,352 @@
+{
+  "doc_id": "sigmaprime_august_review",
+  "source_pdf": "review.pdf",
+  "source_mtime": "2025-11-10T12:08:24+00:00",
+  "extracted_at": "2025-11-12T02:05:40.857352+00:00",
+  "extractor_version": "poc-0.4",
+  "repositories": [
+    {
+      "url": "https://github.com/fractal-protocol/august-contracts-upgradeable",
+      "org": "fractal-protocol",
+      "repo": "august-contracts-upgradeable",
+      "commit": null,
+      "evidence": {
+        "page": 3,
+        "snippet": "The review was conducted on the files hosted on the [Fractal Protocol repository.](https://github.com/fractal-protocol/august-contracts-upgradeable)"
+      }
+    },
+    {
+      "url": "https://github.com/fractal-protocol/august-contracts-upgradeable",
+      "org": "fractal-protocol",
+      "repo": "august-contracts-upgradeable",
+      "commit": "492389005a2146d649ca835c6b5f649848a8b86a",
+      "evidence": {
+        "page": 3,
+        "snippet": "The scope of this time-boxed review was strictly limited to files at commit [4923890.](https://github.com/fractal-protocol/august-contracts-upgradeable/tree/492389005a2146d649ca835c6b5f649848a8b86a) T..."
+      }
+    },
+    {
+      "url": "https://github.com/fractal-protocol/august-contracts-upgradeable",
+      "org": "fractal-protocol",
+      "repo": "august-contracts-upgradeable",
+      "commit": "d510a02b3b9932638f782bc3543564a1d8dfdf61",
+      "evidence": {
+        "page": 3,
+        "snippet": "The scope of this time-boxed review was strictly limited to files at commit [4923890.](https://github.com/fractal-protocol/august-contracts-upgradeable/tree/492389005a2146d649ca835c6b5f649848a8b86a) T..."
+      }
+    },
+    {
+      "url": "https://github.com/ConsenSys/mythril",
+      "org": "ConsenSys",
+      "repo": "mythril",
+      "commit": null,
+      "evidence": {
+        "page": 3,
+        "snippet": "- Mythril: <https://github.com/ConsenSys/mythril>"
+      }
+    },
+    {
+      "url": "https://github.com/trailofbits/slither",
+      "org": "trailofbits",
+      "repo": "slither",
+      "commit": null,
+      "evidence": {
+        "page": 3,
+        "snippet": "- Slither: <https://github.com/trailofbits/slither>"
+      }
+    },
+    {
+      "url": "https://github.com/ConsenSys/surya",
+      "org": "ConsenSys",
+      "repo": "surya",
+      "commit": null,
+      "evidence": {
+        "page": 3,
+        "snippet": "- Surya: <https://github.com/ConsenSys/surya>"
+      }
+    },
+    {
+      "url": "https://github.com/Cyfrin/aderyn",
+      "org": "Cyfrin",
+      "repo": "aderyn",
+      "commit": null,
+      "evidence": {
+        "page": 3,
+        "snippet": "- Aderyn: <https://github.com/Cyfrin/aderyn>"
+      }
+    },
+    {
+      "url": "https://github.com/fractal-protocol/august-contracts-upgradeable",
+      "org": "fractal-protocol",
+      "repo": "august-contracts-upgradeable",
+      "commit": "2196d5357aad71eaf2dcfc6bbff8a4f6d69c59cc",
+      "evidence": {
+        "page": 7,
+        "snippet": "The issue was resolved on commit [2196d53.](https://github.com/fractal-protocol/august-contracts-upgradeable/commit/2196d5357aad71eaf2dcfc6bbff8a4f6d69c59cc) The nonReentrant modifier on AbstractLende..."
+      }
+    },
+    {
+      "url": "https://github.com/OpenZeppelin/openzeppelin-contracts",
+      "org": "OpenZeppelin",
+      "repo": "openzeppelin-contracts",
+      "commit": "e3786e63e6def6f3b71ce7b4b30906123bffe67c",
+      "evidence": {
+        "page": 15,
+        "snippet": "Consider adopting OpenZeppelin's [Ownable2Step](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/e3786e63e6def6f3b71ce7b4b30906123bffe67c/contracts/access/Ownable2Step.sol) pattern or imple..."
+      }
+    }
+  ],
+  "report_schema": [
+    {
+      "key": "Severity",
+      "meaning": "How serious the impact of this finding is.",
+      "expected_values": "Informational / Low / Medium / High"
+    },
+    {
+      "key": "Difficulty",
+      "meaning": "How hard it is to exploit this issue.",
+      "expected_values": "Low / Medium / High"
+    },
+    {
+      "key": "Impact",
+      "meaning": "The severity of the consequences if the vulnerability is exploited.",
+      "expected_values": "Informational / Low / Medium / High"
+    },
+    {
+      "key": "Likelihood",
+      "meaning": "The probability that the vulnerability will be exploited.",
+      "expected_values": "Low / Medium / High"
+    },
+    {
+      "key": "Finding ID",
+      "meaning": "A unique identifier for the finding.",
+      "expected_values": "A string representing the finding's unique ID"
+    },
+    {
+      "key": "Target",
+      "meaning": "The specific component or contract affected by the vulnerability.",
+      "expected_values": "path to affected file / contract"
+    },
+    {
+      "key": "Status",
+      "meaning": "The current status of the finding (e.g., resolved, open).",
+      "expected_values": "Resolved / Open / In Progress"
+    },
+    {
+      "key": "Asset",
+      "meaning": "The specific asset or contract associated with the finding.",
+      "expected_values": "path to affected file / contract"
+    }
+  ],
+  "vulnerability_sections": [
+    {
+      "index": 1,
+      "page_start": 7,
+      "heading": "1. Two nonReentrancy Modifiers Prevent liquidate() Execution",
+      "markdown": "| AUG-01                                 | Two nonReentrancy Modifiers Prevent liquidate() Execution |                |                  |\n|----------------------------------------|-----------------------------------------------------------|----------------|------------------|\n| Asset pools/base/AbstractLender.sol |                                                           |                |                  |\n| Status                                 | Resolved: See Resolution                                  |                |                  |\n| Rating                                 | Severity: High                                            | Impact: Medium | Likelihood: High |\n\n#### **Description**\n\nTwo nonReentrant modifiers are executed in a single call, causing ReentrancyGuard to revert during liquidate() .\n\nWhen the function AbstractLender.liquidate() is called, the following call sequence occurs.\n\n- 1. AbstractLender.liquidate() is called on the lender contract. The function has a nonReentrant modifier. At this point, \\_reentrancyStatus is set to \\_REENTRANCY\\_ENTERED .\n- 2. IPeerToPeerOpenTermLoan(loanAddr).liquidate() is called on the respective loan contract. This code may execute InitializableOpenTermLoan.liquidate() .\n- 3. IHookableLender(lender).notifyLoanMatured() is called on the lender contract. The function has a nonReentrant modifier as described in HookableLender.sol .\n\nSince the \\_reentrancyStatus of the lender contract was already set to \\_REENTRANCY\\_ENTERED in step (1), the call in step (3) would cause a revert on BaseReentrancyGuard.\\_nonReentrantBefore() . The result is, AbstractLender.liquidate() will revert.\n\nThe impact is rated as medium severity as being unable to call liquidate() prevents losses being accounted for at the pool level.\n\n#### **Recommendations**\n\nConsider removing one of the nonReentrant modifiers either on AbstractLender or HookableLender contract.\n\n#### **Resolution**\n\nThe issue was resolved on commit [2196d53.](https://github.com/fractal-protocol/august-contracts-upgradeable/commit/2196d5357aad71eaf2dcfc6bbff8a4f6d69c59cc) The nonReentrant modifier on AbstractLender.liquidate() was removed.\n\n\n\n\n| AUG-02 Restricted Token Redeem Period When lagDuration == 0 |                                 |                |                    |\n|-------------------------------------------------------------------|---------------------------------|----------------|--------------------|\n| Asset                                                             | pool/base/TimelockedERC4626.sol |                |                    |\n| Status                                                            | Resolved: See Resolution        |                |                    |\n| Rating                                                            | Severity: Medium                | Impact: Medium | Likelihood: Medium |\n\n### **Description**\n\nIf lagDuration == 0 , users may have only a limited period, potentially just 1 hour in a day, to claim their token.\n\nWhen lagDuration == 0 , the pool is not time-locked. Therefore, users are supposed to redeem their tokens instantly. However, this is not the case, as the redeem phase still depends on the liquidationHour . Indeed, when lagDuration == 0 , the function requestRedeem() calls the internal function \\_claim() in the following code from lines [**130-133**]:\n\n```\nif (lagDuration == 0) {\n     claimableEpoch = block.timestamp;\n     _claim(year, month, day, 0, receiverAddr);\n}\n```\n\nIf the call happens before the liquidationHour , the call will revert because of the require statement on line [**428**]:\n\n```\nrequire(block.timestamp + _TIMESTAMP_MANIPULATION_WINDOW >= DateUtils.timestampFromDateTime(year, month, day, liquidationHour, 0,\n      ,→ 0), \"Too early\");\n```\n\nHence, the current timestamp is checked with year , month , day and the liquidationHour . For example, when liquidationHour = 23 , users would have only 1 hour a day, just between *11:00 PM UTC and 11:59 PM UTC*, to redeem their tokens.\n\n#### **Recommendations**\n\nUpdate the liquidationHour to 0 , when updating the lagDuration to 0 in the function updateTimelockDuration() . Also, consider reverting if there is a call to update the liquidationHour to a value other than 0 when lagDuration == 0 in the function updateProcessingHour() .\n\n# **Resolution**\n\nThe development team has fixed this issue in commit [d510a02,](https://github.com/fractal-protocol/august-contracts-upgradeable/commit/d510a02b3b9932638f782bc3543564a1d8dfdf61) by adding the following the require statement when the lagDuration > 0 .\n\n```\nrequire(block.timestamp + _TIMESTAMP_MANIPULATION_WINDOW >= DateUtils.timestampFromDateTime(year, month, day, liquidationHour, 0,\n      ,→ 0), \"Too early\");\n```\n",
+      "finding_id": "AUG-01",
+      "description": "#### **Description**\n\nTwo nonReentrant modifiers are executed in a single call, causing ReentrancyGuard to revert during liquidate() .\n\nWhen the function AbstractLender.liquidate() is called, the following call sequence occurs.\n\n- 1. AbstractLender.liquidate() is called on the lender contract. The function has a nonReentrant modifier. At this point, \\_reentrancyStatus is set to \\_REENTRANCY\\_ENTERED .\n- 2. IPeerToPeerOpenTermLoan(loanAddr).liquidate() is called on the respective loan contract. This code may execute InitializableOpenTermLoan.liquidate() .\n- 3. IHookableLender(lender).notifyLoanMatured() is called on the lender contract. The function has a nonReentrant modifier as described in HookableLender.sol .\n\nSince the \\_reentrancyStatus of the lender contract was already set to \\_REENTRANCY\\_ENTERED in step (1), the call in step (3) would cause a revert on BaseReentrancyGuard.\\_nonReentrantBefore() . The result is, AbstractLender.liquidate() will revert.\n\nThe impact is rated as medium severity as being unable to call liquidate() prevents losses being accounted for at the pool level.\n",
+      "metadata": {
+        "Severity": "High",
+        "Difficulty": "High",
+        "Impact": "Medium",
+        "Likelihood": "High",
+        "Finding ID": "AUG-01",
+        "Target": "Asset pools/base/AbstractLender.sol",
+        "Status": "Resolved",
+        "Asset": "Asset pools/base/AbstractLender.sol"
+      },
+      "heading_cleaned": "Two nonReentrancy Modifiers Prevent liquidate() Execution"
+    },
+    {
+      "index": 2,
+      "page_start": 9,
+      "heading": "2. Inflation Attack On Empty Vault Can DoS The Vault",
+      "markdown": "| AUG-03                                         | Inflation Attack On Empty Vault Can DoS The Vault |              |                 |\n|------------------------------------------------|---------------------------------------------------|--------------|-----------------|\n| Asset pools/base/BaseUpgradeableERC4626.sol |                                                   |              |                 |\n| Status                                         | Resolved: See Resolution                          |              |                 |\n| Rating                                         | Severity: Medium                                  | Impact: High | Likelihood: Low |\n\n#### **Description**\n\nThe first depositor may execute an inflation attack to prevent other users from depositing.\n\nA malicious first depositor can inflate the rate between the shares and assets. This can be done by first depositing the lowest possible amount of supported assets to the vault, then transferring a large amount of assets to the vault contract directly without calling deposit() or mint() . The asset transfer will artificially inflate the share price for future depositors. If their deposited amount is less than a specific value, legitimate users cannot deposit due to the check statement on line [**100**] because their shares will be 0 due to the share price inflation.\n\nConsider the following attack scenario:\n\n- 1. First we assume that the vault is freshly generated.\n- 2. The attacker deposits 1 asset by calling deposit(1) . Thus, totalAssets()==1 , totalSupply()==1 .\n- 3. The attacker inflates the rate by transferring the underlying asset directly to the vault. Let us assume they transfer 10\\_000e6 - 1 . Now we have totalAssets() == 10\\_000e6 and totalSupply() == 1 .\n- 4. At this point, legitimate users cannot deposit an amount less than 10\\_000e6 . This is because if the deposited amount is less than 10\\_000e6 , the expected shares will be zero, since shares = totalSupply \\* depositedAmount / totalAssets , and therefore we have shares = 1 \\* depositedAmount / 10\\_000e6 which yields zero shares.\n\n#### **Recommendations**\n\nThe simplest countermeasure to inflation attacks is ensuring that the vault is never empty. This can be achieved by depositing into the vault in the deployment/initialisation script.\n\n#### **Resolution**\n\nThe development team has confirmed that they are going to manually perform the first deposit into the vault.\n\n\n\n\n| AUG-04 Recent Solidity Versions May Not Be Supported By Layer 2 Systems |                  |              |                 |\n|----------------------------------------------------------------------------|------------------|--------------|-----------------|\n| Asset                                                                      | src/*.sol        |              |                 |\n| Resolved: See Resolution Status                                         |                  |              |                 |\n| Rating                                                                     | Severity: Medium | Impact: High | Likelihood: Low |\n\n#### **Description**\n\nSolidity versions starting from 0.8.25 use the MCOPY op-code by default. The op-code MCOPY will cause a revert if it is called on chains that are not upgraded to the EVM version *Cancun*. The Solidity operations that include the MCOPY by default:\n\n- The helper function abi.encode() ;\n- Functions which return byte array;\n- Functions which return string types.\n\nThe testing team has compiled the contract and discovered occurrences of MCOPY in the bytecode.\n\nThe impact of deploying the contract on chains that do not upgrade their EVM to *Cancun* is high. This is because the funds can be stuck. MCOPY will not be used when depositing funds allowing funds to enter the protocol. However, when trying to redeem, the transaction will revert since the function \\_registerRedeemRequest() contains an abi.encode() instruction which uses MCOPY by default.\n\n#### **Recommendations**\n\nConsider setting the Solidity compile flag --evm-version such that it is an earlier EVM version. paris is a good choice for the EVM version as it does not contain either PUSH0 or MCOPY opcodes.\n\nAlternatively, using a compiler version which is strictly less < 0.8.25 .\n\nNote that shanghai (the default in Solidity from 0.8.20 to 0.8.24 ) introduces the opcode PUSH0 which may or may not be supported by other chains.\n\nFurthermore, validate the EVM version of each chain before compiling contracts and deploying to that chain.\n\n#### **Resolution**\n\nThe development team are resolving the issue by setting the EVM version to Paris during compilation.\n",
+      "finding_id": "AUG-03",
+      "description": "#### **Description**\n\nThe first depositor may execute an inflation attack to prevent other users from depositing.\n\nA malicious first depositor can inflate the rate between the shares and assets. This can be done by first depositing the lowest possible amount of supported assets to the vault, then transferring a large amount of assets to the vault contract directly without calling deposit() or mint() . The asset transfer will artificially inflate the share price for future depositors. If their deposited amount is less than a specific value, legitimate users cannot deposit due to the check statement on line [**100**] because their shares will be 0 due to the share price inflation.\n\nConsider the following attack scenario:\n\n- 1. First we assume that the vault is freshly generated.\n- 2. The attacker deposits 1 asset by calling deposit(1) . Thus, totalAssets()==1 , totalSupply()==1 .\n- 3. The attacker inflates the rate by transferring the underlying asset directly to the vault. Let us assume they transfer 10\\_000e6 - 1 . Now we have totalAssets() == 10\\_000e6 and totalSupply() == 1 .\n- 4. At this point, legitimate users cannot deposit an amount less than 10\\_000e6 . This is because if the deposited amount is less than 10\\_000e6 , the expected shares will be zero, since shares = totalSupply \\* depositedAmount / totalAssets , and therefore we have shares = 1 \\* depositedAmount / 10\\_000e6 which yields zero shares.\n",
+      "metadata": {
+        "Severity": "Medium",
+        "Difficulty": null,
+        "Impact": "High",
+        "Likelihood": "Low",
+        "Finding ID": null,
+        "Target": "pools/base/BaseUpgradeableERC4626.sol",
+        "Status": "Resolved",
+        "Asset": "pools/base/BaseUpgradeableERC4626.sol"
+      },
+      "heading_cleaned": "Inflation Attack On Empty Vault Can DoS The Vault"
+    },
+    {
+      "index": 3,
+      "page_start": 11,
+      "heading": "3. Index Swapping May Prevent Subsequent Calls To claim()",
+      "markdown": "| AUG-05 | Index Swapping May Prevent Subsequent Calls To claim() |             |                    |\n|--------|--------------------------------------------------------|-------------|--------------------|\n| Asset  | pools/base/TimelockedERC4626.sol                       |             |                    |\n| Status | Resolved: See Resolution                               |             |                    |\n| Rating | Severity: Low                                          | Impact: Low | Likelihood: Medium |\n\n### **Description**\n\nThe internal function \\_deleteReceiver() swaps the index of a receiver address with the last item, if the index is not the last item.\n\nThis algorithm is commonly used in Solidity as a cost-effective solution for removing an array item. However, since receiverIndex is used as one of the inputs in the claim() function, the index swapping could cause a revert if there are subsequent calls to claim() .\n\nConsider the following mock case. Let us assume there are ten users who wish to withdraw at the same time.\n\n- 1. First, they will query their respective receiverIndex through the getReceiverIndex() function.\n- 2. Using this information, each user calls claim() . Ten transactions are created almost at the same time.\n- 3. We assume that the first user's transaction is successful. At this point, the last item is swapped to be the first item in the array.\n- 4. If the last user's transaction is executed, this transaction reverts with an Invalid receiver index message.\n\n## **Recommendations**\n\nThe receiverIndex information can be cheaply computed onchain if the basic array is replaced with alternative solutions such as OpenZeppelin's [EnumerableSet.](https://docs.openzeppelin.com/contracts/3.x/api/utils#EnumerableSet)\n\n## **Resolution**\n\nThe development team has resolved this issue by extracting the value of receiverIndex on-chain in the \\_claim() function, through the receiverAddr by using a new mapping \\_receiverIndexes .\n",
+      "finding_id": "AUG-05",
+      "description": "### **Description**\n\nThe internal function \\_deleteReceiver() swaps the index of a receiver address with the last item, if the index is not the last item.\n\nThis algorithm is commonly used in Solidity as a cost-effective solution for removing an array item. However, since receiverIndex is used as one of the inputs in the claim() function, the index swapping could cause a revert if there are subsequent calls to claim() .\n\nConsider the following mock case. Let us assume there are ten users who wish to withdraw at the same time.\n\n- 1. First, they will query their respective receiverIndex through the getReceiverIndex() function.\n- 2. Using this information, each user calls claim() . Ten transactions are created almost at the same time.\n- 3. We assume that the first user's transaction is successful. At this point, the last item is swapped to be the first item in the array.\n- 4. If the last user's transaction is executed, this transaction reverts with an Invalid receiver index message.\n",
+      "metadata": {
+        "Severity": "Low",
+        "Difficulty": "High",
+        "Impact": "Low",
+        "Likelihood": "Medium",
+        "Finding ID": "AUG-05-INDEX-SWAP-CLAIM-REVERT",
+        "Target": "pools/base/TimelockedERC4626.sol",
+        "Status": "Resolved: See Resolution",
+        "Asset": "pools/base/TimelockedERC4626.sol"
+      },
+      "heading_cleaned": "Index Swapping May Prevent Subsequent Calls To claim()"
+    },
+    {
+      "index": 4,
+      "page_start": 12,
+      "heading": "4. Excessive Redeem Requests May Cause processAllClaimsByDate() to Revert",
+      "markdown": "| AUG-06                                    | Excessive Redeem Requests May Cause processAllClaimsByDate() to Revert |             |                 |\n|-------------------------------------------|------------------------------------------------------------------------|-------------|-----------------|\n| Asset pools/base/TimelockedERC4626.sol |                                                                        |             |                 |\n| Status                                    | Resolved: See Resolution                                               |             |                 |\n| Rating                                    | Severity: Low                                                          | Impact: Low | Likelihood: Low |\n\n### **Description**\n\nUsers can submit a large number of redeem requests on the same day. This could prevent a successful call to processAllClaimsByDate() if the call breaches the block gas limit.\n\nThe function processAllClaimsByDate() loops through all redeem requests for a single day. If the number of requests is too large, the result is excessive gas consumption potentially larger than the block gas limit.\n\nGas limit tests indicate that the block gas limit will be breached when there are roughly 1,000 redeem requests.\n\nConsequently, users may need to call the claim() function for individual requests.\n\n#### **Recommendations**\n\nConsider adding a limit as an input to the processAllClaimsByDate() function so that requests can be processed in multiple batches when needed. Also, consider adding a minimum withdrawal to prevent dust amounts from being withdrawn.\n\n#### **Resolution**\n\nThe first recommendation has been implemented in commit [d510a02.](https://github.com/fractal-protocol/august-contracts-upgradeable/commit/d510a02b3b9932638f782bc3543564a1d8dfdf61) The function processAllClaimsByDate() now has an argument maxLimit which represent the number of request to process for a dailyCluster .\n",
+      "finding_id": "AUG-06",
+      "description": "### **Description**\n\nUsers can submit a large number of redeem requests on the same day. This could prevent a successful call to processAllClaimsByDate() if the call breaches the block gas limit.\n\nThe function processAllClaimsByDate() loops through all redeem requests for a single day. If the number of requests is too large, the result is excessive gas consumption potentially larger than the block gas limit.\n\nGas limit tests indicate that the block gas limit will be breached when there are roughly 1,000 redeem requests.\n\nConsequently, users may need to call the claim() function for individual requests.\n",
+      "metadata": {
+        "Severity": "Low",
+        "Difficulty": null,
+        "Impact": "Low",
+        "Likelihood": "Low",
+        "Finding ID": null,
+        "Target": "pools/base/TimelockedERC4626.sol",
+        "Status": "Resolved",
+        "Asset": "pools/base/TimelockedERC4626.sol"
+      },
+      "heading_cleaned": "Excessive Redeem Requests May Cause processAllClaimsByDate() to Revert"
+    },
+    {
+      "index": 5,
+      "page_start": 13,
+      "heading": "5. Potentially Inefficient Search On getReceiverIndex()",
+      "markdown": "| AUG-07 | Potentially Inefficient Search On getReceiverIndex() |\n|--------|------------------------------------------------------|\n| Asset  | pools/base/TimelockedERC4626.sol                     |\n| Status | Resolved: See Resolution                             |\n| Rating | Informational                                        |\n\n### **Description**\n\nThe code on lines [**336-338**] uses a basic loop to find the index in the array that contains an address. The gas cost of the query increases proportionally with the number of requests. The case of significant gas cost may arise deliberately or maliciously, if there are numerous requests with different receiverAddr values received by the contract in one day.\n\nIt is also worth noting that if there are multiple requests with the same receiverAddr , this query only returns the first request in the array.\n\n#### **Recommendations**\n\nTo improve the efficiency of the search mechanism, consider implementing OpenZeppelin's [EnumerableSet](https://docs.openzeppelin.com/contracts/3.x/api/utils#EnumerableSet) to store addresses.\n\n## **Resolution**\n\nThe function getReceiverIndex() has been removed in commit [d510a02](https://github.com/fractal-protocol/august-contracts-upgradeable/commit/d510a02b3b9932638f782bc3543564a1d8dfdf61) and it is replaced by mapping \\_receiverIndexes which stores the index of each unique receiver per cluster.\n",
+      "finding_id": "AUG-07",
+      "description": "### **Description**\n\nThe code on lines [**336-338**] uses a basic loop to find the index in the array that contains an address. The gas cost of the query increases proportionally with the number of requests. The case of significant gas cost may arise deliberately or maliciously, if there are numerous requests with different receiverAddr values received by the contract in one day.\n\nIt is also worth noting that if there are multiple requests with the same receiverAddr , this query only returns the first request in the array.\n",
+      "metadata": {
+        "Severity": "Informational",
+        "Difficulty": "High",
+        "Impact": "Informational",
+        "Likelihood": "Medium",
+        "Finding ID": "AUG-07",
+        "Target": "pools/base/TimelockedERC4626.sol",
+        "Status": "Resolved: See Resolution",
+        "Asset": "pools/base/TimelockedERC4626.sol"
+      },
+      "heading_cleaned": "Potentially Inefficient Search On getReceiverIndex()"
+    },
+    {
+      "index": 6,
+      "page_start": 14,
+      "heading": "6. Potential Double Funding Of Loan Contracts",
+      "markdown": "| AUG-08 | Potential Double Funding Of Loan Contracts |\n|--------|--------------------------------------------|\n| Asset  | pools/base/BaseLendingPool.sol             |\n| Status | Resolved: See Resolution                   |\n| Rating | Informational                              |\n\n### **Description**\n\nThe fundLoan() function in BaseLendingPool does not perform a pre-check on the loan state to ensure that it requires funding.\n\n```\nfunction fundLoan(address loanAddr) external override onlyIfInitialized nonReentrant ifConfigured onlyLoansOperator {\n// ... existing code ...\n    IPeerToPeerOpenTermLoan(loanAddr).fundLoan();\n// Post checks\n    require(IPeerToPeerOpenTermLoan(loanAddr).loanState() == LOAN_ACTIVE, \"Funding check failed\");\n// ... other checks ...\n}\n```\n\nWhile there is a post-funding check to ensure the loan is active, there is no pre-funding verification that the loan requires funding.\n\nThe issue is raised as informational severity, as the check is performed in InitializableOpenTermLoan . If other implementations of IPeerToPeerOpenTermLoan do not implement the check, double funding could be possible.\n\n#### **Recommendations**\n\nConsider adding a pre-funding check in fundLoan() to ensure the loan state is LOAN\\_FUNDING\\_REQUIRED before proceeding with the funding operation.\n\nNote that this check would increase gas costs in making an additional call to the loanAddr .\n\n#### **Resolution**\n\nThe recommended check has been implemented in commit [d510a02.](https://github.com/fractal-protocol/august-contracts-upgradeable/commit/d510a02b3b9932638f782bc3543564a1d8dfdf61)\n",
+      "finding_id": "AUG-08",
+      "description": "### **Description**\n\nThe fundLoan() function in BaseLendingPool does not perform a pre-check on the loan state to ensure that it requires funding.\n\n```\nfunction fundLoan(address loanAddr) external override onlyIfInitialized nonReentrant ifConfigured onlyLoansOperator {\n// ... existing code ...\n    IPeerToPeerOpenTermLoan(loanAddr).fundLoan();\n// Post checks\n    require(IPeerToPeerOpenTermLoan(loanAddr).loanState() == LOAN_ACTIVE, \"Funding check failed\");\n// ... other checks ...\n}\n```\n\nWhile there is a post-funding check to ensure the loan is active, there is no pre-funding verification that the loan requires funding.\n\nThe issue is raised as informational severity, as the check is performed in InitializableOpenTermLoan . If other implementations of IPeerToPeerOpenTermLoan do not implement the check, double funding could be possible.\n",
+      "metadata": {
+        "Severity": "Informational",
+        "Difficulty": null,
+        "Impact": "Informational",
+        "Likelihood": null,
+        "Finding ID": null,
+        "Target": "pools/base/BaseLendingPool.sol",
+        "Status": "Resolved: See Resolution",
+        "Asset": "pools/base/BaseLendingPool.sol"
+      },
+      "heading_cleaned": "Potential Double Funding Of Loan Contracts"
+    },
+    {
+      "index": 7,
+      "page_start": 15,
+      "heading": "7. Ownership Mechanism Lacks Additional Safeguards",
+      "markdown": "| AUG-09 | Ownership Mechanism Lacks Additional Safeguards |\n|--------|-------------------------------------------------|\n| Asset  | core/BaseOwnable.sol & pools/LendingPool.sol    |\n| Status | Closed: See Resolution                          |\n| Rating | Informational                                   |\n\n### **Description**\n\nThe BaseOwnable and LendingPool contracts implement a basic ownership mechanism. While functional, it lacks safeguards against accidental transfers to invalid addresses.\n\nThe current transfer of ownership pattern calls the function transferOwnership(address newOwner) which instantly changes the owner to the newOwner . This allows the current owner of the contracts to set an arbitrary address.\n\nIf the address is entered incorrectly, the owner role of the contract is lost forever. Thus, a user would not be able to pass the onlyOwner modifier.\n\n# **Recommendations**\n\nThis scenario is typically mitigated by implementing a two-step transfer pattern, whereby a new owner address is selected, then the selected address must call an acceptOwnership() before the owner is changed. This ensures the new owner address is accessible.\n\nConsider adopting OpenZeppelin's [Ownable2Step](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/e3786e63e6def6f3b71ce7b4b30906123bffe67c/contracts/access/Ownable2Step.sol) pattern or implementing a similar two-step ownership transfer process.\n\n# **Resolution**\n\nThe development has decided not to fix the issue. They mentioned that the owner will be protected by a multi-sig account.\n",
+      "finding_id": "AUG-09",
+      "description": "### **Description**\n\nThe BaseOwnable and LendingPool contracts implement a basic ownership mechanism. While functional, it lacks safeguards against accidental transfers to invalid addresses.\n\nThe current transfer of ownership pattern calls the function transferOwnership(address newOwner) which instantly changes the owner to the newOwner . This allows the current owner of the contracts to set an arbitrary address.\n\nIf the address is entered incorrectly, the owner role of the contract is lost forever. Thus, a user would not be able to pass the onlyOwner modifier.\n",
+      "metadata": {
+        "Severity": "Informational",
+        "Difficulty": "High",
+        "Impact": "Informational",
+        "Likelihood": "Medium",
+        "Finding ID": "AUG-09",
+        "Target": "core/BaseOwnable.sol & pools/LendingPool.sol",
+        "Status": "Closed: See Resolution",
+        "Asset": "core/BaseOwnable.sol & pools/LendingPool.sol"
+      },
+      "heading_cleaned": "Ownership Mechanism Lacks Additional Safeguards"
+    },
+    {
+      "index": 8,
+      "page_start": 16,
+      "heading": "8. Deviation From Common Interface Naming Convention",
+      "markdown": "| AUG-10 | Deviation From Common Interface Naming Convention |  |\n|--------|---------------------------------------------------|--|\n| Asset  | loans/interfaces/ILenderHook.sol                  |  |\n| Status | Resolved: See Resolution                          |  |\n| Rating | Informational                                     |  |\n\n### **Description**\n\nThe interface ILenderHook deviates from common naming conventions. Typically, interfaces are named using the format I + contract name.\n\nThe contract implementing ILenderHook is named HookableLender .\n\n#### **Recommendations**\n\nConsider renaming the interface to IHookableLender for improved clarity and adherence to standard naming practices.\n\n#### **Resolution**\n\nThe interface was renamed to IHookableLender as per the recommendation in commit [d510a02.](https://github.com/fractal-protocol/august-contracts-upgradeable/commit/d510a02b3b9932638f782bc3543564a1d8dfdf61)\n",
+      "finding_id": "AUG-10",
+      "description": "### **Description**\n\nThe interface ILenderHook deviates from common naming conventions. Typically, interfaces are named using the format I + contract name.\n\nThe contract implementing ILenderHook is named HookableLender .\n",
+      "metadata": {
+        "Severity": "Informational",
+        "Difficulty": "Low",
+        "Impact": "Informational",
+        "Likelihood": "Low",
+        "Finding ID": "AUG-10",
+        "Target": "loans/interfaces/ILenderHook.sol",
+        "Status": "Resolved: See Resolution",
+        "Asset": "loans/interfaces/ILenderHook.sol"
+      },
+      "heading_cleaned": "Deviation From Common Interface Naming Convention"
+    },
+    {
+      "index": 9,
+      "page_start": 17,
+      "heading": "9. Variable _maxSupply Is Used For Two Different Purposes",
+      "markdown": "| AUG-11 | Variable _maxSupply Is Used For Two Different Purposes                        |  |\n|--------|-------------------------------------------------------------------------------|--|\n| Asset  | pools/base/BaseUpgradeableERC4626.sol and pools/base/BaseUpgradeableERC20.sol |  |\n| Status | Closed: See Resolution                                                        |  |\n| Rating | Informational                                                                 |  |\n\n### **Description**\n\nThe variable \\_maxSupply is used as the return value of the function maxMint() which, according to the NatSpec comment of this function, is specified as *\"the maximum amount of the Vault shares that can be minted for the receiver, through a mint call\"*. However, this variable is also used as the maximum value of totalSupply in the function BaseUpgradeableERC20.\\_canMint() .\n\n#### **Recommendations**\n\nTo avoid confusion, use another variable as the return value of the function maxMint() or rename the function maxMint() to maxSupply() .\n\n#### **Resolution**\n\nThe development team has decided to mark this issue as a *Won't fix*. They confirmed that the max supply is the max mint as well.\n",
+      "finding_id": "AUG-11",
+      "description": "### **Description**\n\nThe variable \\_maxSupply is used as the return value of the function maxMint() which, according to the NatSpec comment of this function, is specified as *\"the maximum amount of the Vault shares that can be minted for the receiver, through a mint call\"*. However, this variable is also used as the maximum value of totalSupply in the function BaseUpgradeableERC20.\\_canMint() .\n",
+      "metadata": {
+        "Severity": "Informational",
+        "Difficulty": "Low",
+        "Impact": "Informational",
+        "Likelihood": "Low",
+        "Finding ID": "AUG-11",
+        "Target": "pools/base/BaseUpgradeableERC4626.sol and pools/base/BaseUpgradeableERC20.sol",
+        "Status": "Closed: See Resolution",
+        "Asset": "pools/base/BaseUpgradeableERC4626.sol and pools/base/BaseUpgradeableERC20.sol"
+      },
+      "heading_cleaned": "Variable _maxSupply Is Used For Two Different Purposes"
+    },
+    {
+      "index": 10,
+      "page_start": 18,
+      "heading": "10. Rogue Owner May Siphon Assets Through emergencyWithdraw()",
+      "markdown": "| AUG-12 | Rogue Owner May Siphon Assets Through emergencyWithdraw() |\n|--------|-----------------------------------------------------------|\n| Asset  | pools/base/OwnableLiquidityPool.sol                       |\n| Status | Closed: See Resolution                                    |\n| Rating | Informational                                             |\n\n### **Description**\n\nThe emergencyWithdrawal() function lacks preconditions or restrictions, allowing the owner to withdraw any tokens at will.\n\nThere is a risk to the integrity of the pool and the security of depositors' funds. Specific concerns for depositors include:\n\n- No defined conditions that constitute an \"emergency,\" giving the owner discretion to use this function at any time without justification.\n- A malicious or compromised owner exploiting this function to perform an exit scam, instantly draining all assets from the pool.\n- Undermining the trustless nature of the DeFi protocol, as depositors must rely entirely on the owner's integrity.\n\nThe contrary view is that an emergencyWithdraw() potentially allows benevolent owner to extract funds to a safe address in the event of a protocol compromise.\n\n## **Recommendations**\n\nEnsure the owner is a multi-signature wallet or the relevant DAO.\n\nFurthermore, consider the trade-offs between safely extracting user funds in the case of an emergency and the risk of a compromised owner address stealing funds stored in the protocol.\n\n#### **Resolution**\n\nThe development team has decided not to fix this issue as they will use a multi-sig account to call the function emergencyWithdraw() .\n",
+      "finding_id": "AUG-12",
+      "description": "### **Description**\n\nThe emergencyWithdrawal() function lacks preconditions or restrictions, allowing the owner to withdraw any tokens at will.\n\nThere is a risk to the integrity of the pool and the security of depositors' funds. Specific concerns for depositors include:\n\n- No defined conditions that constitute an \"emergency,\" giving the owner discretion to use this function at any time without justification.\n- A malicious or compromised owner exploiting this function to perform an exit scam, instantly draining all assets from the pool.\n- Undermining the trustless nature of the DeFi protocol, as depositors must rely entirely on the owner's integrity.\n\nThe contrary view is that an emergencyWithdraw() potentially allows benevolent owner to extract funds to a safe address in the event of a protocol compromise.\n",
+      "metadata": {
+        "Severity": "Informational",
+        "Difficulty": "High",
+        "Impact": "High",
+        "Likelihood": "High",
+        "Finding ID": "AUG-12",
+        "Target": "pools/base/OwnableLiquidityPool.sol",
+        "Status": "Closed: See Resolution",
+        "Asset": "pools/base/OwnableLiquidityPool.sol"
+      },
+      "heading_cleaned": "Rogue Owner May Siphon Assets Through emergencyWithdraw()"
+    },
+    {
+      "index": 11,
+      "page_start": 19,
+      "heading": "11. Miscellaneous General Comments",
+      "markdown": "| AUG-13 | Miscellaneous General Comments |\n|--------|--------------------------------|\n| Asset  | All contracts                  |\n| Status | Resolved: See Resolution       |\n| Rating | Informational                  |\n\n#### **Description**\n\nThis section details miscellaneous findings discovered by the testing team that do not have direct security implications:\n\n#### 1. **Redundant Code Adds Minimal Impact To The Contract**\n\n#### *Related Asset(s): pools/LendingPool.sol*\n\nThe following code snippet indicates an effort to initialise the value of \\_reentrancyStatus .\n\n```\n_reentrancyStatus = _REENTRANCY_NOT_ENTERED;\n```\n\nThe variable \\_reentrancyStatus() is utilised to store a flag to identify whether reentrancy has occurred or not. The utilisation of this variable is done mainly on BaseReentrancyGuard contract.\n\nA uint256 Solidity variable would be assigned to a default value of zero and therefore, the initialisation code above is not necessary to make modifier nonReentrant of BaseReentrancyGuard contract works.\n\nThe code on line [**30**] of LendingPool contract can be safely removed.\n\n#### 2. **Inaccurate Data In Event WithdrawalRequested**\n\n#### *Related Asset(s): pools/base/TimelockedERC4626.sol*\n\nThe event emittance on line [**405**] uses assetsAmount instead of effectiveAssetsAmount . This does not conform to the NatSpec specification for event Requested on line [**51**] as follows:\n\n```\n@param assets The amount of underlying assets to transfer.\n...\nevent WithdrawalRequested (address ownerAddr, address receiverAddr, uint256 shares,\n                                uint256 assets, uint256 fee, uint256 year, uint256 month, uint256 day);\n```\n\nConsider replacing assetsAmount with effectiveAssetsAmount .\n\n#### 3. **Duplicate Code Present In Notifying Loans**\n\n#### *Related Asset(s): pools/base/HookableLender.sol*\n\nThe functions notifyLoanMatured() , notifyLoanClosed() and notifyPrincipalRepayment() in the HookableLender contract are nearly identical. While these functions perform the same operations, they serve distinct semantic purposes in the contract's logic. However, code duplication should be minimised as much as possible.\n\nTo reduce code duplication while maintaining semantic clarity, consider implementing an internal function containing the shared logic.\n\n#### 4. **Out Of Place Function**\n\n#### *Related Asset(s): pools/base/BaseLendingPool.sol*\n\nThe collectFees() function in BaseLendingPool appears to be out of place:\n\n\n```\nfunction collectFees() external onlyIfInitialized nonReentrant ifConfigured onlyOwner {\n    require(feesCollector != address(0), \"Fee collector not set\");\n    require(totalCollectableFees > 0, \"No fees to collect\");\n    _collectFees();\n}\n```\n\nThis function calls \\_collectFees() , which is likely inherited from TimelockedERC4626 . These fees are typically associated with user redemptions of deposits, rather than being directly related to loan operations. Its presence in a contract focused on loan deployment and management may lead to confusion about the source and nature of these fees.\n\nConsider moving this function to a more appropriate contract that deals with user deposits and withdrawals, or clearly document its purpose and fee source in the contract.\n\n#### 5. **Redundant Code And Unnecessary Conditional Structure**\n\n#### *Related Asset(s): pools/LendingPool.sol*\n\nThe current implementation of updateTimelockDuration contains redundant code and a potentially unnecessary conditional structure:\n\n```\nif (newDuration > lagDuration) {\n    lagDuration = newDuration;\n} else {\n    require(globalLiabilityShares == 0, \"Process claims first\");\n    lagDuration = newDuration;\n}\n```\n\nRefactor the code to remove duplication and improve readability:\n\n```\nif (newDuration < lagDuration) {\n    require(globalLiabilityShares == 0, \"Process claims first\");\n}\nlagDuration = newDuration;\n```\n\n#### 6. **Contract Contains Commented-Out Code**\n\n#### *Related Asset(s): pools/LendingPool.sol*\n\nThe updateTimelockDuration function in the LendingPool contract contains commented-out code:\n\n```\n//require(newDuration >= 2 hours, \"Timelock too short\");\n```\n\nRemove the commented-out code. If this check is no longer needed, it should be deleted entirely. If it might be required in the future, document the rationale in a comment or move it to development notes outside the contract.\n\n#### 7. **Unnecessary onlyIfInitialized Modifier**\n\n#### *Related Asset(s): src/\\*.sol*\n\nThe use of the onlyIfInitialized modifier in functions that have the modifier ifConfig is unnecessary and leads to more gas consumption. This is because the function configurePool() has the modifier onlyIfInitialized .\n\nRemove the modifier onlyIfInitialized from the functions that have ifConfig .\n\n## **Recommendations**\n\nEnsure that the comments are understood and acknowledged, and consider implementing the suggestions above.\n\n\n# **Resolution**\n\nThe development team's responses to the raised issues above are as follows.\n\n1. The issue was resolved as suggested. The initialisation of the variable \\_reentrancyStatus is removed.\n\n- 2. The issue was acknowledged by the development team as the effective amount can be calculated offchain assetsAmount - applicableFee .\n- 3. The issue was acknowledged by the development team as the internal function will increase the contract's code size.\n- 4. The issue was resolved by removing the function \\_collectFees() from the contract TimelockedERC4626 . The external function collectFees is updated accordingly.\n- 5. The code was refactored as suggested.\n- 6. The code was removed as suggested.\n- 7. The issue was resolved as suggested by removing the modifier onlyIfInitialized .\n\n\nAugust Vault Test Suite\n",
+      "finding_id": "AUG-13",
+      "description": "#### **Description**\n\nThis section details miscellaneous findings discovered by the testing team that do not have direct security implications:\n\n#### 1. **Redundant Code Adds Minimal Impact To The Contract**\n\n#### *Related Asset(s): pools/LendingPool.sol*\n\nThe following code snippet indicates an effort to initialise the value of \\_reentrancyStatus .\n\n```\n_reentrancyStatus = _REENTRANCY_NOT_ENTERED;\n```\n\nThe variable \\_reentrancyStatus() is utilised to store a flag to identify whether reentrancy has occurred or not. The utilisation of this variable is done mainly on BaseReentrancyGuard contract.\n\nA uint256 Solidity variable would be assigned to a default value of zero and therefore, the initialisation code above is not necessary to make modifier nonReentrant of BaseReentrancyGuard contract works.\n\nThe code on line [**30**] of LendingPool contract can be safely removed.\n\n#### 2. **Inaccurate Data In Event WithdrawalRequested**\n\n#### *Related Asset(s): pools/base/TimelockedERC4626.sol*\n\nThe event emittance on line [**405**] uses assetsAmount instead of effectiveAssetsAmount . This does not conform to the NatSpec specification for event Requested on line [**51**] as follows:\n\n```\n@param assets The amount of underlying assets to transfer.\n...\nevent WithdrawalRequested (address ownerAddr, address receiverAddr, uint256 shares,\n                                uint256 assets, uint256 fee, uint256 year, uint256 month, uint256 day);\n```\n\nConsider replacing assetsAmount with effectiveAssetsAmount .\n\n#### 3. **Duplicate Code Present In Notifying Loans**\n\n#### *Related Asset(s): pools/base/HookableLender.sol*\n\nThe functions notifyLoanMatured() , notifyLoanClosed() and notifyPrincipalRepayment() in the HookableLender contract are nearly identical. While these functions perform the same operations, they serve distinct semantic purposes in the contract's logic. However, code duplication should be minimised as much as possible.\n\nTo reduce code duplication while maintaining semantic clarity, consider implementing an internal function containing the shared logic.\n\n#### 4. **Out Of Place Function**\n\n#### *Related Asset(s): pools/base/BaseLendingPool.sol*\n\nThe collectFees() function in BaseLendingPool appears to be out of place:\n\n\n```\nfunction collectFees() external onlyIfInitialized nonReentrant ifConfigured onlyOwner {\n    require(feesCollector != address(0), \"Fee collector not set\");\n    require(totalCollectableFees > 0, \"No fees to collect\");\n    _collectFees();\n}\n```\n\nThis function calls \\_collectFees() , which is likely inherited from TimelockedERC4626 . These fees are typically associated with user redemptions of deposits, rather than being directly related to loan operations. Its presence in a contract focused on loan deployment and management may lead to confusion about the source and nature of these fees.\n\nConsider moving this function to a more appropriate contract that deals with user deposits and withdrawals, or clearly document its purpose and fee source in the contract.\n\n#### 5. **Redundant Code And Unnecessary Conditional Structure**\n\n#### *Related Asset(s): pools/LendingPool.sol*\n\nThe current implementation of updateTimelockDuration contains redundant code and a potentially unnecessary conditional structure:\n\n```\nif (newDuration > lagDuration) {\n    lagDuration = newDuration;\n} else {\n    require(globalLiabilityShares == 0, \"Process claims first\");\n    lagDuration = newDuration;\n}\n```\n\nRefactor the code to remove duplication and improve readability:\n\n```\nif (newDuration < lagDuration) {\n    require(globalLiabilityShares == 0, \"Process claims first\");\n}\nlagDuration = newDuration;\n```\n\n#### 6. **Contract Contains Commented-Out Code**\n\n#### *Related Asset(s): pools/LendingPool.sol*\n\nThe updateTimelockDuration function in the LendingPool contract contains commented-out code:\n\n```\n//require(newDuration >= 2 hours, \"Timelock too short\");\n```\n\nRemove the commented-out code. If this check is no longer needed, it should be deleted entirely. If it might be required in the future, document the rationale in a comment or move it to development notes outside the contract.\n\n#### 7. **Unnecessary onlyIfInitialized Modifier**\n\n#### *Related Asset(s): src/\\*.sol*\n\nThe use of the onlyIfInitialized modifier in functions that have the modifier ifConfig is unnecessary and leads to more gas consumption. This is because the function configurePool() has the modifier onlyIfInitialized .\n\nRemove the modifier onlyIfInitialized from the functions that have ifConfig .\n",
+      "metadata": {
+        "Severity": "Informational",
+        "Difficulty": null,
+        "Impact": "Informational",
+        "Likelihood": null,
+        "Finding ID": null,
+        "Target": null,
+        "Status": "Resolved: See Resolution",
+        "Asset": "All contracts"
+      },
+      "heading_cleaned": "Miscellaneous General Comments"
+    }
+  ]
+}

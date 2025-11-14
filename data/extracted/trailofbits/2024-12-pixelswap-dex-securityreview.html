@@ -1,0 +1,6521 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8"/>
+ </head>
+ <body>
+  <div class="page" data-page-id="0">
+   <p>
+    <img src="_page_0_Picture_0.jpeg"/>
+   </p>
+   <h1>
+    <b>
+     PixelSwap DEX
+    </b>
+   </h1>
+   <p block-type="Text">
+    Security Assessment
+   </p>
+   <p block-type="Text">
+    <b>
+     December 19, 2024
+    </b>
+   </p>
+   <p block-type="Text">
+    <i>
+     Prepared for:
+    </i>
+   </p>
+   <p block-type="Text">
+    PixelSwap Labs Ltd.
+   </p>
+   <p block-type="Text">
+    <i>
+     Prepared by:
+    </i>
+    <b>
+     Tarun Bansal and Guillermo Larregay
+    </b>
+   </p>
+  </div>
+  <div class="page" data-page-id="1">
+   <h1>
+    <span id="page-1-0">
+    </span>
+    About Trail of Bits
+   </h1>
+   <p block-type="Text">
+    Founded in 2012 and headquartered in New York, Trail of Bits provides technical security assessment and advisory services to some of the world's most targeted organizations. We combine high-end security research with a real-world attacker mentality to reduce risk and fortify code. With 100+ employees around the globe, we've helped secure critical software elements that support billions of end users, including Kubernetes and the Linux kernel.
+   </p>
+   <p block-type="Text">
+    We maintain an exhaustive list of publications at
+    <a href="https://github.com/trailofbits/publications">
+     https://github.com/trailofbits/publications,
+    </a>
+    with links to papers, presentations, public audit reports, and podcast appearances.
+   </p>
+   <p block-type="Text">
+    In recent years, Trail of Bits consultants have showcased cutting-edge research through presentations at CanSecWest, HCSS, Devcon, Empire Hacking, GrrCon, LangSec, NorthSec, the O'Reilly Security Conference, PyCon, REcon, Security BSides, and SummerCon.
+   </p>
+   <p block-type="Text">
+    We specialize in software testing and code review projects, supporting client organizations in the technology, defense, and finance industries, as well as government entities. Notable clients include HashiCorp, Google, Microsoft, Western Digital, and Zoom.
+   </p>
+   <p block-type="Text">
+    Trail of Bits also operates a center of excellence with regard to blockchain security. Notable projects include audits of Algorand, Bitcoin SV, Chainlink, Compound, Ethereum 2.0, MakerDAO, Matic, Uniswap, Web3, and Zcash.
+   </p>
+   <p block-type="Text">
+    To keep up to date with our latest news and announcements, please follow
+    <a href="https://twitter.com/trailofbits">
+     @trailofbits
+    </a>
+    on Twitter and explore our public repositories at
+    <a href="https://github.com/trailofbits">
+     https://github.com/trailofbits
+    </a>
+    . To engage us directly, visit our "Contact" page at
+    <a href="https://www.trailofbits.com/contact">
+     https://www.trailofbits.com/contact,
+    </a>
+    or email us at
+    <a href="mailto:info@trailofbits.com">
+     info@trailofbits.com.
+    </a>
+   </p>
+   <h4>
+    <b>
+     Trail of Bits, Inc.
+    </b>
+   </h4>
+   <p block-type="Text">
+    497 Carroll St., Space 71, Seventh Floor Brooklyn, NY 11215 https://www.trailofbits.com
+    <a href="mailto:info@trailofbits.com">
+     info@trailofbits.com
+    </a>
+   </p>
+   <p>
+    <img src="_page_1_Picture_9.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="2">
+   <h1>
+    <span id="page-2-0">
+    </span>
+    Notices and Remarks
+   </h1>
+   <h1>
+    Copyright and Distribution
+   </h1>
+   <p block-type="Text">
+    © 2024 by Trail of Bits, Inc.
+   </p>
+   <p block-type="Text">
+    All rights reserved. Trail of Bits hereby asserts its right to be identified as the creator of this report in the United Kingdom.
+   </p>
+   <p block-type="Text">
+    This report is considered by Trail of Bits to be public information; it is licensed to PixelSwap Labs Ltd. under the terms of the project statement of work and has been made public at PixelSwap Labs Ltd.'s request. Material within this report may not be reproduced or distributed in part or in whole without the express written permission of Trail of Bits.
+   </p>
+   <p block-type="Text">
+    The sole canonical source for Trail of Bits publications is the Trail of Bits
+    <a href="https://github.com/trailofbits/publications">
+     Publications
+    </a>
+    page. Reports accessed through any source other than that page may have been modified and should not be considered authentic.
+   </p>
+   <h1>
+    Test Coverage Disclaimer
+   </h1>
+   <p block-type="Text">
+    All activities undertaken by Trail of Bits in association with this project were performed in accordance with a statement of work and agreed upon project plan.
+   </p>
+   <p block-type="Text">
+    Security assessment projects are time-boxed and often reliant on information that may be provided by a client, its affiliates, or its partners. As a result, the findings documented in this report should not be considered a comprehensive list of security issues, flaws, or defects in the target system or codebase.
+   </p>
+   <p block-type="Text">
+    Trail of Bits uses automated testing techniques to rapidly test the controls and security properties of software. These techniques augment our manual security review work, but each has its limitations: for example, a tool may not generate a random edge case that violates a property or may not fully complete its analysis during the allotted time. Their use is also limited by the time and resource constraints of a project.
+   </p>
+  </div>
+  <div class="page" data-page-id="3">
+   <h1>
+    <span id="page-3-0">
+    </span>
+    Table of Contents
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       About
+       <br/>
+       Trail of
+       <br/>
+       Bits
+      </th>
+      <th>
+       1
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Notices
+       <br/>
+       and
+       <br/>
+       Remarks
+      </th>
+      <th>
+       2
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Table
+       <br/>
+       of
+       <br/>
+       Contents
+      </th>
+      <th>
+       3
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Project
+       <br/>
+       Summary
+      </th>
+      <th>
+       5
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Executive
+       <br/>
+       Summary
+      </td>
+      <td>
+       6
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Project
+       <br/>
+       Goals
+      </td>
+      <td>
+       8
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Project
+       <br/>
+       Targets
+      </td>
+      <td>
+       9
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Project
+       <br/>
+       Coverage
+      </td>
+      <td>
+       10
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Codebase
+       <br/>
+       Maturity
+       <br/>
+       Evaluation
+      </td>
+      <td>
+       12
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Summary
+       <br/>
+       of
+       <br/>
+       Findings
+      </td>
+      <td>
+       16
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Detailed
+       <br/>
+       Findings
+      </td>
+      <td>
+       18
+      </td>
+     </tr>
+     <tr>
+      <td>
+       1.
+       <br/>
+       The BulkInternalTransfer
+       <br/>
+       receiver
+       <br/>
+       computes
+       <br/>
+       the wrong
+       <br/>
+       total
+       <br/>
+       amounts
+      </td>
+      <td>
+       18
+      </td>
+     </tr>
+     <tr>
+      <td>
+       2.
+       <br/>
+       Granting
+       <br/>
+       the role to
+       <br/>
+       the master
+       <br/>
+       funding
+       <br/>
+       contract
+       <br/>
+       on
+       <br/>
+       a
+       <br/>
+       funding
+       <br/>
+       wallet
+       <br/>
+       contract
+       <br/>
+       result
+       <br/>
+       in
+       <br/>
+       draining
+       <br/>
+       the funding
+       <br/>
+       wallet
+       <br/>
+       balance
+      </td>
+      <td>
+       will
+       <br/>
+       20
+      </td>
+     </tr>
+     <tr>
+      <td>
+       3.
+       <br/>
+       Users
+       <br/>
+       can
+       <br/>
+       inflate their
+       <br/>
+       funding
+       <br/>
+       wallet
+       <br/>
+       balance by
+       <br/>
+       sending
+       <br/>
+       an
+       <br/>
+       expired
+       <br/>
+       Swap
+       <br/>
+       message to
+       <br/>
+       the settlement
+       <br/>
+       contract
+      </td>
+      <td>
+       22
+      </td>
+     </tr>
+     <tr>
+      <td>
+       4.
+       <br/>
+       SettlementVault
+       <br/>
+       balances
+       <br/>
+       are not
+       <br/>
+       updated
+       <br/>
+       in
+       <br/>
+       the PlaceOrder_Partial_2
+       <br/>
+       receiver
+       <br/>
+       the settlement
+       <br/>
+       contract
+      </td>
+      <td>
+       of
+       <br/>
+       24
+      </td>
+     </tr>
+     <tr>
+      <td>
+       5.
+       <br/>
+       Lack
+       <br/>
+       of
+       <br/>
+       validation
+       <br/>
+       of
+       <br/>
+       PixelswapStreamPool
+       <br/>
+       configuration
+       <br/>
+       parameters
+      </td>
+      <td>
+       26
+      </td>
+     </tr>
+     <tr>
+      <td>
+       6.
+       <br/>
+       Users
+       <br/>
+       can
+       <br/>
+       drain
+       <br/>
+       the TON
+       <br/>
+       balance of
+       <br/>
+       the PixelswapSettlement
+       <br/>
+       contract
+      </td>
+      <td>
+       27
+      </td>
+     </tr>
+     <tr>
+      <td>
+       7.
+       <br/>
+       Users
+       <br/>
+       can
+       <br/>
+       avoid
+       <br/>
+       paying
+       <br/>
+       the gas
+       <br/>
+       fee for
+       <br/>
+       the token
+       <br/>
+       creation
+       <br/>
+       transaction
+      </td>
+      <td>
+       29
+      </td>
+     </tr>
+     <tr>
+      <td>
+       8.
+       <br/>
+       The tokens_count
+       <br/>
+       initial
+       <br/>
+       value in
+       <br/>
+       the
+       <br/>
+       PixelswapStreamPool
+       <br/>
+       contract
+       <br/>
+       is
+       <br/>
+       zero
+      </td>
+      <td>
+       30
+      </td>
+     </tr>
+     <tr>
+      <td>
+       9.
+       <br/>
+       The returned
+       <br/>
+       TON
+       <br/>
+       amount
+       <br/>
+       from
+       <br/>
+       an
+       <br/>
+       order
+       <br/>
+       execution
+       <br/>
+       result
+       <br/>
+       is
+       <br/>
+       ignored
+      </td>
+      <td>
+       31
+      </td>
+     </tr>
+     <tr>
+      <td>
+       10.
+       <br/>
+       Wrong
+       <br/>
+       formula
+       <br/>
+       used
+       <br/>
+       for
+       <br/>
+       LP
+       <br/>
+       amount
+       <br/>
+       calculation
+      </td>
+      <td>
+       32
+      </td>
+     </tr>
+     <tr>
+      <td>
+       11.
+       <br/>
+       Users
+       <br/>
+       can
+       <br/>
+       use nested
+       <br/>
+       PlaceOrders
+       <br/>
+       to
+       <br/>
+       drain
+       <br/>
+       the settlement
+       <br/>
+       contract
+      </td>
+      <td>
+       34
+      </td>
+     </tr>
+     <tr>
+      <td>
+       12.
+       <br/>
+       The LP
+       <br/>
+       tokens
+       <br/>
+       are never
+       <br/>
+       burned
+       <br/>
+       by
+       <br/>
+       the Stream
+       <br/>
+       Pool
+       <br/>
+       contract
+      </td>
+      <td>
+       36
+      </td>
+     </tr>
+     <tr>
+      <td>
+       13.
+       <br/>
+       Lack
+       <br/>
+       of
+       <br/>
+       the pair_id
+       <br/>
+       and
+       <br/>
+       token_id
+       <br/>
+       validation
+       <br/>
+       in
+       <br/>
+       the PixelswapStreamPool
+       <br/>
+       38
+      </td>
+      <td>
+       contract
+      </td>
+     </tr>
+     <tr>
+      <td>
+       14.
+       <br/>
+       The value attached
+       <br/>
+       to
+       <br/>
+       messages
+       <br/>
+       is
+       <br/>
+       not
+       <br/>
+       checked
+       <br/>
+       to
+       <br/>
+       be positive
+      </td>
+      <td>
+       40
+      </td>
+     </tr>
+     <tr>
+      <td>
+       15.
+       <br/>
+       The current
+       <br/>
+       balance is
+       <br/>
+       not
+       <br/>
+       checked
+       <br/>
+       before sending
+       <br/>
+       a
+       <br/>
+       message with
+       <br/>
+       a
+       <br/>
+       non-zero
+       <br/>
+       value
+      </td>
+      <td>
+       42
+      </td>
+     </tr>
+     <tr>
+      <td>
+       16.
+       <br/>
+       The exec_id
+       <br/>
+       value is
+       <br/>
+       not
+       <br/>
+       validated
+       <br/>
+       for
+       <br/>
+       the internal
+       <br/>
+       orders
+       <br/>
+       in
+       <br/>
+       nested
+       <br/>
+       PlaceOrder
+      </td>
+      <td>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       messages
+      </td>
+      <td>
+       43
+      </td>
+     </tr>
+     <tr>
+      <td>
+       17.
+       <br/>
+       The token_balance get
+       <br/>
+       function
+       <br/>
+       reverts
+       <br/>
+       if
+       <br/>
+       a
+       <br/>
+       user
+       <br/>
+       balance is
+       <br/>
+       0
+      </td>
+      <td>
+       45
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p>
+    <img src="_page_3_Picture_2.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="4">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       18.
+       <br/>
+       Different
+       <br/>
+       parsing
+       <br/>
+       formats
+       <br/>
+       for
+       <br/>
+       Jetton
+       <br/>
+       notification
+       <br/>
+       messages
+      </th>
+      <th>
+       46
+      </th>
+     </tr>
+     <tr>
+      <td>
+       19.
+       <br/>
+       The JettonFactory
+       <br/>
+       contract
+       <br/>
+       allows
+       <br/>
+       minting
+       <br/>
+       zero
+       <br/>
+       tokens
+      </td>
+      <td>
+       47
+      </td>
+     </tr>
+     <tr>
+      <td>
+       20.
+       <br/>
+       Incorrect
+       <br/>
+       gas
+       <br/>
+       calculations
+       <br/>
+       in
+       <br/>
+       several
+       <br/>
+       contracts
+      </td>
+      <td>
+       48
+      </td>
+     </tr>
+     <tr>
+      <td>
+       21.
+       <br/>
+       A
+       <br/>
+       privileged
+       <br/>
+       account
+       <br/>
+       can
+       <br/>
+       drain
+       <br/>
+       the PixelswapStreamPool
+       <br/>
+       contract
+      </td>
+      <td>
+       50
+      </td>
+     </tr>
+     <tr>
+      <td>
+       22.
+       <br/>
+       The fee recipient
+       <br/>
+       accounts
+       <br/>
+       cannot
+       <br/>
+       be changed
+       <br/>
+       in
+       <br/>
+       the Stream
+       <br/>
+       Pool
+       <br/>
+       contract
+      </td>
+      <td>
+       51
+      </td>
+     </tr>
+     <tr>
+      <td>
+       23.
+       <br/>
+       The gas
+       <br/>
+       checks
+       <br/>
+       in
+       <br/>
+       the PixelswapStreamPool
+       <br/>
+       contract
+       <br/>
+       are wrongly
+       <br/>
+       placed
+      </td>
+      <td>
+       52
+      </td>
+     </tr>
+     <tr>
+      <td>
+       24.
+       <br/>
+       Users
+       <br/>
+       cannot
+       <br/>
+       deposit
+       <br/>
+       only
+       <br/>
+       Jetton
+       <br/>
+       to
+       <br/>
+       their
+       <br/>
+       funding
+       <br/>
+       wallet
+      </td>
+      <td>
+       54
+      </td>
+     </tr>
+     <tr>
+      <td>
+       A.
+       <br/>
+       Vulnerability
+       <br/>
+       Categories
+      </td>
+      <td>
+       55
+      </td>
+     </tr>
+     <tr>
+      <td>
+       B.
+       <br/>
+       Code
+       <br/>
+       Maturity
+       <br/>
+       Categories
+      </td>
+      <td>
+       57
+      </td>
+     </tr>
+     <tr>
+      <td>
+       C.
+       <br/>
+       Code
+       <br/>
+       Quality
+       <br/>
+       Findings
+      </td>
+      <td>
+       59
+      </td>
+     </tr>
+     <tr>
+      <td>
+       D.
+       <br/>
+       Incident
+       <br/>
+       Response
+       <br/>
+       Recommendations
+      </td>
+      <td>
+       60
+      </td>
+     </tr>
+     <tr>
+      <td>
+       E.
+       <br/>
+       Testing
+       <br/>
+       Improvement
+       <br/>
+       Recommendations
+      </td>
+      <td>
+       62
+      </td>
+     </tr>
+     <tr>
+      <td>
+       F.
+       <br/>
+       Fix
+       <br/>
+       Review
+       <br/>
+       Results
+      </td>
+      <td>
+       65
+      </td>
+     </tr>
+     <tr>
+      <td>
+       G.
+       <br/>
+       Fix
+       <br/>
+       Review
+       <br/>
+       Status
+       <br/>
+       Categories
+      </td>
+      <td>
+       71
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p>
+    <img src="_page_4_Picture_1.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="5">
+   <h1>
+    <span id="page-5-0">
+    </span>
+    Project Summary
+   </h1>
+   <h1>
+    Contact Information
+   </h1>
+   <p block-type="Text">
+    The following project manager was associated with this project:
+   </p>
+   <p block-type="Text">
+    <b>
+     Sam Greenup
+    </b>
+    , Project Manager sam.greenup@trailofbits.com
+   </p>
+   <p block-type="Text">
+    The following engineering director was associated with this project:
+   </p>
+   <p block-type="Text">
+    <b>
+     Josselin Feist
+    </b>
+    , Engineering Director, Blockchain josselin.feist@trailofbits.com
+   </p>
+   <p block-type="Text">
+    The following consultants were associated with this project:
+   </p>
+   <p block-type="Text">
+   </p>
+   <p block-type="Text">
+    <b>
+     Tarun Bansal
+    </b>
+    , Consultant
+    <b>
+     Guillermo Larregay
+    </b>
+    , Consultant tarun.bansal@trailofbits.com guillermo.larregay@trailofbits.com
+   </p>
+   <h1>
+    Project Timeline
+   </h1>
+   <p block-type="Text">
+    The significant events and milestones of the project are listed below.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Date
+      </th>
+      <th>
+       Event
+      </th>
+     </tr>
+     <tr>
+      <th>
+       June
+      </th>
+      <th>
+       Pre-project
+      </th>
+     </tr>
+     <tr>
+      <td>
+       20,
+      </td>
+      <td>
+       kickoff
+      </td>
+     </tr>
+     <tr>
+      <td>
+       2024
+      </td>
+      <td>
+       call
+      </td>
+     </tr>
+     <tr>
+      <th>
+       June
+      </th>
+      <th>
+       Status
+      </th>
+     </tr>
+     <tr>
+      <td>
+       28,
+      </td>
+      <td>
+       update meeting
+      </td>
+     </tr>
+     <tr>
+      <td>
+       2024
+      </td>
+      <td>
+       #1
+      </td>
+     </tr>
+     <tr>
+      <th>
+       July
+      </th>
+      <th>
+       Status
+      </th>
+     </tr>
+     <tr>
+      <td>
+       8,
+      </td>
+      <td>
+       update meeting
+      </td>
+     </tr>
+     <tr>
+      <td>
+       2024
+      </td>
+      <td>
+       #2
+      </td>
+     </tr>
+     <tr>
+      <th>
+       July
+       <br/>
+       17,
+       <br/>
+       2024
+      </th>
+      <th>
+       Delivery
+       <br/>
+       of
+       <br/>
+       report
+       <br/>
+       draft
+      </th>
+     </tr>
+     <tr>
+      <th>
+       July
+      </th>
+      <th>
+       Report
+      </th>
+     </tr>
+     <tr>
+      <td>
+       17,
+      </td>
+      <td>
+       readout
+      </td>
+     </tr>
+     <tr>
+      <td>
+       2024
+      </td>
+      <td>
+       meeting
+      </td>
+     </tr>
+     <tr>
+      <th>
+       December
+      </th>
+      <th>
+       Delivery
+      </th>
+     </tr>
+     <tr>
+      <td>
+       19,
+      </td>
+      <td>
+       of
+      </td>
+     </tr>
+     <tr>
+      <td>
+       2024
+      </td>
+      <td>
+       comprehensive report
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="6">
+   <h1>
+    <span id="page-6-0">
+    </span>
+    Executive Summary
+   </h1>
+   <h1>
+    Engagement Overview
+   </h1>
+   <p block-type="Text">
+    PixelSwap Labs Ltd. engaged Trail of Bits to review the security of PixelSwap DEX smart contracts. The PixelSwap DEX is a constant-product-formula-based decentralized exchange developed in the Tact language to be deployed on the TON blockchain network.
+   </p>
+   <p block-type="Text">
+    A team of two consultants conducted the review from June 24 to July 16, 2024, for a total of six engineer-weeks of effort. Our testing efforts focused on finding issues impacting the availability and integrity of the target system. With full access to source code and documentation, we performed static and dynamic testing of the target smart contracts using automated and manual processes. The off-chain software components used by the system were not in scope for this review.
+   </p>
+   <h1>
+    Observations and Impact
+   </h1>
+   <p block-type="Text">
+    The PixelSwap DEX smart contracts are divided into well-defined components, both to keep track of user balances and pair reserves and to keep these different balances in sync in the limited smart contract execution environment of the TON blockchain network. However, the complex message-passing flow and error-handling mechanisms make it difficult to follow the code paths and to understand the security properties of all system components.
+   </p>
+   <p block-type="Text">
+    During the review, we found multiple high-severity issues arising from a lack of user data validation that enable theft of user deposits (
+    <a href="#page-22-0">
+     TOB-PXL-3,
+    </a>
+    <a href="#page-27-0">
+     TOB-PXL-6,
+    </a>
+    and
+    <a href="#page-38-0">
+     TOB-PXL-13)
+    </a>
+    . We also found a high-severity issue,
+    <a href="#page-34-0">
+     TOB-PXL-11
+    </a>
+    , related to the wrong compilation of a return value from a recursive call function.
+   </p>
+   <p block-type="Text">
+    Some issues, such as
+    <a href="#page-18-1">
+     TOB-PXL-1,
+    </a>
+    <a href="#page-20-0">
+     TOB-PXL-2,
+    </a>
+    <a href="#page-29-0">
+     TOB-PXL-7,
+    </a>
+    <a href="#page-30-0">
+     TOB-PXL-8
+    </a>
+    , and
+    <a href="#page-31-0">
+     TOB-PXL-9
+    </a>
+    , are logic bugs that highlight the test suite's low coverage. Other issues are related to incorrect settlement vault balance tracking, incorrect gas checks, incorrect gas value computation, inconsistent message formatting, and the use of an incorrect formula.
+   </p>
+   <p block-type="Text">
+    We also noted that the settlement vault balance functionality is incomplete and is not used to validate balance transfers between funding and execution contracts.
+   </p>
+   <h1>
+    Recommendations
+   </h1>
+   <p block-type="Text">
+    Based on the codebase maturity evaluation and findings identified during the security review, Trail of Bits recommends that the PixelSwap Labs Ltd. team take the following steps prior to the production deployment:
+   </p>
+   <p block-type="Text">
+    ●
+    <b>
+     Remediate the findings disclosed in this report.
+    </b>
+    Various issues allow attackers to drain all the assets from the protocol smart contracts. These findings should be
+   </p>
+   <p>
+    <img src="_page_6_Picture_12.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="7">
+   <p block-type="Text">
+    addressed as part of direct remediation or as part of any refactoring that may occur when addressing other recommendations.
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      <b>
+       Reduce the codebase complexity.
+      </b>
+      Break the messages and functions to handle different types of assets and operations to reduce the complexity of the codebase.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       ● Document and follow a strategy for gas checks and computations.
+      </b>
+      Develop a strategy for calculating gas check parameters and the remaining gas value, document this strategy, and follow it for all the functions of the smart contracts.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Document the message and asset flow through the system.
+      </b>
+      Create diagrams for all of the message and asset flow paths through the smart contracts to identify points of failure and the reachability of an inconsistent state. Document assumptions of all the user interactions with the smart contracts and validate their correctness to find possible malicious inputs.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Expand and improve the test suite.
+      </b>
+      Tests should cover edge cases and unexpected inputs. Check all of the state updates in the test cases to avoid a false sense of security from incorrect or incomplete test cases. Ensure that the TON balance of the system smart contracts does not go down after a user interaction to maintain a healthy TON balance for storage rent. See
+      <a href="#page-62-0">
+       appendix
+      </a>
+      E for more information.
+     </li>
+    </ul>
+   </p>
+   <h1>
+    Finding Severities and Categories
+   </h1>
+   <p block-type="Text">
+    The following tables provide the number of findings by severity and category.
+   </p>
+   <h4>
+    EXPOSURE ANALYSIS
+   </h4>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity
+      </th>
+      <th>
+       Count
+      </th>
+     </tr>
+     <tr>
+      <td>
+       High
+      </td>
+      <td>
+       9
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Medium
+      </td>
+      <td>
+       2
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Low
+      </td>
+      <td>
+       2
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Informational
+      </td>
+      <td>
+       9
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Undetermined
+      </td>
+      <td>
+       2
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    CATEGORY BREAKDOWN
+   </h4>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Category
+      </th>
+      <th>
+       Count
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Access Controls
+      </td>
+      <td>
+       2
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Authentication
+      </td>
+      <td>
+       1
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       21
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="8">
+   <h1>
+    <span id="page-8-0">
+    </span>
+    Project Goals
+   </h1>
+   <p block-type="Text">
+    The engagement was scoped to provide a security assessment of the PixelSwap DEX. Specifically, we sought to answer the following non-exhaustive list of questions:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Are the access controls correctly implemented? Can a non-privileged account gain access to privileged functionality?
+     </li>
+     <li block-type="ListItem">
+      Are messages correctly handled? How are complex structures decoded? Is it possible for malformed data to be decoded incorrectly, permanently affecting the system?
+     </li>
+     <li block-type="ListItem">
+      Is it possible for a user to access funds that do not belong to them? Is it possible to drain a contract or otherwise get funds stuck in a contract?
+     </li>
+     <li block-type="ListItem">
+      Can a malicious actor modify internal accounting? Can they affect third parties' interactions with the contracts?
+     </li>
+     <li block-type="ListItem">
+      Do all contracts handle AFR and bounced messages as expected? Is it possible for a malicious actor to forge AFR messages?
+     </li>
+     <li block-type="ListItem">
+      Are the contract state variables correctly initialized, and their values correctly modified during the contract's lifetime?
+     </li>
+     <li block-type="ListItem">
+      Are the DEX swap and liquidity provider token minting equations correctly implemented? Could malicious actors gain value in a swap, or receive more LP tokens than the value added?
+     </li>
+     <li block-type="ListItem">
+      Are all fund flows considered for adding or removing liquidity? Can funds become lost in any DEX operations?
+     </li>
+     <li block-type="ListItem">
+      Do tests reflect real-life situations? Do the tests fail to consider any user flows?
+     </li>
+     <li block-type="ListItem">
+      Is the system implementing standards (such as TEP-74) correctly? Can any standard-compliant contract interact with the PixelSwap DEX and expect standard behavior?
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_8_Picture_12.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="9">
+   <h1>
+    <span id="page-9-0">
+    </span>
+    Project Targets
+   </h1>
+   <p block-type="Text">
+    The engagement involved a review and testing of the following target.
+   </p>
+   <h4>
+    PixelSwap DEX
+   </h4>
+   <p block-type="Text">
+    Repository https://github.com/nx-fi/pixelswap
+   </p>
+   <p block-type="Text">
+    Version 5c24e13fcae51b250bd70e0a812ce69a9b3dee4a
+   </p>
+   <p block-type="Text">
+    Type TACT / FunC
+   </p>
+   <p block-type="Text">
+    Platform TON
+   </p>
+  </div>
+  <div class="page" data-page-id="10">
+   <h1>
+    <span id="page-10-0">
+    </span>
+    Project Coverage
+   </h1>
+   <p block-type="Text">
+    This section provides an overview of the analysis coverage of the review, as determined by our high-level engagement goals. Our approaches included the following:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      The scope for the current audit included the following files:
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/pixelswap_funding.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/pixelswap_messages.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/pixelswap_settlement.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/pixelswap_streampool.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/pixelswap_streampool_data.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/pixelswap_streampool_messages.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/univ2_math.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/utils/access_control_single_role_non_transferrable .tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/utils/access_control_single_role.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/utils/address.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/utils/afr.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/utils/msgtools.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/utils/option.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/utils/ownable_2step.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/utils/pausable_single_role.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/utils/time.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        contracts/jetton/jetton_factory.tact
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      We understood and reviewed the full flow of messages and funds from the user TON or Jetton wallet to the funding wallet, funding master contract, settlement contract, and Stream Pool contract. This included the data validation in each step, the AFR message flows, and the potential state reversions.
+     </li>
+     <li block-type="ListItem">
+      We covered the integrations with the TEP-74 Jetton standard. This included reviewing the external message handlers for Jetton messages, data validation steps to keep track of balances, and AFR handlers for state reversion.
+     </li>
+     <li block-type="ListItem">
+      We reviewed the implementation of the TEP-74 standard for the LP tokens in the Jetton Factory trait contract.
+     </li>
+     <li block-type="ListItem">
+      We reviewed the message handlers for all contracts. These handlers are public entrypoints that any user can interact with. We reviewed access controls, gas and value calculations, and data validation for incoming messages.
+     </li>
+     <li block-type="ListItem">
+      We reviewed the internal functionality of the funding wallet, funding master, settlement, and Stream Pool contracts. This includes the internal calculation functions for adding and removing liquidity and performing swaps in the Stream
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_10_Picture_25.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="11">
+   <p block-type="Text">
+    Pool contract, depositing and withdrawing assets in the settlement contract, and the interactions between users and the funding contracts.
+   </p>
+   <h1>
+    Coverage Limitations
+   </h1>
+   <p block-type="Text">
+    Because of the time-boxed nature of testing work, it is common to encounter coverage limitations. The following list outlines the coverage limitations of the engagement and indicates system elements that may warrant further review:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Given the complexity of the system and the number of issues found during the audit, we believe that additional time for the engagement would have improved our coverage of the items listed below. It also could have increased our understanding and testing of the codebase, potentially leading to discovery of more issues.
+     </li>
+     <li block-type="ListItem">
+      We did not cover the oracle.tact and oracle_data.tact contracts since they were not used anywhere in the PixelSwap DEX. Instead, we focused on currently implemented functionality to maximize our understanding of the system.
+     </li>
+     <li block-type="ListItem">
+      We did not cover the following libraries and utilities:
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        fixed_point.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        math.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        weighted_math.tact
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        FunC files, such as mathlib.fc, extra.fc
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      All interactions, tests, and flows related to the Stream Pool contract were made with a single actor, and no simultaneous transactions from multiple senders or actors were tested. Additional testing should be performed to ensure that concurrent interactions do not put the system in an inconsistent state.
+     </li>
+     <li block-type="ListItem">
+      We did review the gas calculations, but given the complexity of the interactions and the number of code paths that could use gas to receive, process, or send messages in an asynchronous manner, we cannot assure that the calculation results are correct for every potential case. Even though we found issues related to gas calculations (such as
+      <a href="#page-29-0">
+       TOB-PXL-7
+      </a>
+      ,
+      <a href="#page-48-0">
+       TOB-PXL-20
+      </a>
+      , and
+      <a href="#page-52-0">
+       TOB-PXL-23
+      </a>
+      ), we recommend improving the test suite to cover all possible execution paths in the contracts and measure the gas usage for each particular case.
+     </li>
+     <li block-type="ListItem">
+      We did not test the system for malformed input messages. We considered that attacker messages could have incorrect or deliberately malicious data, but not the cases where the data is corrupt or cannot be parsed by the receiving contract. These cases should be tested in the unit tests focusing on the data parsing functions.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_11_Picture_13.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="12">
+   <h1>
+    <span id="page-12-0">
+    </span>
+    Codebase Maturity Evaluation
+   </h1>
+   <p block-type="Text">
+    Trail of Bits uses a traffic-light protocol to provide each client with a clear understanding of the areas in which its codebase is mature, immature, or underdeveloped. Deficiencies identified here often stem from root causes within the software development life cycle that should be addressed through standardization measures (e.g., the use of common libraries, functions, or frameworks) or training and awareness programs.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Category
+      </th>
+      <th>
+       Summary
+      </th>
+      <th>
+       Result
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Arithmetic
+      </td>
+      <td>
+       The codebase uses arithmetic operations to calculate the
+       <br/>
+       amount out for swaps, the amount of LP tokens to mint,
+       <br/>
+       the amount of tokens to transfer on removing liquidity,
+       <br/>
+       and new reserves of the pool on every user action. These
+       <br/>
+       operations follow the correct rounding direction to
+       <br/>
+       benefit the protocol.
+       <br/>
+       However, the system parameters are not bounded, and
+       <br/>
+       their impact has not been documented. We also found
+       <br/>
+       an issue related to using the wrong formula
+       <br/>
+       (TOB-PXL-10). The test suite does not cover several
+       <br/>
+       arithmetic edge cases.
+      </td>
+      <td>
+       Weak
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Auditing
+      </td>
+      <td>
+       Most of the state-changing functions in the contracts
+       <br/>
+       emit events for off-chain monitoring. However, there is
+       <br/>
+       no specific documentation describing the events, their
+       <br/>
+       types, and the requirements for emission.
+       <br/>
+       We were not informed about any incident monitoring
+       <br/>
+       system or incident response plan.
+       <br/>
+       Regarding events, there is a name duplication issue
+       <br/>
+       between the TokenBalanceChangeEvent
+       <br/>
+       in the funding
+       <br/>
+       and the settlement contract. Some events have specific
+       <br/>
+       message types, and other events just reuse existing
+       <br/>
+       incoming messages and forward them. Given the issues
+       <br/>
+       described, no naming convention is in place.
+       <br/>
+       Refer to appendix C for more information about code
+       <br/>
+       quality issues and appendix D for recommendations on
+       <br/>
+       designing and implementing an incident response plan.
+      </td>
+      <td>
+       Moderate
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Authentication /
+      </td>
+      <td>
+       The system implements only a few access control roles
+      </td>
+      <td>
+       Moderate
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="13">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+      </th>
+      <th>
+      </th>
+      <th>
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Access Controls
+      </td>
+      <td>
+       for privileged functions following the principle of least
+       <br/>
+       privilege. It is mentioned that certain privileged roles are
+       <br/>
+       meant to be bound to a hardware wallet or
+       <br/>
+       multisignature wallet, but it is not possible for us to verify
+       <br/>
+       these claims.
+       <br/>
+       Crucial privileged operations implement a two-step
+       <br/>
+       process; however, the existing test suite does not cover
+       <br/>
+       the access controls of all the privileged functions or the
+       <br/>
+       functionality for granting and revoking roles.
+       <br/>
+       The system can benefit from additional documentation
+       <br/>
+       specifying which actors are granted roles, their privileges,
+       <br/>
+       and the process of granting and revoking roles in the
+       <br/>
+       system.
+      </td>
+      <td>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Complexity
+       <br/>
+       Management
+      </td>
+      <td>
+       The codebase includes unnecessary complexity that
+       <br/>
+       hinders automated and manual review. The functions
+       <br/>
+       overuse nested operations such as conditionals,
+       <br/>
+       exceptions, or recursive calls with complex return values.
+       <br/>
+       A single PlaceOrder
+       <br/>
+       message is used to implement all
+       <br/>
+       the core functionality of the system, which makes it
+       <br/>
+       difficult to follow the code and asset flow and introduces
+       <br/>
+       several security issues related to invalid user inputs.
+       <br/>
+       Using different parameters for gas checks and remaining
+       <br/>
+       gas computation also introduces unnecessary
+       <br/>
+       complexity.
+      </td>
+      <td>
+       Weak
+      </td>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+       The codebase can benefit from the use of different
+       <br/>
+       messages to transfer TON and Jetton, swap and
+       <br/>
+       add/remove liquidity, and break messages and functions
+       <br/>
+       to be more granular in general.
+       <br/>
+       There are several instances of code duplication or code
+       <br/>
+       blocks that could be extracted into functions. This makes
+       <br/>
+       the codebase more difficult to read and can introduce
+       <br/>
+       bugs in certain situations, for example, when only one
+       <br/>
+       instance of the duplicated code is modified. Refer to
+       <br/>
+       appendix C for more information.
+      </td>
+      <td>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Decentralization
+      </td>
+      <td>
+       The project implements a decentralized exchange (DEX)
+       <br/>
+       in the TON network. However, it is not fully decentralized.
+       <br/>
+       All privileged operations are managed by the PixelSwap
+       <br/>
+       Labs team, either by hardware wallet accounts or
+      </td>
+      <td>
+       Weak
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="14">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+      </th>
+      <th>
+       multisignature wallets, as stated in the documentation.
+       <br/>
+       Additionally, these changes do not implement a timelock
+       <br/>
+       feature to allow users to opt out of these changes.
+       <br/>
+       There is no mention of a decentralized governance
+       <br/>
+       system to be implemented. System configuration
+       <br/>
+       parameters (such as adding funding or execution
+       <br/>
+       contracts or changing gas configuration) can only be
+       <br/>
+       changed by the owners.
+      </th>
+      <th>
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Documentation
+      </td>
+      <td>
+       The documentation is a multi-level specification of the
+       <br/>
+       important components. The codebase includes inline and
+       <br/>
+       NatSpec comments, and there is consistency across all
+       <br/>
+       documentation.
+       <br/>
+       Some inline comments are wrong and outdated.
+       <br/>
+       Additional documentation on the selection of gas
+       <br/>
+       parameters and gas value arithmetic is required to
+       <br/>
+       facilitate the computation of the correct gas parameters
+       <br/>
+       to ensure the execution of full message flow and
+       <br/>
+       maintain a stable system state.
+      </td>
+      <td>
+       Moderate
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Low-Level
+       <br/>
+       Manipulation
+      </td>
+      <td>
+       From a Tact language point of view, the usage of raw
+       <br/>
+       FunC or assembly code can be considered low-level.
+       <br/>
+       In the PixelSwap codebase, multiple low-level libraries
+       <br/>
+       are used for basic TON functionality, such as stdlib.fc,
+       <br/>
+       math calculations, or a standard-compliant Jetton wallet
+       <br/>
+       library in FunC.
+       <br/>
+       As stated in this report's Project Coverage section, the
+       <br/>
+       low-level files were considered out of scope, and we
+       <br/>
+       recommend further analysis and testing for these
+       <br/>
+       libraries.
+      </td>
+      <td>
+       Further
+       <br/>
+       Investigation
+       <br/>
+       Required
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Testing and
+       <br/>
+       Verification
+      </td>
+      <td>
+       The existing test suite includes unit tests for most of the
+       <br/>
+       functionality, but the test cases focus on the "happy path"
+       <br/>
+       and do not cover edge cases, adversarial user input, or
+       <br/>
+       failure cases. The internal transfer test cases fail.
+       <br/>
+       Additionally, several test cases do not check the resulting
+       <br/>
+       state sufficiently to ensure the correctness of the smart
+       <br/>
+       contract storage updates. There are no tests verifying the
+       <br/>
+       correct emission of events (external messages).
+      </td>
+      <td>
+       Weak
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="15">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+      </th>
+      <th>
+      </th>
+      <th>
+      </th>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+       The target version of the codebase is still under
+       <br/>
+       development, as evident from all the commented-out
+       <br/>
+       code in the contracts and functions, the debug "dump"
+       <br/>
+       statements, and the undocumented code.
+      </td>
+      <td>
+      </td>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+       We recommend cleaning up the codebase, expanding the
+       <br/>
+       test suite's coverage and edge cases, and implementing
+       <br/>
+       additional test strategies such as fuzzing or end-to-end
+       <br/>
+       integration testing before the codebase is deployed and
+       <br/>
+       published. The test suite should be run in the CI/CD
+       <br/>
+       pipeline to detect bugs as early as possible.
+      </td>
+      <td>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Transaction
+       <br/>
+       Ordering
+      </td>
+      <td>
+       We did not perform any tests on the codebase regarding
+       <br/>
+       transaction ordering risks.
+       <br/>
+       Since the TON network is asynchronous by design, the
+       <br/>
+       order in which messages are processed is not known
+       <br/>
+       from outside the chain, and it can be challenging to
+       <br/>
+       configure a specific order of processing for network
+       <br/>
+       messages.
+      </td>
+      <td>
+       Further
+       <br/>
+       Investigation
+       <br/>
+       Required
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="16">
+   <h1>
+    <span id="page-16-0">
+    </span>
+    Summary of Findings
+   </h1>
+   <p block-type="Text">
+    The table below summarizes the findings of the review, including type and severity details.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       ID
+      </th>
+      <th>
+       Title
+      </th>
+      <th>
+       Type
+      </th>
+      <th>
+       Severity
+      </th>
+     </tr>
+     <tr>
+      <td>
+       1
+      </td>
+      <td>
+       The BulkInternalTransfer receiver computes the
+       <br/>
+       wrong total amounts
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       2
+      </td>
+      <td>
+       Granting the role to the master funding contract
+       <br/>
+       on a funding wallet contract will result in draining
+       <br/>
+       the funding wallet balance
+      </td>
+      <td>
+       Authentication
+      </td>
+      <td>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       3
+      </td>
+      <td>
+       Users can inflate their funding wallet balance by
+       <br/>
+       sending an expired Swap message to the
+       <br/>
+       settlement contract
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       4
+      </td>
+      <td>
+       SettlementVault balances are not updated in the
+       <br/>
+       PlaceOrder_Partial_2 receiver of the settlement
+       <br/>
+       contract
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+     <tr>
+      <td>
+       5
+      </td>
+      <td>
+       Lack of validation of PixelswapStreamPool
+       <br/>
+       configuration parameters
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+     <tr>
+      <td>
+       6
+      </td>
+      <td>
+       Users can drain the TON balance of the
+       <br/>
+       PixelswapSettlement contract
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       7
+      </td>
+      <td>
+       Users can avoid paying the gas fee for the token
+       <br/>
+       creation transaction
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Low
+      </td>
+     </tr>
+     <tr>
+      <td>
+       8
+      </td>
+      <td>
+       The tokens_count initial value in the
+       <br/>
+       PixelswapStreamPool contract is zero
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+     <tr>
+      <td>
+       9
+      </td>
+      <td>
+       The returned TON amount from an order
+       <br/>
+       execution result is ignored
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+     <tr>
+      <td>
+       10
+      </td>
+      <td>
+       Wrong formula used for LP amount calculation
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       11
+      </td>
+      <td>
+       Users can use nested PlaceOrders to drain the
+       <br/>
+       settlement contract
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       High
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p>
+    <img src="_page_16_Picture_3.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="17">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       12
+      </th>
+      <th>
+       The LP tokens are never burned by the Stream
+       <br/>
+       Pool contract
+      </th>
+      <th>
+       Data Validation
+      </th>
+      <th>
+       High
+      </th>
+     </tr>
+     <tr>
+      <td>
+       13
+      </td>
+      <td>
+       Lack of the pair_id and token_id validation in the
+       <br/>
+       PixelswapStreamPool contract
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       14
+      </td>
+      <td>
+       The value attached to messages is not checked to
+       <br/>
+       be positive
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+     <tr>
+      <td>
+       15
+      </td>
+      <td>
+       The current balance is not checked before
+       <br/>
+       sending a message with a non-zero value
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       16
+      </td>
+      <td>
+       The exec_id value is not validated for the internal
+       <br/>
+       orders in nested PlaceOrder messages
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Medium
+      </td>
+     </tr>
+     <tr>
+      <td>
+       17
+      </td>
+      <td>
+       The token_balance get function reverts if a user
+       <br/>
+       balance is 0
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Undetermined
+      </td>
+     </tr>
+     <tr>
+      <td>
+       18
+      </td>
+      <td>
+       Different parsing formats for Jetton notification
+       <br/>
+       messages
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Medium
+      </td>
+     </tr>
+     <tr>
+      <td>
+       19
+      </td>
+      <td>
+       The JettonFactory contract allows minting zero
+       <br/>
+       tokens
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+     <tr>
+      <td>
+       20
+      </td>
+      <td>
+       Incorrect gas calculations in several contracts
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Undetermined
+      </td>
+     </tr>
+     <tr>
+      <td>
+       21
+      </td>
+      <td>
+       A privileged account can drain the
+       <br/>
+       PixelswapStreamPool contract
+      </td>
+      <td>
+       Access Controls
+      </td>
+      <td>
+       Low
+      </td>
+     </tr>
+     <tr>
+      <td>
+       22
+      </td>
+      <td>
+       The fee recipient accounts cannot be changed in
+       <br/>
+       the Stream Pool contract
+      </td>
+      <td>
+       Access Controls
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+     <tr>
+      <td>
+       23
+      </td>
+      <td>
+       The gas checks in the PixelswapStreamPool
+       <br/>
+       contract are wrongly placed
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+     <tr>
+      <td>
+       24
+      </td>
+      <td>
+       Users cannot deposit only Jetton to their funding
+       <br/>
+       wallet
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="18">
+   <h1>
+    <span id="page-18-0">
+    </span>
+    Detailed Findings
+   </h1>
+   <span id="page-18-1">
+   </span>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="2">
+       1.
+       <br/>
+       The
+       <br/>
+       BulkInternalTransfer
+       <br/>
+       receiver
+       <br/>
+       computes
+       <br/>
+       the
+       <br/>
+       wrong
+       <br/>
+       total
+       <br/>
+       amounts
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       High
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </th>
+      <th>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-1
+      </th>
+     </tr>
+     <tr>
+      <th colspan="2">
+       Target:
+       <br/>
+       contracts/pixelswap_funding.tact
+      </th>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The BulkInternalTransfer receiver function of the PixelswapFundingWallet contract computes the wrong total amounts to spend by adding the amount of the first entry multiple times.
+   </p>
+   <p block-type="Text">
+    In the PixelswapFundingWallet contract, when a BulkInternalTransfer message is processed, a loop calculates the total amount of tokens to be spent from the wallet. However, the loop does not increase the index variable i, so the result values will be the amounts for the first entry times the total number of entries.
+   </p>
+   <p block-type="Text">
+    Consequently, when the spend_wallet internal function is called, an incorrect balance will be deducted, or a panic will be raised if the balance is insufficient.
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    Additionally, the loop in the receiver for BulkInternalTransfer in the PixelswapFunding contract is correctly implemented, which can result in the sum of user balances not matching the balance of the PixelswapSettlement contract, allowing users to withdraw more than they own and incorrectly decreasing the balance of the sender.
+   </p>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    Bob sends a BulkInternalTransfer message with three entries, the first of which has 0 token_amt and 0 ton_amt. Bob's funding wallet spends 0 of his tokens, but the master funding contract correctly adds funds to the receivers' wallets. Bob is able to withdraw funds that do not belong to him from the funding contract.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, increment the index variable i in the loop.
+   </p>
+   <p block-type="Text">
+    In the long term, expand the test suite to implement test cases for bulk transfers and ensure that these tests also consider malicious inputs.
+   </p>
+   <p>
+    <img src="_page_18_Picture_14.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="19">
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="20">
+   <h1>
+    <span id="page-20-0">
+    </span>
+    2. Granting the role to the master funding contract on a funding wallet contract will result in draining the funding wallet balance
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       High
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       High
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Authentication
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-2
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       contracts/pixelswap_funding.tact
+       <br/>
+       Target:
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    Granting the privileged role to the PixelswapFunding contract on a user-owned PixelswapFundingWallet contract will result in the user balance being spent even if the user is the recipient of the InternalTransfer message. This can drain the user's balance by repeatedly forwarding the InternalTransfer message between the funding wallet and the master contract.
+   </p>
+   <p block-type="Text">
+    Users have funding wallets to interact with the system. In these wallets, they are both owners and privileged users (they have a privileged role). Any user can grant the privileged role to an address on their funding wallets via the GrantRole message of the access control trait, as shown in figure 2.1:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    If a user grants the privileged role to the master funding contract, then the InternalTransfer message receiver function will always execute the first if block for the messages sent from the master funding contract, as shown in figure 2.2:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    This will spend the user's balance instead of adding funds to the user's wallet and send the same message to the master funding contract, which will then send it back to the user's funding wallet contract, and it will keep spending the user's balance repeatedly until the gas sent with the message is consumed.
+   </p>
+   <h3>
+    Exploit Scenario
+   </h3>
+   <p block-type="Text">
+    Alice accidentally grants the privileged role to the master funding contract on her funding wallet. From then on, any internal transfer she receives will not be accrued to her wallet and will drain her wallet balance.
+   </p>
+   <p>
+    <img src="_page_20_Picture_11.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="21">
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, review the order in which the checks are performed to ensure that even if the funding contract is privileged, it does not affect the expected outcome of the process. Also, consider limiting accounts that can get privileged roles in each system contract.
+   </p>
+   <p block-type="Text">
+    Long term, identify and document all possible actions that privileged accounts can take, along with their associated risks. This will facilitate codebase reviews and prevent future mistakes.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="22">
+   <h1>
+    <span id="page-22-0">
+    </span>
+    3. Users can inflate their funding wallet balance by sending an expired Swap message to the settlement contract
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       High
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-3
+      </td>
+     </tr>
+     <tr>
+      <td>
+       contracts/pixelswap_streampool.tact
+       <br/>
+       Target:
+      </td>
+      <td>
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    Users can inflate their funding wallet balance of any token by sending a Swap message that will trigger a failure reply message from the PixelswapStreamPool contract. Users can use this to drain the settlement contract.
+   </p>
+   <p block-type="Text">
+    There are two ways to initiate a swap in the system: sending a PlaceOrder message to the user's funding wallet and sending a Swap message to the PixelswapSettlement contract.
+   </p>
+   <p block-type="Text">
+    The Swap message to the PixelswapSettlement contract has an extra_tokens field. The token_gas and token_forward_milliton fields of the extra_tokens structure are used to calculate the required gas amount and to decide if the output tokens should be added to the user's funding wallet or sent to the user's external wallet. All other fields of the extra_tokens values are ignored in the Swap message receiver function of the PixelswapSettlement contract. The Swap receiver of the settlement contract then creates a PlaceOrder message and sends it to the PixelswapStreamPool contract for execution.
+   </p>
+   <p block-type="Text">
+    If the place_order internal function of the PixelswapStreamPool contract detects a failure case, it sends the PlaceOrder message back to the PixelswapSettlement contract as a failure reply message. The settlement contract then forwards it to the PixelswapFunding contract, which forwards it to the user's PixelswapFundingWallet contract.
+   </p>
+   <p block-type="Text">
+    The PixelswapFundingWallet then processes the PlaceOrder message as unspent order, as shown in figure 3.1:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    However, the unspent_order_inputs function of the PixelswapFundingWallet contract assumes that the tokens included in the extra_tokens field were spent from the user's wallet if the token_is_input is set to true and adds these tokens to the user's balance, while the input tokens in the extra_tokens are not spent from the user's funding wallet if they initiate the swap by sending a Swap message to the settlement contract.
+   </p>
+   <p>
+    <img src="_page_22_Picture_10.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="23">
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    Eve sends an expired Swap message with an extra_tokens field containing a TokenInfo for 1,000 USDT tokens with the token_is_input variable set to true. This message triggers a failure reply message from the PixelswapStreamPool contract, which is forwarded to Eve's funding wallet contract. The funding wallet contract adds 1,000 USDT to her balance, assuming they were spent from her wallet to initiate the swap. Eve withdraws these USDT tokens from her funding wallet and repeats this process to drain all the tokens from the settlement contract.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, in the Swap message receiver of the settlement contract, check that the extra_tokens field of the message does not include any input tokens.
+   </p>
+   <p block-type="Text">
+    Long term, document the message flow in both success and failure cases and write test cases to ensure correct behavior in each case.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="24">
+   <h1>
+    <span id="page-24-0">
+    </span>
+    4. SettlementVault balances are not updated in the PlaceOrder_Partial_2 receiver of the settlement contract
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       Informational
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-4
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       contracts/pixelswap_settlement.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The PlaceOrder_Partial_2 message receiver function of the PixelswapSettlement contract is used to relay messages between the funding contract and execution contracts, but it does not update the SettlementVault balances to reflect the transfer of funds between funding and execution contracts.
+   </p>
+   <p block-type="Text">
+    When a user initiates an order from their funding wallet, the PlaceOrder message is sent from their funding wallet to the master funding contract, which sends the same message to the PixelswapSettlement contract. The settlement contract then fetches the execution contract address from its storage and sends the PlaceOrder message to the PixelswapSteampool contract. However, the PlaceOrder_Partial_2 message receiver of the PixelswapSettlement contract does not remove the input tokens from the SettlementVault of the funding contract and does not add the same tokens to the SettlementVault of the execution contract.
+   </p>
+   <p block-type="Text">
+    Similarly, when a failure message is sent from the execution contract to the settlement contract, the PlaceOrder_Partial_2 message receiver of the PixelswapSettlement contract does not remove the input tokens from SettlementVault of the execution contract and does not add the same tokens to the SettlementVault of the funding contract before sending the message to the funding contract.
+   </p>
+   <p block-type="Text">
+    This results in an imbalance between the balances stored in the funding contracts, settlement vaults, and reserves stored in the execution contracts.
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, add calls to the token_balance_add and token_balance_reduce internal functions to correctly update the settlement vault balances of the funding and execution contracts while processing the PlaceOrder_Partial_2 message.
+   </p>
+   <p block-type="Text">
+    Long term, create message flow and fund flow diagrams, and document all of the places where the balances of different components and users are tracked in the system.
+   </p>
+   <p>
+    <img src="_page_24_Picture_11.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="25">
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="26">
+   <h1>
+    <span id="page-26-0">
+    </span>
+    5. Lack of validation of PixelswapStreamPool configuration parameters
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       Informational
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       High
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-5
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       contracts/pixelswap_streampool.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The owner of the PixelSwapStreamPool contracts can set the configuration parameters for the pool and the gas to any value without limits. This can lead to broken functionality or high TON spending for users in the pools until the values are fixed.
+   </p>
+   <p block-type="Text">
+    According to the documentation, the owner role belongs to a multisignature wallet, so it is expected that prior to executing a configuration change, more than one actor will review the transaction. Thus, using a multisignature wallet makes it difficult to set wrong configuration values.
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    Alice and Bob are signers for the 2-out-of-3 multisignature wallet that controls the deployed PixelswapStreamPool contract. Alice creates and signs a configuration change transaction, accidentally setting the remove_liquidity gas configuration to an extremely high value. Bob trusts Alice, so he signs the transaction without reviewing it. When it is executed, users' interactions are more expensive than expected.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, set some reasonable limits to the configuration parameters that can be set in the PixelswapStreamPool contract.
+   </p>
+   <p block-type="Text">
+    Long term, document the expected values for each parameter and their safe ranges. Add test cases for the configuration change functions.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+   <p>
+    <img src="_page_26_Picture_13.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="27">
+   <h1>
+    <span id="page-27-0">
+    </span>
+    6. Users can drain the TON balance of the PixelswapSettlement contract
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       High
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-6
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       contracts/pixelswap_settlement.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The gas parameter fields forward_milliton and gas_transfer of the WithdrawFunds message can be used to drain the TON balance of the PixelswapSettlement contract, as the values specified in these fields are not spent from the user's funding wallet.
+   </p>
+   <p block-type="Text">
+    The WithdrawFunds message in the Settlement contract allows users to withdraw the balance of their funding wallet to their external wallet. The WithdrawFunds receiver function of the settlement contract calls the send_tokens internal function to transfer the specified token and amount to the user:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    The send_tokens function transfers the sum of the token_amt, forward_milliton, and gas_transfer values when the provided token_id is the TON native currency:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    However, the WithdrawFunds message receiver of the PixelSwapFundingWallet contract does not spend the user's TON balance by the sum of forward_milliton and gas_transfer values for TON transfer:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    A user can specify non-zero values for the forward_milliton and gas_transfer fields in the WithdrawFunds message to drain the TON balance of the settlement contract.
+   </p>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    Bob sends 1 nanoton to his funding wallet and creates a message to withdraw all TON balance from the settlement contract.
+   </p>
+   <h3>
+    Recommendations
+   </h3>
+   <p block-type="Text">
+    Short term, consider one of the following:
+   </p>
+   <p>
+    <img src="_page_27_Picture_15.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="28">
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Ensure that the sum of the token_amt, forward_milliton, and gas_transfer values is deducted from the user's funding wallet while processing the WithdrawFunds message.
+     </li>
+     <li block-type="ListItem">
+      Or ensure that the forward_milliton and gas_transfer values are zero when the msg.token_id is the TON address.
+     </li>
+     <li block-type="ListItem">
+      Or update the send_tokens to send only token_amt TON when transferring the native TON.
+     </li>
+    </ul>
+   </p>
+   <p block-type="Text">
+    Long term, implement tests that verify the total amount of TON balance of the system smart contracts is kept constant after each user action.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="29">
+   <h1>
+    <span id="page-29-0">
+    </span>
+    7. Users can avoid paying the gas fee for the token creation transaction
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       Low
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-7
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       contracts/pixelswap_streampool.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    To create a new token, a user must send a CreateToken message to the Stream Pool contract with enough value to pay for the token creation fee. This fee is also used as a mitigation feature to disincentivize the creation of excessively many tokens, given that the tokens are stored in a mapping structure inside the Stream Pool contract's storage.
+   </p>
+   <p block-type="Text">
+    In the CreateToken message handler, the message value is checked to ensure that it is enough to pay the creation fee, but it doesn't take into account the gas costs needed to execute the transaction.
+   </p>
+   <p block-type="Text">
+    This allows any user to create new tokens without paying for the computation gas required to create them, using the Stream Pool contract balance to pay for it.
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    Alice decides to drain the balance of a PixelswapStreamPool contract. To do this, she starts sending CreateToken messages to the Stream Pool with a value just above (i.e., by 1 nanoton) the token creation fee.
+   </p>
+   <p block-type="Text">
+    Repeating this will drain the PixelswapStreamPool contract balance, which will be used to pay for all the CreateToken message processing. Admins will need to send TON to it to continue paying the storage fee.
+   </p>
+   <h3>
+    Recommendations
+   </h3>
+   <p block-type="Text">
+    Short term, modify the value check in the CreateToken message receiver to ensure the user provides enough TON for the required gas.
+   </p>
+   <p block-type="Text">
+    Long term, expand checks in the test cases to ensure that the TON balance of the system smart contracts does not go down after user actions that do not transfer TON.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+   <p>
+    <img src="_page_29_Picture_15.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="30">
+   <h3>
+    <span id="page-30-0">
+    </span>
+    8. The tokens_count initial value in the PixelswapStreamPool contract is zero
+   </h3>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       Informational
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Undetermined
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-8
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       contracts/pixelswap_streampool.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The token_count variable in the PixelswapStreamPool contract is meant to track how many tokens are added. All stream pool contracts add the TON as a token in the init function, but the tokens_count variable is not updated in the init function, and it remains 0.
+   </p>
+   <p block-type="Text">
+    This has no impact on the current state of the codebase, as the tokens are stored in a non-iterable mapping.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, make sure the tokens_count variable is updated in the init function to track the correct number of tokens added to the PixelswapStreamPool contract.
+   </p>
+   <p block-type="Text">
+    Long term, expand the test suite to implement test cases to check the variable values in all of the contracts. This will ensure correct value updates.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="31">
+   <h1>
+    <span id="page-31-0">
+    </span>
+    9. The returned TON amount from an order execution result is ignored
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       Informational
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       High
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-9
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       contracts/pixelswap_settlement.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    When an order is processed in the PixelswapStreamPool contract, an OrderExecutionResult message is returned to the settlement contract. This message contains information about the amounts of tokens and TON that should be deducted from the settlement vault balance of the exec_id and added to the settlement vault balance of the fund_id.
+   </p>
+   <p block-type="Text">
+    The process_order_execution_result internal function of the settlement contract reduces the token_amt of the token_id token from the settlement vault balance of the exec_id and adds the same balance to the settlement vault of the fund_id if the tokens are not transferred to the user's external wallet. However, this function ignores the value of the ton_amt field of the OrderExecutionResult message and does not update the settlement vault balance for the native TON token:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    The existing execution contract PixelswapStreamPool does not send a non-zero value of the ton_amt in the OrderExecutionResult message; therefore, this issue does not lead to any loss of funds in the current system. New execution contracts may send a Jetton and TON together in a single OrderExecutionResult message, which will result in an out-of-sync balance of settlement vaults and other contracts.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, if the ton_amt value is non-zero, update the settlement vault balances of the exec_id and fund_id for the TON token when processing the OrderExecutionResult message.
+   </p>
+   <p block-type="Text">
+    Long term, create message flow and fund flow diagrams and document all of the places where the balances of different components and users are tracked in the system.
+   </p>
+   <h3>
+    <b>
+     Fix Review Status
+    </b>
+   </h3>
+   <p>
+    <img src="_page_31_Picture_12.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="32">
+   <span id="page-32-0">
+   </span>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="2">
+       10.
+       <br/>
+       Wrong
+       <br/>
+       formula
+       <br/>
+       used
+       <br/>
+       for
+       <br/>
+       LP
+       <br/>
+       amount
+       <br/>
+       calculation
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Severity:
+       <br/>
+       High
+      </td>
+      <td>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-10
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       contracts/univ2_math.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The PixelswapStreamPool contract uses the wrong formula to compute the LP token amount for adding liquidity. This results in liquidity providers losing on the fee earned from the swaps.
+   </p>
+   <p block-type="Text">
+    The PixelswapStreamPool contract calls the calc_add_lp_balanced function of the univ2_math.tact library contract to compute the LP token amount to mint for a liquidity provider. The calc_add_lp_balanced function computes the LP token amount by computing the square root of the new reserves and deducting the last total supply of the LP tokens from the result of the square root:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    However, the remove liquidity function computes the amount of tokens to transfer in proportion to the LP tokens to burn with respect to the total supply of the LP tokens. This results in liquidity providers losing their share of the swap fee because the swap fee accrued by the pool up to a certain time is given to the new liquidity providers instead of being distributed among the existing liquidity providers.
+   </p>
+   <p block-type="Text">
+    The calc_add_lp_unbalanced function of the univ2_math.tact library contract also uses the wrong formula for calculating the LP token amount.
+   </p>
+   <h3>
+    Exploit Scenario
+   </h3>
+   <p block-type="Text">
+    Let us consider a TON / USDC pool with 0 liquidity.
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Alice deposits 10,000,000,000 nanotons TON and 10,000,000,000 nanotons USDC in the pool and mints 10,000,000,000 nanotons LP tokens.
+     </li>
+     <li block-type="ListItem">
+      Bob swaps 1,000,000,000 nanotons TON for 908,264,387 nanotons USDC. The reserves after the swap are 10,999,970,000 nanotons TON and 9,091,735,613 nanotons USDC.
+     </li>
+     <li block-type="ListItem">
+      Eve deposits 10,999,970,000 nanotons TON and 9,091,735,613 nanotons USDC, and the protocol mints 10,000,881,879 nanotons LP tokens for Eve.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_32_Picture_12.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="33">
+   <p block-type="Text">
+    ● Eve redeems her LP tokens for 11,000,455,010 nanotons TON and 9,092,136,485 nanotons USDC, which is more than the 10,999,484,989 nanotons TON and 9,091,334,740 nanotons USDC that Alice can redeem by removing all her liquidity.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, use the following formula for the LP token amount calculation in the calc_add_lp_balanced and calc_add_lp_unbalanced functions when a user adds liquidity to a non-empty pool:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    Long term, define high-level system invariants and implement end-to-end test cases to check these invariants with multiple transactions by different users. Consider using a fuzzer to test these invariants.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="34">
+   <h3>
+    <span id="page-34-0">
+    </span>
+    11. Users can use nested PlaceOrders to drain the settlement contract
+   </h3>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       High
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-11
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       contracts/pixelswap_funding.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The spend_order_inputs function of the PixelswapFundingWallet contract does not spend the input tokens of the nested PlaceOrder messages, which allows users to use nested PlaceOrder messages to drain all the assets from the settlement contract.
+   </p>
+   <p block-type="Text">
+    The PlaceOrder receiver function of the PixelswapFundingWallet contract calls the spend_order_inputs internal function to update the user's balance of tokens for the order. The PlaceOrder message has an optional ref_po field, which can have a ref to another PlaceOrder message. The spend_order_inputs function processes these nested PlaceOrder messages by recursively calling the spend_order_inputs function:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    However, the return statement of the spend_order_inputs function compiles to the following FunC code:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    The above FunC code returns the first FunC tensor, which is computed by processing the input tokens specified in the outermost PlaceOrder instead of returning the result of the recursive call of the $PixelswapFundingWallet$_fun_spend_order_inputs FunC function. The value returned from this function is then stored in the contract storage.
+   </p>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    Eve deposits 1000,000,000 nanotons TON and 1000,000,000 nanotons USDC in her funding wallet. Eve then sends a PlaceOrder message to add liquidity of 1000,000,000 nanotons TON and 1000,000,000 nanotons USDC to the TON/USDC pool, with the ref_po having another PlaceOrder order message to add the same liquidity again. The spend_order_inputs function of the funding wallet contract deducts Eve's balance for only the outermost PlaceOrder message, stores the new values of 0 TON and 0 USDC balance in the contract storage, and sends the whole PlaceOrder message to the funding master contract. The whole PlaceOrder is then successfully processed by the PixelswapStreamPool contract to mint LP token amounts for both PlaceOrder
+   </p>
+   <p>
+    <img src="_page_34_Picture_11.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="35">
+   <p block-type="Text">
+    messages for Eve. Eve then redeems all her LP tokens from the pool and withdraws 2000,000,000 nanotons TON and 2000,000,000 nanotons USDC.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, replace the return statement of the recursive call with the following:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    Long term, expand the test suite to check execution of nested orders. Check the whole system state after a transaction in a test case to ensure correctness of the test cases.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="36">
+   <h1>
+    <span id="page-36-0">
+    </span>
+    12. The LP tokens are never burned by the Stream Pool contract
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       High
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+      </td>
+      <td>
+       Finding
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Data
+      </td>
+      <td>
+       ID:
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Validation
+      </td>
+      <td>
+       TOB-PXL-12
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p block-type="Text">
+    Target: contracts/jetton/jetton_factory.tact
+   </p>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The PixelswapStreamPool contract sends the burn message to the Jetton master contract of the pair's LP token instead of the Jetton wallet owned by itself. This results in the LP tokens never being burned.
+   </p>
+   <p block-type="Text">
+    Users remove their liquidity by transferring their LP tokens to the PixelswapStreamPool contract with a payload to send the RemoveLiquidityJettonNotification message to the PixelswapStreamPool contract. The RemoveLiquidityJettonNotification handler function of the Stream Pool contract updates the reserves and LP token supply stored in the pair_config map and calls the self.burn function. The burn function is inherited from the JettonFactory trait contract:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    The burn function of the JettonFactory trait sends the burn message to the Jetton master contract of the LP token with the bounce flag set to false. The Jetton master contract reverts the transaction, and the burn message is never processed by the Jetton contracts of the LP token.
+   </p>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    Alice adds 1000,000,000 nanotons TON and 1000,000,000 nanotons USDC to the pool and mints 1000,000,000 nanotons LP tokens. After some time, Alice removes her liquidity by transferring her LP tokens to the PixelswapStreamPool contract, but the LP tokens are not burned by the Stream Pool contract, and the LP token balance of the Stream Pool contract is increased by 1,000,000,000 nanotons LP tokens.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, update the burn function of the JettonFactory trait contract to send the burn message to the Jetton wallet owned by the Stream Pool contract.
+   </p>
+   <p block-type="Text">
+    Long term, check the whole system state after a transaction in a test case to ensure correctness of the test cases.
+   </p>
+   <p>
+    <img src="_page_36_Picture_13.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="37">
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="38">
+   <h1>
+    <span id="page-38-0">
+    </span>
+    13. Lack of the pair_id and token_id validation in the PixelswapStreamPool contract
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       High
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-13
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       contracts/pixelswap_streampool.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The PlaceOrder message receiver function of the PixelswapStreamPool contract does not validate that the pair_id specified in the message corresponds to the token_id values specified in the message. This allows users to provide arbitrary token_id values to execute a swap or add liquidity to a pair without transferring the required tokens.
+   </p>
+   <p block-type="Text">
+    The protocol allows users to transfer their Jettons and execute a protocol action in a single transaction by specifying order parameters in the forward_payload field of the transfer message of the Jetton contract. The Jetton contract sends the OrderJettonNotification message to the settlement contract, which adds a deposit to the user's funding wallet, executes a swap, or adds liquidity to the specified pair based on the forward_payload value specified in the OrderJettonNotification message.
+   </p>
+   <p block-type="Text">
+    However, the OrderJettonNotification message receiver cannot verify that the message is sent by the correct Jetton wallet contract and is not sent by a malicious actor; it considers the sender as the token_id for the order to be executed. This allows users to add a funding wallet balance for an arbitrary token_id, execute a swap without transferring Jettons, and add liquidity to a pool without transferring Jettons by sending the OrderJettonNotification message from an arbitrary address.
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    As a result, the PlaceOrder message receiver function of the PixelswapStreamPool contract does not check if the user-provided value of the pair_id field corresponds to the token_id values provided in the PlaceOrder message. This allows attackers to send the OrderJettonNotification message from an arbitrary address to steal tokens from the settlement contract.
+   </p>
+   <h4>
+    Exploit Scenario 1
+   </h4>
+   <p block-type="Text">
+    Eve sends an OrderJettonNotification message from her smart wallet to swap USDC for TON from the TON/USDC pool. The order is executed successfully, and Eve gets free TON from the settlement contract.
+   </p>
+   <p>
+    <img src="_page_38_Picture_10.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="39">
+   <h4>
+    Exploit Scenario 2
+   </h4>
+   <p block-type="Text">
+    Eve sends an OrderJettonNotification message from her smart wallet to deposit a fake Jetton to her funding wallet. She then sends a PlaceOrder message to swap USDC for TON by specifying the fake Jetton as input token token_id and TON/USDC pair pair_id. The order is executed successfully, and Eve gets free TON from the settlement contract.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, validate that the pair_id specified in the PlaceOrder message corresponds to the provided token_id values to ensure correct token transfers before executing an order.
+   </p>
+   <p block-type="Text">
+    Long term, validate all user inputs at all of the system's entrypoints to ensure the correctness and security of the system.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="40">
+   <span id="page-40-0">
+   </span>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="2">
+       14.
+       <br/>
+       The
+       <br/>
+       value
+       <br/>
+       attached
+       <br/>
+       to messages
+       <br/>
+       is
+       <br/>
+       not
+       <br/>
+       checked
+       <br/>
+       to
+       <br/>
+       be
+       <br/>
+       positive
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Severity:
+       <br/>
+       Informational
+      </td>
+      <td>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-14
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       contracts/utils/msgtools.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The message tools library implements helper functions to deal with message passing between contracts. Some of these functions deal with messages that carry TON value, and the caller can specify the amount of TON to send.
+   </p>
+   <p block-type="Text">
+    In two of these functions, there is no check to ensure that the value to be set is positive. Given that the parameter is of type Int, it is possible to pass a negative value and break functionality.
+   </p>
+   <p block-type="Text">
+    The vulnerable functions are send_to_value and send_and_deploy_value, shown in figures 14.1 and 14.2:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    The following list shows examples of potentially dangerous usages of this function in the current codebase:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L419-L419">
+       OrderJettonNotification
+      </a>
+      handler in pixelswap_settlement.tact
+     </li>
+     <li block-type="ListItem">
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_streampool.tact#L298-L298">
+       RemoveLiquidityJettonNotification
+      </a>
+      handler in pixelswap_streampool.tact
+     </li>
+     <li block-type="ListItem">
+      Swap
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L483-L483">
+       handler
+      </a>
+      in pixelswap_settlement.tact
+     </li>
+     <li block-type="ListItem">
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L605-L605">
+       OrderExecutionResult
+      </a>
+      handler in pixelswap_settlement.tact
+     </li>
+     <li block-type="ListItem">
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L626-L626">
+       InternalTransfer
+      </a>
+      handler in pixelswap_settlement.tact
+     </li>
+     <li block-type="ListItem">
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L762-L762">
+       Deposit
+      </a>
+      function in pixelswap_settlement.tact
+     </li>
+    </ul>
+   </p>
+   <p block-type="Text">
+    Most of these usages depend on the current values for the gas configuration, lack of check or enforcement of context().value that could be bypassed by future implementations, or values that depend on the execution state (reliance on gas_consumed()).
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, add a validation for the value parameter to be positive in the send_to_value and send_and_deploy_value functions.
+   </p>
+   <p>
+    <img src="_page_40_Picture_16.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="41">
+   <p block-type="Text">
+    Long term, check all usages of these functions in the codebase and ensure that all calculations for the value parameters are well-defined, bounded, and never negative. Enforce these checks by creating new test cases.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="42">
+   <h1>
+    <span id="page-42-0">
+    </span>
+    15. The current balance is not checked before sending a message with a non-zero value
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       High
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Medium
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-15
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       contracts/utils/msgtools.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    All message sending functions in the message tools library use the SendIgnoreErrors mode. If the sender contract's current TON balance is insufficient to send the specified value, the message will not be sent and will be dropped silently in the action phase. Consequently, funds can be lost, or the system state can become out of sync between contracts.
+   </p>
+   <p block-type="Text">
+    This issue can be exploited in different ways, one of which is described in the Exploit Scenario section below.
+   </p>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    In the settlement contract, when the token_id is the TON native asset, the
+    <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L728-L746">
+     send_tokens
+    </a>
+    <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L728-L746">
+     function
+    </a>
+    sends a token amount equal to the sum of the specified token_amt, the forwarding gas, and the gas cost to pay for the transfer. However, it never checks that the contract's current balance exceeds the value to be sent.
+   </p>
+   <p block-type="Text">
+    This results in a loss of funds for the user, because the funding wallet's TON balance has already been reduced at this point.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, when dealing with TON amounts to be transferred in messages, first ensure that the current contract's balance is enough. In case of failure, notify the sender via AFR.
+   </p>
+   <p block-type="Text">
+    Long term, document all gas usages in the different message flows; ensure that the contract balances cannot drop below a certain threshold; and implement tests that check that the functionality of the system is not broken in low-balance situations.
+   </p>
+   <h3>
+    <b>
+     Fix Review Status
+    </b>
+   </h3>
+   <p>
+    <img src="_page_42_Picture_13.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="43">
+   <h1>
+    <span id="page-43-0">
+    </span>
+    16. The exec_id value is not validated for the internal orders in nested PlaceOrder messages
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       Medium
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-16
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       contracts/pixelswap_streampool.tact,
+       <br/>
+       contracts/pixelswap_settlement.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    When a PlaceOrder message arrives at the PixelswapStreamPool contract, the exec_id is checked to ensure it matches the current contract's exec_id. This is also checked in the settlement contract to ensure that the message is routed to the correct PixelswapStreamPool:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    However, PlaceOrder messages can have nested PlaceOrder messages in the ref_po field, and those nested exec_ids are never checked by the settlement or Stream Pool contracts.
+   </p>
+   <p block-type="Text">
+    Additionally, when the order is processed by process_order(), a ProcessOrderResult message is generated with the exec_id of the current Stream Pool, no matter what the original message's exec_id was. This result is sent back to the settlement contract to keep track of the accounting, and the process_order_execution function updates the settlement vault balances using the exec_id set by the Stream Pool.
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    Bob, a PixelSwap user, creates an order composed of a TON/USDC swap and a deposit to a USDC/USDT pool located in a different Stream Pool contract. In order to save some time, he nests both orders in a single PlaceOrder message, believing that the system will correctly identify the execution contracts that must be called. The order executes successfully and the resulting reserves of the TON/USDC pair will be incorrect since both orders were processed by the TON/USDC pool execution contract.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, check that the exec_id value matches the current execution contract's ID for all orders in a nested PlaceOrder message. Notify the user in case an invalid order is not processed so they can retry later or at least be aware of the execution failure.
+   </p>
+   <p>
+    <img src="_page_43_Picture_12.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="44">
+   <p block-type="Text">
+    Long term, consider re-engineering the architecture and the way nested orders are created, transmitted, and handled. Alternatively, consider rewriting the PlaceOrder nesting feature in order to make it less error-prone (e.g.,, by nesting only the non-redundant information).
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+   <p>
+    <img src="_page_44_Picture_3.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="45">
+   <span id="page-45-0">
+   </span>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="2">
+       17.
+       <br/>
+       The
+       <br/>
+       token_balance
+       <br/>
+       get
+       <br/>
+       function
+       <br/>
+       reverts
+       <br/>
+       if
+       <br/>
+       a
+       <br/>
+       user
+       <br/>
+       balance
+       <br/>
+       is
+       <br/>
+       0
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Severity:
+       <br/>
+       Undetermined
+      </td>
+      <td>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-17
+      </td>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p block-type="Text">
+    Target: contracts/pixelswap_funding.tact
+   </p>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The token_balance function in the PixelswapFundingWallet contract should return the current wallet's balance for the specified token. However, the balances mapping entry is deleted when the user balance becomes zero, so the token_balance function reverts when it is called for users with zero balance.
+   </p>
+   <p block-type="Text">
+    This can affect external off-chain integrations, potentially breaking external projects that are attempting to get information from Pixelswap.
+   </p>
+   <h3>
+    <b>
+     [Redacted]
+    </b>
+   </h3>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, return the expected value of zero if the mapping entry does not exist.
+   </p>
+   <p block-type="Text">
+    Long term, consider rewriting the parts of the code where the mapping entry is deleted for zero balance results. Since test cases can also break when this call reverts, it is recommended that the test suite be improved to detect this kind of unexpected behavior.
+   </p>
+   <h3>
+    <b>
+     Fix Review Status
+    </b>
+   </h3>
+  </div>
+  <div class="page" data-page-id="46">
+   <h1>
+    <span id="page-46-0">
+    </span>
+    18. Different parsing formats for Jetton notification messages
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+      </th>
+      <th>
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Severity:
+       <br/>
+       Medium
+      </td>
+      <td>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-18
+      </td>
+     </tr>
+     <tr>
+      <td colspan="3">
+       contracts/pixelswap_settlement.tact,
+       <br/>
+       Target:
+       <br/>
+       contracts/pixelswap_streampool_messages.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h1>
+    Description
+   </h1>
+   <p block-type="Text">
+    The Jetton notification message for
+    <a href="https://github.com/ton-blockchain/TEPs/blob/master/text/0074-jettons-standard.md">
+     transfer_notification
+    </a>
+    , with ID 0x7362d09c, is defined differently for the settlement and the Stream Pool contracts. In particular, the fund_id and subaccount structure fields are read in reverse order, as shown in figures 18.1 and 18.2.
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    Off-chain components and UI projects mistakenly send the wrong value for the fund_id and subaccount fields, causing funds to be lost.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, standardize the structure of the messages that share the same ID or same fields.
+   </p>
+   <p block-type="Text">
+    Long term, avoid duplication of message types. Even if the functions' data needs are different, having different names and structures for the same message is confusing and error-prone. Define shared messages in a single place.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="47">
+   <h1>
+    <span id="page-47-0">
+    </span>
+    19. The JettonFactory contract allows minting zero tokens
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       Informational
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Undetermined
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-19
+      </td>
+     </tr>
+     <tr>
+      <td colspan="3">
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p block-type="Text">
+    Target: contracts/jetton/jetton_factory.tact
+   </p>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The mint function of the JettonFactory trait does not validate that the amount of coins to mint is greater than zero, therefore allowing a mint of zero tokens.
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    In the current state of the codebase, it is not possible to trigger this zero-amount mint for the LP tokens since the add_liquidity function checks for a minimum liquidity of 1000 to be added. However, if this same trait is used in other contracts, it can become an issue.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, add a validation check to ensure the amount is greater than zero.
+   </p>
+   <p block-type="Text">
+    Long term, consider the possible edge cases in all functions, define the behavior, and implement test cases to ensure compliance.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="48">
+   <h1>
+    <span id="page-48-0">
+    </span>
+    20. Incorrect gas calculations in several contracts
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+      </th>
+      <th>
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Severity:
+       <br/>
+       Undetermined
+      </td>
+      <td>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Undetermined
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-20
+      </td>
+     </tr>
+     <tr>
+      <td colspan="3">
+       contracts/pixelswap_streampool.tact,
+       <br/>
+       Target:
+       <br/>
+       contracts/pixelswap_settlement.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    TON contracts, being a part of an asynchronous blockchain, can process messages in a non-deterministic order. In some cases, the incoming messages require the contract to perform changes in the storage, send new messages, and other gas-consuming tasks.
+   </p>
+   <p block-type="Text">
+    It is important to take into account the gas costs associated with executing functions or sending messages to ensure that the contract's final balance after execution does not drop below a threshold. Otherwise, if the balance is zero, the contract cannot pay for storage costs and can eventually be destroyed.
+   </p>
+   <p block-type="Text">
+    We noticed several places where the gas calculations were not correct or did not consider all of the costs that must be paid. We did not assess the exact severity of this issue because these calculations may have a long-reaching impact on the affected functions and further calls, and can depend on external factors unknown at the time.
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Swap
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L442">
+       message handler
+      </a>
+      in pixelswap_settlement.tact should consider the storage fees, the gas consumed, and the gas for paused contract refund.
+     </li>
+     <li block-type="ListItem">
+      Later,
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L463">
+       line 463
+      </a>
+      should check that the resulting amount is greater than gas_check_swap_message.
+     </li>
+     <li block-type="ListItem">
+      Lines
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L454">
+       454
+      </a>
+      and
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L468">
+       468
+      </a>
+      should deduct gas_consumed().
+     </li>
+     <li block-type="ListItem">
+      PlaceOrder
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_streampool.tact#L185">
+       message handler
+      </a>
+      in pixelswap_streampool.tact should consider the message transfer fee.
+     </li>
+     <li block-type="ListItem">
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_streampool.tact#L273-L280">
+       RemoveLiquidityJettonNotification
+      </a>
+      message handler should consider the transfer_notification_handler gas fee or use the remaining gas instead of context().value.
+     </li>
+     <li block-type="ListItem">
+      Later,
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_streampool.tact#L297">
+       line 297
+      </a>
+      subtracts remove_liquidity gas twice because the call was already made. It is not checked that the remaining gas is more than the required token0 and token1 gas amounts.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_48_Picture_12.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="49">
+   <h3>
+    Recommendations
+   </h3>
+   <p block-type="Text">
+    Short term, ensure that the gas calculations correctly account for the message transfer fee, storage fee, computation fee, and forward TON amount in the mentioned places and all other places where they are calculated.
+   </p>
+   <p block-type="Text">
+    Long term, measure all execution paths and their gas requirements to ensure that the amounts are correctly calculated through tests.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="50">
+   <h1>
+    <span id="page-50-0">
+    </span>
+    21. A privileged account can drain the PixelswapStreamPool contract
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+      </th>
+      <th>
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Severity:
+       <br/>
+       Low
+      </td>
+      <td>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Access
+       <br/>
+       Controls
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-21
+      </td>
+     </tr>
+     <tr>
+      <td colspan="3">
+       Target:
+       <br/>
+       fcontracts/pixelswap_streampool.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    In the PixelswapStreamPool contract, there are two ways to create new tokens and new trading pairs by sending CreateToken and CreateTradingPair messages: the first one requires being a privileged account, and the second one requires the sender to be enabled for adding tokens and pairs, and also paying a creation fee intended to avoid spamming.
+   </p>
+   <p block-type="Text">
+    Since the privileged account does not require paying the fee or sending TON at all, it is possible to drain the balance of the PixelswapStreamPool contract because the message handler sends the fee to the recipient in all cases.
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    Alice, a privileged account in the Stream Pool contract, decides to add new tokens and trading pairs to the system. Since she is not required to send additional value in her messages, she sends messages with the minimum amount possible to pay for the computation.
+   </p>
+   <p block-type="Text">
+    While the PixelswapStreamPool contract has a balance, she is able to add the tokens and pairs. However, once the balance becomes zero, the transactions will start failing, putting the contract at risk of not being able to pay storage fees.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, check for the contract balance before sending the fee payment.
+   </p>
+   <p block-type="Text">
+    Long term, improve the test suite to consider all combinations of privileged and unprivileged users performing actions on the system. Check for balances before and after the transactions are executed, and ensure that the final balance is enough for storage fees.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+   <p>
+    <img src="_page_50_Picture_14.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="51">
+   <h3>
+    <span id="page-51-0">
+    </span>
+    22. The fee recipient accounts cannot be changed in the Stream Pool contract
+   </h3>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       Informational
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Undetermined
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Access
+       <br/>
+       Controls
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-22
+      </td>
+     </tr>
+     <tr>
+      <td colspan="3">
+       contracts/pixelswap_streampool.tact
+       <br/>
+       Target:
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The creation_fee_recipient and protocol_fee_recipient addresses are set once in the PixelswapStreamPool contract constructor and cannot be changed.
+   </p>
+   <p block-type="Text">
+    If, for some reason, access to those accounts is lost or compromised, the protocol will continue to send funds to them, increasing the financial damage over time and making it impossible for the team to recover funds.
+   </p>
+   <p block-type="Text">
+    Moreover, the protocol_fee_recipient account is not used in the PixelswapStreamPool contract.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, consider having a privileged method to change these fee recipients.
+   </p>
+   <p block-type="Text">
+    Long term, determine if these accounts will be used, what security measures will be in place for setting and changing their values, and under what circumstances the change should be made.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="52">
+   <h1>
+    <span id="page-52-0">
+    </span>
+    23. The gas checks in the PixelswapStreamPool contract are wrongly placed
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+      </th>
+      <th>
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Severity:
+       <br/>
+       Informational
+      </td>
+      <td>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-23
+      </td>
+     </tr>
+     <tr>
+      <td colspan="3">
+       Target:
+       <br/>
+       contracts/pixelswap_streampool.tact
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The gas checks in the PlaceOrder message receiver of the PixelswapStreamPool contract are placed after the pair_status update. This can lead to loss of funds for user and pair reserves and balances going out of sync.
+   </p>
+   <p block-type="Text">
+    The PlaceOrder message receiver of the PixelswapStreamPool contract adds two gas checks. It adds one at the end of the process_order internal function:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    It adds another at the end of the receiver function:
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    However, the process_order function updates the pair reserves in the pair_status map for the specified pair_id before these gas checks. If, for some reason, these gas checks fail, then it can have the following effect:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      If the gas check in the receiver function fails, then the PlaceOrder message will be sent back to the settlement contract and will add the input tokens back to the user's funding wallet balance.
+     </li>
+     <li block-type="ListItem">
+      If the gas check in the process_order function fails while processing a nested PlaceOrder message, then only the current PlaceOrder and its nested PlaceOrder messages are returned to the settlement contract. This adds input tokens to the user's funding wallet balance only for these orders instead of all of the orders. The user also loses the output token of swaps for successfully executed PlaceOrder messages.
+     </li>
+     <li block-type="ListItem">
+      In every case, the reserves of the specified pair and token balances of the settlement contract go out of sync, resulting in an unstable system state.
+     </li>
+    </ul>
+   </p>
+   <p block-type="Text">
+    Currently, the gas checks in the PixelswapFundingWallet and PixelswapSettlement contracts ensure that the gas checks in the PixelswapStreamPool contract do not fail. However, future updates to the codebase could introduce a path to fail these gas checks.
+   </p>
+   <p>
+    <img src="_page_52_Picture_13.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="53">
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, place the above-mentioned gas checks before calls to the state-modifying functions to ensure the correct state in case of gas check failure.
+   </p>
+   <p block-type="Text">
+    Long term, document the system state specification with user actions and their effect on the system state to identify potential issues arising from complex user interactions.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+   <p>
+    <img src="_page_53_Picture_5.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="54">
+   <span id="page-54-0">
+   </span>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="3">
+       24.
+       <br/>
+       Users
+       <br/>
+       cannot
+       <br/>
+       deposit
+       <br/>
+       only
+       <br/>
+       Jetton
+       <br/>
+       to
+       <br/>
+       their
+       <br/>
+       funding
+       <br/>
+       wallet
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Severity:
+       <br/>
+       Informational
+      </td>
+      <td>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-PXL-24
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       contracts/pixelswap_settlement.tact
+       <br/>
+       Target:
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p block-type="Text">
+    The gas check in the OrderJettonNotification handler of the PixelswapSettlement contract ensures that the TON sent by the user is more than the value of the gas_check_jetton_notification parameter, which is 500 millitons, and that the ton_amt is calculated by subtracting the gas_for_incoming_jetton_transfer value, which is 400 millitons, from the message value.
+   </p>
+   <p block-type="Text">
+    Because of this, the user needs to deposit at least 100 millitons of TON along with any Jetton deposit, and there is no way for a user to deposit only Jetton to their funding wallet.
+   </p>
+   <h4>
+    <b>
+     [Redacted]
+    </b>
+   </h4>
+   <p block-type="Text">
+    Description
+   </p>
+   <h3>
+    Recommendations
+   </h3>
+   <p block-type="Text">
+    Short term, accept the TON amount to deposit as a message parameter instead of calculating it in the contract, and return the excess TON sent as the message value.
+   </p>
+   <p block-type="Text">
+    Long term, implement test cases for all real-life use cases to ensure expected behavior from the smart contracts.
+   </p>
+   <h4>
+    <b>
+     Fix Review Status
+    </b>
+   </h4>
+  </div>
+  <div class="page" data-page-id="55">
+   <h1>
+    <span id="page-55-0">
+    </span>
+    A. Vulnerability Categories
+   </h1>
+   <p block-type="Text">
+    The following tables describe the vulnerability categories, severity levels, and difficulty levels used in this document.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="3">
+       Vulnerability Categories
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Category
+      </td>
+      <td>
+       Description
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Access Controls
+      </td>
+      <td>
+       Insufficient authorization or assessment of rights
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Auditing and Logging
+      </td>
+      <td>
+       Insufficient auditing of actions or logging of problems
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Authentication
+      </td>
+      <td>
+       Improper identification of users
+      </td>
+     </tr>
+     <tr>
+      <th>
+       Configuration
+      </th>
+      <th>
+       Misconfigured servers, devices, or software components
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Cryptography
+      </td>
+      <td>
+       A breach of system confidentiality or integrity
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Data Exposure
+      </td>
+      <td>
+       Exposure of sensitive information
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Improper reliance on the structure or values of data
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Denial of Service
+      </td>
+      <td>
+       A system failure with an availability impact
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Error Reporting
+      </td>
+      <td>
+       Insecure or insufficient reporting of error conditions
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Patching
+      </td>
+      <td>
+       Use of an outdated software package or library
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Session Management
+      </td>
+      <td>
+       Improper identification of authenticated users
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Testing
+      </td>
+      <td>
+       Insufficient test methodology or test coverage
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Timing
+      </td>
+      <td>
+       Race conditions or other order-of-operations flaws
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Undefined Behavior
+      </td>
+      <td>
+       Undefined behavior triggered within the system
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="56">
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="3">
+       Severity Levels
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Severity
+      </th>
+      <th>
+       Description
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Informational
+      </th>
+      <th>
+       The issue does not pose an immediate risk but is relevant to security best
+       <br/>
+       practices.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Undetermined
+      </th>
+      <th>
+       The extent of the risk was not determined during this engagement.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Low
+      </th>
+      <th>
+       The risk is small or is not one the client has indicated is important.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Medium
+      </th>
+      <th>
+       User information is at risk; exploitation could pose reputational, legal, or
+       <br/>
+       moderate financial risks.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       High
+      </th>
+      <th>
+       The flaw could affect numerous users and have serious reputational, legal,
+       <br/>
+       or financial implications.
+      </th>
+     </tr>
+    </tbody>
+   </table>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="3">
+       Diffi
+       <br/>
+       culty Levels
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Diffi
+       <br/>
+       culty
+      </th>
+      <th>
+       Description
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Undetermined
+      </th>
+      <th>
+       The difficulty of exploitation was not determined during this engagement.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Low
+      </th>
+      <th>
+       The flaw is well known; public tools for its exploitation exist or can be
+       <br/>
+       scripted.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Medium
+      </th>
+      <th>
+       An attacker must write an exploit or will need in-depth knowledge of the
+       <br/>
+       system.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       High
+      </th>
+      <th>
+       An attacker must have privileged access to the system, may need to know
+       <br/>
+       complex technical details, or must discover other weaknesses to exploit this
+       <br/>
+       issue.
+      </th>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="57">
+   <h1>
+    <span id="page-57-0">
+    </span>
+    B. Code Maturity Categories
+   </h1>
+   <p block-type="Text">
+    The following tables describe the code maturity categories and rating criteria used in this document.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="3">
+       Code Maturity Categories
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Category
+      </td>
+      <td>
+       Description
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Arithmetic
+      </td>
+      <td>
+       The proper use of mathematical operations and semantics
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Auditing
+      </td>
+      <td>
+       The use of event auditing and logging to support monitoring
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Authentication /
+       <br/>
+       Access Controls
+      </td>
+      <td>
+       The use of robust access controls to handle identification and
+       <br/>
+       authorization and to ensure safe interactions with the system
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Complexity
+       <br/>
+       Management
+      </td>
+      <td>
+       The presence of clear structures designed to manage system complexity,
+       <br/>
+       including the separation of system logic into clearly defined functions
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Decentralization
+      </td>
+      <td>
+       The presence of a decentralized governance structure for mitigating
+       <br/>
+       insider threats and managing risks posed by contract upgrades
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Documentation
+      </td>
+      <td>
+       The presence of comprehensive and readable codebase documentation
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Low-Level
+       <br/>
+       Manipulation
+      </td>
+      <td>
+       The justified use of inline assembly and low-level calls
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Testing and
+       <br/>
+       Verification
+      </td>
+      <td>
+       The presence of robust testing procedures (e.g., unit tests, integration
+       <br/>
+       tests, and verification methods) and sufficient test coverage
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Transaction
+       <br/>
+       Ordering
+      </td>
+      <td>
+       The system's resistance to transaction-ordering attacks
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Rating Criteria
+      </th>
+      <th>
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Rating
+      </th>
+      <th>
+       Description
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Strong
+      </th>
+      <th>
+       No issues were found, and the system exceeds industry standards.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Satisfactory
+      </th>
+      <th>
+       Minor issues were found, but the system is compliant with best practices.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Moderate
+      </th>
+      <th>
+       Some issues that may affect system safety were found.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Weak
+      </th>
+      <th>
+       Many issues that affect system safety were found.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Missing
+      </th>
+      <th>
+       A required component is missing, significantly affecting system safety.
+      </th>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="58">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Not Applicable
+      </th>
+      <th>
+       The category is not applicable to this review.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Not Considered
+      </th>
+      <th>
+       The category was not considered in this review.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Further
+       <br/>
+       Investigation
+       <br/>
+       Required
+      </th>
+      <th>
+       Further investigation is required to reach a meaningful conclusion.
+      </th>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="59">
+   <h1>
+    <span id="page-59-0">
+    </span>
+    C. Code Quality Findings
+   </h1>
+   <p block-type="Text">
+    This appendix contains findings that do not have immediate or obvious security implications. However, they may facilitate exploit chains targeting other vulnerabilities, become easily exploitable in future releases, or decrease code readability. We recommend fixing the issues reported here.
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      <b>
+       Remove unnecessary conditional in
+       <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/utils/access_control_single_role.tact#L47-L49">
+        AccessControlSingleRole
+       </a>
+       .
+      </b>
+      The del() function returns true or false depending on the existence of the value to be deleted.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Use a more appropriate name for the
+       <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L202-L205">
+        IncreaseTokenBalance
+       </a>
+       message.
+      </b>
+      The message is sent to the PixelswapSettlementVault contract for both
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L822-L828">
+       increasing
+      </a>
+      and
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L830-L836">
+       decreasing
+      </a>
+      the token balance.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Fix the comment in
+       <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/utils/access_control_single_role_non_transferrable.tact#L17-L20">
+        AccessControlSIngleRoleNonTransferrable
+       </a>
+       .
+      </b>
+      The trait implements the owner role, which is not transferable.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Remove the unused
+       <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_streampool.tact#L587-L587">
+        is_token_info
+       </a>
+       variable.
+      </b>
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Avoid using magic constants.
+      </b>
+      Literal values are set directly in code (e.g.,
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L441-L441">
+       #1
+      </a>
+      ,
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_settlement.tact#L463">
+       #2
+      </a>
+      ,
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_streampool.tact#L574">
+       #3,
+      </a>
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_streampool.tact#L580">
+       #4
+      </a>
+      ). This makes the functions harder to read, and more difficult to maintain in case the requirements are updated.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Remove useless code.
+      </b>
+      The
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_streampool.tact#L833-L859">
+       add_liquidity
+      </a>
+      and
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_streampool.tact#L864-L885">
+       remove_liquidity
+      </a>
+      functions calculate the amounts and fees using the calc_add_lp_* and calc_remove_lp functions from univ2_math.tact. The math functions explicitly state that the fees returned are always 0; however, the Stream Pool caller calculates protocol fees and updates the fees_payable fields in the pair status. Besides having no effect, this code increases the computation cost and makes the functions more complex to understand.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Remove duplicated code.
+      </b>
+      There are some instances of duplicated code, or sections of code that could be abstracted into separate functions to improve readability. Some examples include
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_streampool.tact#L750-L774">
+       #1
+      </a>
+      ,
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_streampool.tact#L801-L825">
+       #2,
+      </a>
+      and
+      <a href="https://github.com/nx-fi/pixelswap/blob/5c24e13fcae51b250bd70e0a812ce69a9b3dee4a/contracts/pixelswap_streampool.tact#L534-L544">
+       #3.
+      </a>
+      Having duplicated code increases the likelihood of adding bugs when only one of the instances is modified, and also increases the complexity of the function, degrading readability.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Remove debug calls and commented code statements.
+      </b>
+      In several contracts, most notably on PixelswapStreamPool, there are a significant number of dump calls, debug print calls, and code statements commented out. The debug statements should be converted into tests, validating the state before and after the intended calls.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_59_Picture_10.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="60">
+   <h1>
+    <span id="page-60-0">
+    </span>
+    D. Incident Response Recommendations
+   </h1>
+   <p block-type="Text">
+    This section provides recommendations on formulating an incident response plan.
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      <b>
+       ● Identify the parties (either specific people or roles) responsible for implementing the mitigations when an issue occurs (e.g., deploying smart contracts, pausing contracts, upgrading the front end, etc.).
+      </b>
+     </li>
+     <li block-type="ListItem">
+      <b>
+       ● Document internal processes for addressing situations in which a deployed remedy does not work or introduces a new bug.
+      </b>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        <b>
+         ○
+        </b>
+        Consider documenting a plan of action for handling failed remediations.
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      <b>
+       ● Clearly describe the intended contract deployment process.
+      </b>
+     </li>
+     <li block-type="ListItem">
+      <b>
+       ● Outline the circumstances under which PixelSwap Labs will compensate users affected by an issue (if any).
+      </b>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        <b>
+         ○
+        </b>
+        Issues that warrant compensation could include an individual or aggregate loss or a loss resulting from user error, a contract flaw, or a third-party contract flaw.
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      <b>
+       ● Document how the team plans to stay up to date on new issues that could affect the system; awareness of such issues will inform future development work and help the team secure the deployment toolchain and the external on-chain and off-chain services that the system relies on.
+      </b>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        <b>
+         ○
+        </b>
+        Identify sources of vulnerability news for each language and component used in the system, and subscribe to updates from each source. Consider creating a private Discord channel in which a bot will post the latest vulnerability news; this will provide the team with a way to track all updates in one place. Lastly, consider assigning certain team members to track news about vulnerabilities in specific system components.
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      <b>
+       ● Determine when the team will seek assistance from external parties (e.g., auditors, affected users, other protocol developers) and how it will onboard them.
+      </b>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        <b>
+         ○
+        </b>
+        Effective remediation of certain issues may require collaboration with external parties.
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      <b>
+       ● Define contract behavior that would be considered abnormal by off-chain monitoring solutions.
+      </b>
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_60_Picture_13.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="61">
+   <p block-type="Text">
+    It is best practice to perform periodic dry runs of scenarios outlined in the incident response plan to find omissions and opportunities for improvement and to develop "muscle memory." Additionally, document the frequency with which the team should perform dry runs of various scenarios, and perform dry runs of more likely scenarios more regularly. Create a template to be filled out with descriptions of any necessary improvements after each dry run.
+   </p>
+  </div>
+  <div class="page" data-page-id="62">
+   <h1>
+    <span id="page-62-0">
+    </span>
+    E. Testing Improvement Recommendations
+   </h1>
+   <p block-type="Text">
+    This appendix aims to provide general recommendations on improving processes and enhancing the quality of the PixelSwap DEX test suite.
+   </p>
+   <h1>
+    Identified Testing Deficiencies
+   </h1>
+   <p block-type="Text">
+    During the audit, we encountered a number of issues that could have been prevented or minimized through better test practices and improved test coverage (e.g.,
+    <a href="#page-18-1">
+     TOB-PXL-1,
+    </a>
+    <a href="#page-22-0">
+     TOB-PXL-3,
+    </a>
+    and
+    <a href="#page-32-0">
+     TOB-PXL-10,
+    </a>
+    among others). We identified several deficiencies in the test suite that could make further testing and development more difficult and thereby reduce the likelihood that the test suite will find security issues:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      The test suite does not fully cover all of the contracts and functions in the codebase, and it does not test for all edge cases.
+     </li>
+     <li block-type="ListItem">
+      Multiple negative unit tests do not test for a specific failure case; instead, they will pass on any failure inside the test body. This reduces confidence that the test suite will catch test failures, makes tests and issues harder to triage and debug, and could lead to false negatives.
+     </li>
+     <li block-type="ListItem">
+      Tests do not check for event emission (external messages) or transaction results and only rely on checking balances or balance deltas for specific accounts, ignoring other relevant checks.
+     </li>
+     <li block-type="ListItem">
+      The test directory lacks a coherent structure; all DEX unit tests are placed inside the same file. This can make it difficult to identify which components and behaviors are being tested, making it harder to onboard developers.
+     </li>
+    </ul>
+   </p>
+   <p block-type="Text">
+    To address these deficiencies and improve the PixelSwap DEX's test coverage and processes, we recommend that the PixelSwap Labs team define a clear testing strategy and create guidelines on how testing is performed in the codebase. Our general guidelines for improving test suite quality are as follows:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      1.
+      <b>
+       Define a clear test directory structure.
+      </b>
+      A clear directory structure helps organize the work of multiple developers, makes it easier to identify which components and behaviors are being tested, and gives insight into the overall test coverage.
+     </li>
+     <li block-type="ListItem">
+      2.
+      <b>
+       Write a design specification of the system, its components, and its functions in plain language.
+      </b>
+      Defining a specification can allow the team to more easily detect bugs and inconsistencies in the system, reduce the likelihood that future code changes will introduce bugs, improve the maintainability of the system, and allow the team to create a robust and holistic testing strategy.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_62_Picture_11.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="63">
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      3.
+      <b>
+       Use the function specifications to guide the creation of unit tests.
+      </b>
+      Creating a specification of all preconditions, postconditions, failure cases, entry points, and execution paths for a function will make it easier to maintain high test coverage and identify edge cases.
+     </li>
+     <li block-type="ListItem">
+      4.
+      <b>
+       Use the interaction specifications to guide the creation of integration tests.
+      </b>
+      An interaction specification will make it easier to identify the interactions that need to be tested and the external failure cases that need to be validated or guarded against, and it will help identify issues related to access controls and external calls.
+     </li>
+     <li block-type="ListItem">
+      5.
+      <b>
+       Use fork testing for integration testing with third-party smart contracts and to ensure that the deployed system works as expected.
+      </b>
+      Fork testing can be used to test interactions between the protocol contracts and third-party smart contracts by providing an environment that is as close to production as possible. Additionally, fork testing can be used to identify whether the deployed system is behaving as expected.
+     </li>
+     <li block-type="ListItem">
+      6.
+      <b>
+       Keep the team updated on new tooling and tool releases.
+      </b>
+      Since Tact and FunC are relatively new languages and not many tools are developed for them yet, it is recommended for the team to be updated on the development of third-party tools such as fuzzers, mutation testers, and static and dynamic analyzers, among others. Additionally, keep track of new compiler releases, bug fixes, and their potential effects on the project codebase.
+     </li>
+    </ul>
+   </p>
+   <h1>
+    Directory Structure
+   </h1>
+   <p block-type="Text">
+    Creating a specific directory structure for the system's tests will make it easier to develop and maintain the test suite and find coverage gaps. This section contains brief guidelines on defining a directory structure.
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Create individual directories for each test type (e.g., unit/, integration/, fork/, fuzz/) and for the utility contracts. The individual directories can be further divided into directories based on components or behaviors being tested.
+     </li>
+     <li block-type="ListItem">
+      Create a single base contract that inherits from the shared utility contracts and is inherited by individual test contracts. This will help reduce code duplication across the test suite.
+     </li>
+     <li block-type="ListItem">
+      Create a clear naming convention for test files and test functions to make it easier to filter tests and understand the properties or contracts that are being tested.
+     </li>
+    </ul>
+   </p>
+   <h1>
+    Unit Testing
+   </h1>
+   <p block-type="Text">
+    The provided Blueprint test suite covers a limited number of scenarios and situations. Some tests are failing, and there are sparse negative test cases. We provide the following general recommendations based on our findings:
+   </p>
+   <p>
+    <img src="_page_63_Picture_11.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="64">
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      <b>
+       Define a specification for each function
+      </b>
+      and use it to guide the development of the unit tests. Examples of function specifications can be found in the Function Specification Example section above.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Improve the unit tests' coverage
+      </b>
+      so that they test all functions and contracts in the codebase. Use coverage reports and mutation testing to guide the creation of additional unit tests.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Use positive unit tests
+      </b>
+      to test that functions and components behave as expected. Ideally, each unit test should test a single property, with additional unit tests for edge cases. The unit test should test that all expected side effects are correct.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Improve the use of negative unit tests
+      </b>
+      by not defining test cases that pass on any failure within a test body; instead, each negative unit test should test for a specific failure case.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Ensure that no tests fail under normal conditions.
+      </b>
+      Any failing tests should be an alert that the code is not working as expected, and the team should fix the issue immediately.
+     </li>
+    </ul>
+   </p>
+   <h1>
+    Integration and Fork Testing
+   </h1>
+   <p block-type="Text">
+    Integration tests build on unit tests by testing how individual components integrate with each other or with third-party contracts. It can often be useful to run integration testing on a fork of the network to make the testing environment as close to production as possible and to minimize the use of mock contracts whose implementation can differ from third-party contracts. We provide the following general recommendations for performing integration and fork testing:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      <b>
+       Use the interaction specification to develop integration tests.
+      </b>
+      Ensure that the integration tests aid in verifying the interactions specification.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Identify valuable input data for the integration tests
+      </b>
+      that can maximize code coverage and test potential edge cases.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Use negative integration tests
+      </b>
+      , similar to negative unit tests, to test common failure cases.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Use fork testing to build on top of the integration testing suite.
+      </b>
+      Fork testing will aid in testing third-party contract integrations and the proper configuration of the system once it is deployed.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_64_Picture_11.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="65">
+   <h1>
+    <span id="page-65-0">
+    </span>
+    F. Fix Review Results
+   </h1>
+   <p block-type="Text">
+    When undertaking a fix review, Trail of Bits reviews the fixes implemented for issues identified in the original report. This work involves a review of specific areas of the source code and system configuration, not comprehensive analysis of the system.
+   </p>
+   <p block-type="Text">
+    From November 25 to November 27, 2024, Trail of Bits reviewed the fixes and mitigations implemented by the PixelSwap Labs Ltd. team for the issues identified in this report. We reviewed each fix to determine its effectiveness in resolving the associated issue.
+   </p>
+   <p block-type="Text">
+    In summary, of the 24 issues described in this report, PixelSwap Labs Ltd. has resolved 19 issues and has not resolved the remaining five issues. For additional information, please see the Detailed Fix Review Results below.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       ID
+      </th>
+      <th>
+       Title
+      </th>
+      <th>
+       Status
+      </th>
+     </tr>
+     <tr>
+      <td>
+       1
+      </td>
+      <td>
+       The BulkInternalTransfer receiver computes the wrong total amounts
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       2
+      </td>
+      <td>
+       Granting the role to the master funding contract on a funding wallet
+       <br/>
+       contract will result in draining the funding wallet balance
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       3
+      </td>
+      <td>
+       Users can inflate their funding wallet balance by sending an expired
+       <br/>
+       Swap message to the settlement contract
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       4
+      </td>
+      <td>
+       SettlementVault balances are not updated in the PlaceOrder_Partial_2
+       <br/>
+       receiver of the settlement contract
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       5
+      </td>
+      <td>
+       Lack of validation of PixelswapStreamPool configuration parameters
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       6
+      </td>
+      <td>
+       Users can drain the TON balance of the PixelswapSettlement contract
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       7
+      </td>
+      <td>
+       Users can avoid paying the gas fee for the token creation transaction
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       8
+      </td>
+      <td>
+       The tokens_count initial value in the PixelswapStreamPool contract is
+       <br/>
+       zero
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       9
+      </td>
+      <td>
+       The returned TON amount from an order execution result is ignored
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       10
+      </td>
+      <td>
+       Wrong formula used for LP amount calculation
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="66">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       11
+      </th>
+      <th>
+       Users can use nested PlaceOrders to drain the settlement contract
+      </th>
+      <th>
+       Resolved
+      </th>
+     </tr>
+     <tr>
+      <td>
+       12
+      </td>
+      <td>
+       The LP tokens are never burned by the Stream Pool contract
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       13
+      </td>
+      <td>
+       Lack of the pair_id and token_id validation in the PixelswapStreamPool
+       <br/>
+       contract
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       14
+      </td>
+      <td>
+       The value attached to messages is not checked to be positive
+      </td>
+      <td>
+       Unresolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       15
+      </td>
+      <td>
+       The current balance is not checked before sending a message with a
+       <br/>
+       non-zero value
+      </td>
+      <td>
+       Unresolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       16
+      </td>
+      <td>
+       The exec_id value is not validated for the internal orders in nested
+       <br/>
+       PlaceOrder messages
+      </td>
+      <td>
+       Unresolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       17
+      </td>
+      <td>
+       The token_balance get function reverts if a user balance is 0
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       18
+      </td>
+      <td>
+       Different parsing formats for Jetton notification messages
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       19
+      </td>
+      <td>
+       The JettonFactory contract allows minting zero tokens
+      </td>
+      <td>
+       Unresolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       20
+      </td>
+      <td>
+       Incorrect gas calculations in several contracts
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       21
+      </td>
+      <td>
+       A privileged account can drain the PixelswapStreamPool contract
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       22
+      </td>
+      <td>
+       The fee recipient accounts cannot be changed in the Stream Pool
+       <br/>
+       contract
+      </td>
+      <td>
+       Unresolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       23
+      </td>
+      <td>
+       The gas checks in the PixelswapStreamPool contract are wrongly
+       <br/>
+       placed
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       24
+      </td>
+      <td>
+       Users cannot deposit only Jetton to their funding wallet
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p>
+    <img src="_page_66_Picture_1.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="67">
+   <h1>
+    Detailed Fix Review Results
+   </h1>
+   <p block-type="Text">
+    <b>
+     TOB-PXL-1: The BulkInternalTransfer receiver computes the wrong total amounts
+    </b>
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/505">
+     #505.
+    </a>
+    The BulkInternalTransfer receiver function of the PixelswapFundingWallet contract now correctly updates the loop index variable.
+   </p>
+   <h1>
+    <b>
+     TOB-PXL-2: Granting the role to the master funding contract on a funding wallet contract will result in draining the funding wallet balance
+    </b>
+   </h1>
+   <p block-type="Text">
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/559">
+     #559.
+    </a>
+    The role condition check order has been reversed to fix the issue.
+   </p>
+   <h1>
+    <b>
+     TOB-PXL-3: Users can inflate their funding wallet balance by sending an expired Swap message to the settlement contract
+    </b>
+   </h1>
+   <p block-type="Text">
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/589">
+     #589.
+    </a>
+    The PixelswapSettlement contract has been updated to throw an error if the extra_tokens has a TokenInfo with the token_is_input attribute set to true.
+   </p>
+   <h3>
+    <b>
+     TOB-PXL-4: SettlementVault balances are not updated in the PlaceOrder_Partial_2 receiver of the settlement contract
+    </b>
+   </h3>
+   <p block-type="Text">
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/558">
+     #558.
+    </a>
+    The PlaceOrder_Partial_2 message receiver function of the PixelswapSettlement contract now correctly updates the SettlementVault balances to reflect the transfer of funds between funding and execution contracts
+   </p>
+   <p block-type="Text">
+    <b>
+     TOB-PXL-5: Lack of validation of PixelswapStreamPool configuration parameters
+    </b>
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/557">
+     #557
+    </a>
+    and PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/677">
+     #677.
+    </a>
+    The gas fee configuration values are not validated to be within a limit.
+   </p>
+   <p block-type="Text">
+    <b>
+     TOB-PXL-6: Users can drain the TON balance of the PixelswapSettlement contract
+    </b>
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/556">
+     #556.
+    </a>
+    Now the sum of the token_amt, forward_milliton, and gas_transfer values is deducted from the user's funding wallet while processing the WithdrawFunds message.
+   </p>
+   <p block-type="Text">
+    <b>
+     TOB-PXL-7: Users can avoid paying the gas fee for the token creation transaction
+    </b>
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/555">
+     #555.
+    </a>
+    The CreateToken message receiver has been updated to ensure that the user and admin both provide enough TON for the required gas fee.
+   </p>
+   <h1>
+    <b>
+     TOB-PXL-8: The tokens_count initial value in the PixelswapStreamPool contract is zero
+    </b>
+   </h1>
+   <p block-type="Text">
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/553">
+     #553.
+    </a>
+    The init function now updates the tokens_count variable to track the correct number of tokens added to the PixelswapStreamPool contract.
+   </p>
+   <p block-type="Text">
+    <b>
+     TOB-PXL-9: The returned TON amount from an order execution result is ignored
+    </b>
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/552">
+     #552.
+    </a>
+    Now the SettlementVault balances are updated for the TON amount value in the order execution result even when the msg.token_id is not null.
+   </p>
+   <p>
+    <img src="_page_67_Picture_14.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="68">
+   <h4>
+    <b>
+     TOB-PXL-10: Wrong formula used for LP amount calculation
+    </b>
+   </h4>
+   <p block-type="Text">
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/564">
+     #564.
+    </a>
+    The updated code uses the correct formula for LP amount calculation.
+   </p>
+   <h4>
+    <b>
+     TOB-PXL-11: Users can use nested PlaceOrders to drain the settlement contract
+    </b>
+   </h4>
+   <p block-type="Text">
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/575">
+     #575.
+    </a>
+    Now the spend_order_inputs function of the PixelswapFundingWallet contract calls itself recursively to correctly update the user's funding wallet balance.
+   </p>
+   <h4>
+    <b>
+     TOB-PXL-12: The LP tokens are never burned by the Stream Pool contract
+    </b>
+   </h4>
+   <p block-type="Text">
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/560">
+     #560.
+    </a>
+    The PixelSwap Labs Ltd. team updated the burn function of the JettonFactory trait contract to send the burn message to the Jetton wallet owned by the Stream Pool contract.
+   </p>
+   <h3>
+    <b>
+     TOB-PXL-13: Lack of the pair_id and token_id validation in the PixelswapStreamPool contract
+    </b>
+   </h3>
+   <p block-type="Text">
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/605">
+     #605.
+    </a>
+    The pair_id and token_id are now validated correctly against the user-provided token_id.
+   </p>
+   <h1>
+    <b>
+     TOB-PXL-14: The value attached to messages is not checked to be positive
+    </b>
+   </h1>
+   <p block-type="Text">
+    Unresolved. The issue has not been resolved.
+   </p>
+   <p block-type="Text">
+    The client provided the following context for this finding's fix status:
+   </p>
+   <p block-type="Text">
+    <i>
+     Acknowledged. Passing a negative value here will just cause a system error. This will also never happen in the code logic.
+    </i>
+   </p>
+   <h3>
+    <b>
+     TOB-PXL-15: The current balance is not checked before sending a message with a non-zero value
+    </b>
+   </h3>
+   <p block-type="Text">
+    Unresolved. The issue has not been resolved.
+   </p>
+   <p block-type="Text">
+    The client provided the following context for this finding's fix status:
+   </p>
+   <p block-type="Text">
+    <i>
+     When exploring a fix we concluded that aborting with AFRs is not sufficient in many cases. In many scenarios the transaction would already be completed when (and if) balance would fall below zero, and in most cases it's either impossible or too complicated to recover from this faulty state.
+    </i>
+   </p>
+   <p block-type="Text">
+    <i>
+     Instead we conducted an extensive review of the code logic to make sure a) no code path sends out more TON than it should have, accounting for all credits and debits, b) prior to sending TON the code always checks for the remaining balance of GAS_RESERVE (which is configured to a different value per smart contract), and c) gas out + processing fee &lt; gas in.
+    </i>
+   </p>
+   <p block-type="Text">
+    <i>
+     In some specific scenarios, for example making a call to a contract after a long idle time, c cannot be guaranteed due to the storage fee. We do not have a solution for this, and
+    </i>
+   </p>
+   <p>
+    <img src="_page_68_Picture_18.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="69">
+   <p block-type="Text">
+    <i>
+     this problem is also existing for native TON smart contracts such as Jetton contracts, so we deem it good enough. To mitigate the risk we initially fund the contracts with enough TON to cover storage fees for years.
+    </i>
+   </p>
+   <h3>
+    <b>
+     TOB-PXL-16: The exec_id value is not validated for the internal orders in nested PlaceOrder messages
+    </b>
+   </h3>
+   <p block-type="Text">
+    Unresolved. The issue has not been resolved.
+   </p>
+   <p block-type="Text">
+    The client provided the following context for this finding's fix status:
+   </p>
+   <p block-type="Text">
+    <i>
+     Acknowledged. Architecture of nested orders will be changed.
+    </i>
+   </p>
+   <h3>
+    <b>
+     TOB-PXL-17: The token_balance get function reverts if a user balance is 0
+    </b>
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/562">
+     #562.
+    </a>
+    The token_balance get function now returns 0 instead of reverting.
+   </h3>
+   <h1>
+    <b>
+     TOB-PXL-18: Different parsing formats for Jetton notification messages
+    </b>
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/565">
+     #565.
+    </a>
+    The RemoveLiquidityJettonNotification message has been updated to follow a common parsing format for the jetton notification message.
+   </h1>
+   <h1>
+    <b>
+     TOB-PXL-19: The JettonFactory contract allows minting zero tokens
+    </b>
+    Unresolved. The issue has not been resolved.
+   </h1>
+   <p block-type="Text">
+    The client provided the following context for this finding's fix status:
+   </p>
+   <p block-type="Text">
+    <i>
+     Acknowledged. Testing showed that negative transfer amounts will be rejected by the system. This will also never happen in the code logic.
+    </i>
+   </p>
+   <h4>
+    <b>
+     TOB-PXL-20: Incorrect gas calculations in several contracts
+    </b>
+   </h4>
+   <p block-type="Text">
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/548">
+     #548.
+    </a>
+    The codebase has been updated to correct gas calculations.
+   </p>
+   <h1>
+    <b>
+     TOB-PXL-21: A privileged account can drain the PixelswapStreamPool contract
+    </b>
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/555">
+     #555.
+    </a>
+    The CreateToken and CreateTradingPair message receiver functions now send the creation fee only when they are called by a non privileged user.
+   </h1>
+   <h3>
+    <b>
+     TOB-PXL-22: The fee recipient accounts cannot be changed in the Stream Pool contract
+    </b>
+   </h3>
+   <p block-type="Text">
+    Unresolved. The issue has not been resolved.
+   </p>
+   <p block-type="Text">
+    The client provided the following context for this finding's fix status:
+   </p>
+   <p block-type="Text">
+    <i>
+     Acknowledged. The protocol fee collector will be a peripheral smart contract that is outside the scope of this audit.
+    </i>
+   </p>
+   <p>
+    <img src="_page_69_Picture_17.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="70">
+   <p block-type="Text">
+    <b>
+     TOB-PXL-23: The gas checks in the PixelswapStreamPool contract are wrongly placed
+    </b>
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/543">
+     #543.
+    </a>
+    The gas checks in the PixelswapStreamPool contract have been removed because they are already included in the entrypoint contracts.
+   </p>
+   <h4>
+    <b>
+     TOB-PXL-24: Users can not deposit only Jetton to their funding wallet
+    </b>
+   </h4>
+   <p block-type="Text">
+    Resolved in PR
+    <a href="https://github.com/nx-fi/pixelswap/pull/548">
+     #548.
+    </a>
+    The gas_for_incoming_jetton_transfer has been updated to be equal to the the gas_check_jetton_notification parameter, which is 500 millitons.
+   </p>
+  </div>
+  <div class="page" data-page-id="71">
+   <h1>
+    <span id="page-71-0">
+    </span>
+    G. Fix Review Status Categories
+   </h1>
+   <p block-type="Text">
+    The following table describes the statuses used to indicate whether an issue has been sufficiently addressed.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="3">
+       Fix Status
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Status
+      </th>
+      <th>
+       Description
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Undetermined
+      </th>
+      <th>
+       The status of the issue was not determined during this engagement.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Unresolved
+      </th>
+      <th>
+       The issue persists and has not been resolved.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Partially Resolved
+      </th>
+      <th>
+       The issue persists but has been partially resolved.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Resolved
+      </th>
+      <th>
+       The issue has been sufficiently resolved.
+      </th>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+ </body>
+</html>

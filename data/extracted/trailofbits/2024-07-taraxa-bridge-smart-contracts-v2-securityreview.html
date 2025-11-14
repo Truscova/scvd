@@ -1,0 +1,2232 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8"/>
+ </head>
+ <body>
+  <div class="page" data-page-id="0">
+   <p>
+    <img src="_page_0_Picture_0.jpeg"/>
+   </p>
+   <h1>
+    <b>
+     Taraxa Ficus Root Bridge Smart Contracts
+    </b>
+   </h1>
+   <p block-type="Text">
+    Security Assessment (Summary Report)
+   </p>
+   <p block-type="Text">
+    <b>
+     August 16, 2024
+    </b>
+   </p>
+   <p block-type="Text">
+    <i>
+     Prepared for:
+    </i>
+   </p>
+   <p block-type="Text">
+    <b>
+     Előd Varga
+    </b>
+   </p>
+   <p block-type="Text">
+    Taraxa
+   </p>
+   <p block-type="Text">
+    <i>
+     Prepared by:
+    </i>
+    <b>
+     Alexander Remie and Justin Jacob
+    </b>
+   </p>
+  </div>
+  <div class="page" data-page-id="1">
+   <h1>
+    <span id="page-1-0">
+    </span>
+    About Trail of Bits
+   </h1>
+   <p block-type="Text">
+    Founded in 2012 and headquartered in New York, Trail of Bits provides technical security assessment and advisory services to some of the world's most targeted organizations. We combine high-end security research with a real-world attacker mentality to reduce risk and fortify code. With 100+ employees around the globe, we've helped secure critical software elements that support billions of end users, including Kubernetes and the Linux kernel.
+   </p>
+   <p block-type="Text">
+    We maintain an exhaustive list of publications at
+    <a href="https://github.com/trailofbits/publications">
+     https://github.com/trailofbits/publications,
+    </a>
+    with links to papers, presentations, public audit reports, and podcast appearances.
+   </p>
+   <p block-type="Text">
+    In recent years, Trail of Bits consultants have showcased cutting-edge research through presentations at CanSecWest, HCSS, Devcon, Empire Hacking, GrrCon, LangSec, NorthSec, the O'Reilly Security Conference, PyCon, REcon, Security BSides, and SummerCon.
+   </p>
+   <p block-type="Text">
+    We specialize in software testing and code review projects, supporting client organizations in the technology, defense, and finance industries, as well as government entities. Notable clients include HashiCorp, Google, Microsoft, Western Digital, and Zoom.
+   </p>
+   <p block-type="Text">
+    Trail of Bits also operates a center of excellence with regard to blockchain security. Notable projects include audits of Algorand, Bitcoin SV, Chainlink, Compound, Ethereum 2.0, MakerDAO, Matic, Uniswap, Web3, and Zcash.
+   </p>
+   <p block-type="Text">
+    To keep up to date with our latest news and announcements, please follow
+    <a href="https://twitter.com/trailofbits">
+     @trailofbits
+    </a>
+    on Twitter and explore our public repositories at
+    <a href="https://github.com/trailofbits">
+     https://github.com/trailofbits.
+    </a>
+    To engage us directly, visit our "Contact" page at
+    <a href="https://www.trailofbits.com/contact">
+     https://www.trailofbits.com/contact,
+    </a>
+    or email us at
+    <a href="mailto:info@trailofbits.com">
+     info@trailofbits.com.
+    </a>
+   </p>
+   <h4>
+    <b>
+     Trail of Bits, Inc.
+    </b>
+   </h4>
+   <p block-type="Text">
+    497 Carroll St., Space 71, Seventh Floor Brooklyn, NY 11215 https://www.trailofbits.com
+    <a href="mailto:info@trailofbits.com">
+     info@trailofbits.com
+    </a>
+   </p>
+   <p>
+    <img src="_page_1_Picture_9.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="2">
+   <h1>
+    <span id="page-2-0">
+    </span>
+    Notices and Remarks
+   </h1>
+   <h2>
+    Copyright and Distribution
+   </h2>
+   <p block-type="Text">
+    © 2024 by Trail of Bits, Inc.
+   </p>
+   <p block-type="Text">
+    All rights reserved. Trail of Bits hereby asserts its right to be identified as the creator of this report in the United Kingdom.
+   </p>
+   <p block-type="Text">
+    This report is considered by Trail of Bits to be public information; it is licensed to Taraxa under the terms of the project statement of work and has been made public at Taraxa's request. Material within this report may not be reproduced or distributed in part or in whole without the express written permission of Trail of Bits.
+   </p>
+   <p block-type="Text">
+    The sole canonical source for Trail of Bits publications is the Trail of Bits
+    <a href="https://github.com/trailofbits/publications">
+     Publications
+    </a>
+    page. Reports accessed through any source other than that page may have been modified and should not be considered authentic.
+   </p>
+   <h2>
+    Test Coverage Disclaimer
+   </h2>
+   <p block-type="Text">
+    All activities undertaken by Trail of Bits in association with this project were performed in accordance with a statement of work and agreed upon project plan.
+   </p>
+   <p block-type="Text">
+    Security assessment projects are time-boxed and often reliant on information that may be provided by a client, its affiliates, or its partners. As a result, the findings documented in this report should not be considered a comprehensive list of security issues, flaws, or defects in the target system or codebase.
+   </p>
+   <p block-type="Text">
+    Trail of Bits uses automated testing techniques to rapidly test the controls and security properties of software. These techniques augment our manual security review work, but each has its limitations: for example, a tool may not generate a random edge case that violates a property or may not fully complete its analysis during the allotted time. Their use is also limited by the time and resource constraints of a project.
+   </p>
+  </div>
+  <div class="page" data-page-id="3">
+   <h1>
+    <span id="page-3-0">
+    </span>
+    Table of Contents
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+      </th>
+      <th>
+      </th>
+     </tr>
+     <tr>
+      <th>
+       About
+       <br/>
+       Trail
+       <br/>
+       of
+       <br/>
+       Bits
+      </th>
+      <th>
+       1
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Notices
+       <br/>
+       and
+       <br/>
+       Remarks
+      </th>
+      <th>
+       2
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Table
+       <br/>
+       of
+       <br/>
+       Contents
+      </td>
+      <td>
+       3
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Project
+       <br/>
+       Summary
+      </td>
+      <td>
+       4
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Project
+       <br/>
+       Targets
+      </td>
+      <td>
+       5
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Executive
+       <br/>
+       Summary
+      </td>
+      <td>
+       6
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Summary
+       <br/>
+       of
+       <br/>
+       Findings
+      </td>
+      <td>
+       8
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Detailed
+       <br/>
+       Findings
+      </td>
+      <td>
+       9
+      </td>
+     </tr>
+     <tr>
+      <td>
+       1.
+       <br/>
+       Lack
+       <br/>
+       of
+       <br/>
+       safeTransfer
+       <br/>
+       usage
+       <br/>
+       for
+       <br/>
+       ERC20
+      </td>
+      <td>
+       9
+      </td>
+     </tr>
+     <tr>
+      <td>
+       2.
+       <br/>
+       The
+       <br/>
+       add()
+       <br/>
+       function
+       <br/>
+       can
+       <br/>
+       revert
+      </td>
+      <td>
+       11
+      </td>
+     </tr>
+     <tr>
+      <td>
+       3.
+       <br/>
+       G1
+       <br/>
+       and
+       <br/>
+       G2
+       <br/>
+       from()
+       <br/>
+       method
+       <br/>
+       lack
+       <br/>
+       field
+       <br/>
+       point
+       <br/>
+       validation
+      </td>
+      <td>
+       12
+      </td>
+     </tr>
+     <tr>
+      <td>
+       4.
+       <br/>
+       Missing
+       <br/>
+       validation
+       <br/>
+       allows
+       <br/>
+       signatures
+       <br/>
+       to
+       <br/>
+       be
+       <br/>
+       duplicated
+       <br/>
+       to
+       <br/>
+       finalize
+       <br/>
+       any
+       <br/>
+       PillarBlock
+      </td>
+      <td>
+       13
+      </td>
+     </tr>
+     <tr>
+      <td>
+       5.
+       <br/>
+       Incorrect
+       <br/>
+       mapping
+       <br/>
+       key
+       <br/>
+       used
+       <br/>
+       in
+       <br/>
+       validation
+       <br/>
+       inside
+       <br/>
+       registerContract
+      </td>
+      <td>
+       15
+      </td>
+     </tr>
+     <tr>
+      <td>
+       6.
+       <br/>
+       Reentrancy
+       <br/>
+       in
+       <br/>
+       applyState
+       <br/>
+       can
+       <br/>
+       lead
+       <br/>
+       to
+       <br/>
+       breaking
+       <br/>
+       the
+       <br/>
+       contract
+       <br/>
+       and
+       <br/>
+       stealing
+      </td>
+      <td>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       hook-enabled
+       <br/>
+       tokens
+      </td>
+      <td>
+       17
+      </td>
+     </tr>
+     <tr>
+      <td>
+       7.
+       <br/>
+       Confusing
+       <br/>
+       application
+       <br/>
+       of
+       <br/>
+       settlementFee
+       <br/>
+       to
+       <br/>
+       locking
+       <br/>
+       native
+       <br/>
+       assets
+      </td>
+      <td>
+       20
+      </td>
+     </tr>
+     <tr>
+      <td>
+       A.
+       <br/>
+       Vulnerability
+       <br/>
+       Categories
+      </td>
+      <td>
+       21
+      </td>
+     </tr>
+     <tr>
+      <td>
+       B.
+       <br/>
+       Code
+       <br/>
+       Quality
+       <br/>
+       Recommendations
+      </td>
+      <td>
+       23
+      </td>
+     </tr>
+     <tr>
+      <td>
+       C.
+       <br/>
+       Fix
+       <br/>
+       Review
+       <br/>
+       Results
+      </td>
+      <td>
+       26
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Detailed
+       <br/>
+       Fix
+       <br/>
+       Review
+       <br/>
+       Results
+      </td>
+      <td>
+       27
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p>
+    <img src="_page_3_Picture_2.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="4">
+   <h1>
+    <span id="page-4-0">
+    </span>
+    Project Summary
+   </h1>
+   <h2>
+    Contact Information
+   </h2>
+   <p block-type="Text">
+    The following project manager was associated with this project:
+   </p>
+   <p block-type="Text">
+    <b>
+     Sam Greenup
+    </b>
+    , Project Manager
+    <a href="mailto:sam.greenup@trailofbits.com">
+     sam.greenup@trailofbits.com
+    </a>
+   </p>
+   <p block-type="Text">
+    The following engineering director was associated with this project:
+   </p>
+   <p block-type="Text">
+    <b>
+     Josselin Feist
+    </b>
+    , Engineering Director, Blockchain josselin.feist@trailofbits.com
+   </p>
+   <p block-type="Text">
+    The following consultant was associated with this project:
+   </p>
+   <p block-type="Text">
+    <b>
+     Alexander Remie
+    </b>
+    , Consultant
+    <b>
+     Justin Jacob
+    </b>
+    , Consultant
+    <a href="mailto:alexander.remie@trailofbits.com">
+     alexander.remie@trailofbits.com
+    </a>
+    <a href="mailto:justin.jacob@trailofbits.com">
+     justin.jacob@trailofbits.com
+    </a>
+   </p>
+   <h2>
+    Project Timeline
+   </h2>
+   <p block-type="Text">
+    The significant events and milestones of the project are listed below.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Date
+      </th>
+      <th>
+       Event
+      </th>
+     </tr>
+     <tr>
+      <th>
+       July
+       <br/>
+       2,
+       <br/>
+       2024
+      </th>
+      <th>
+       Pre-project
+       <br/>
+       kickoff
+       <br/>
+       call
+      </th>
+     </tr>
+     <tr>
+      <th>
+       July
+       <br/>
+       15,
+       <br/>
+       2024
+      </th>
+      <th>
+       Delivery
+       <br/>
+       of
+       <br/>
+       report
+       <br/>
+       draft;
+       <br/>
+       report
+       <br/>
+       readout
+       <br/>
+       meeting
+      </th>
+     </tr>
+     <tr>
+      <th>
+       August
+       <br/>
+       16,
+       <br/>
+       2024
+      </th>
+      <th>
+       Delivery
+       <br/>
+       of
+       <br/>
+       summary
+       <br/>
+       report
+       <br/>
+       with
+       <br/>
+       fix
+       <br/>
+       review
+      </th>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="5">
+   <h1>
+    <span id="page-5-0">
+    </span>
+    Project Targets
+   </h1>
+   <p block-type="Text">
+    The engagement involved a review and testing of the following target.
+   </p>
+   <h4>
+    bridge
+   </h4>
+   <p block-type="Text">
+    Repository
+    <a href="https://github.com/Taraxa-project/bridge/tree/f82dd87c7e23358c74f7dc37451ca61110b60942">
+     https://github.com/Taraxa-project/bridge
+    </a>
+   </p>
+   <p block-type="Text">
+    Version f82dd87c7e23358c74f7dc37451ca61110b60942
+   </p>
+   <p block-type="Text">
+    Type Solidity
+   </p>
+   <p block-type="Text">
+    Platform EVM
+   </p>
+   <h4>
+    beacon-light-client
+   </h4>
+   <p block-type="Text">
+    Repository
+    <a href="https://github.com/Taraxa-project/beacon-light-client/tree/b2eafadf37e466f7cbed3c5b1ca0a917f152137a">
+     https://github.com/Taraxa-project/beacon-light-client
+    </a>
+   </p>
+   <p block-type="Text">
+    Version b2eafadf37e466f7cbed3c5b1ca0a917f152137a
+   </p>
+   <p block-type="Text">
+    Type Solidity
+   </p>
+   <p block-type="Text">
+    Platform EVM
+   </p>
+  </div>
+  <div class="page" data-page-id="6">
+   <h1>
+    <span id="page-6-0">
+    </span>
+    Executive Summary
+   </h1>
+   <h2>
+    Engagement Overview
+   </h2>
+   <p block-type="Text">
+    Taraxa engaged Trail of Bits to continue a review of the security of its bridge smart contracts at commit f82dd87 and to conduct a best-effort review of the Beacon chain light client at commit b2eafad. The contracts within the bridge repo facilitate the bridging of tokens between the Taraxa and Ethereum chains. The Beacon chain light client facilitates light client proofs of a beacon chain (which is used by the bridge contracts).
+   </p>
+   <p block-type="Text">
+    Although this was meant to be a continuation of the review of the previous bridge review (commit ec89224), the provided commit for this audit (f82dd87) included an almost complete rewrite of the bridge smart contracts. Therefore, we spent a considerable amount of time on re-reviewing the entire implementation, instead of purely focusing on the parts not covered during the original audit. This limited the depth of our review (as well as our best-effort review of the Beacon chain light client).
+   </p>
+   <p block-type="Text">
+    A team of two consultants conducted the review from July 8 to July 14, 2024, for a total of 1.6 engineer-weeks of effort. With full access to source code and documentation, we performed static and dynamic testing of the codebase, using automated and manual processes.
+   </p>
+   <h2>
+    Observations and Impact
+   </h2>
+   <p block-type="Text">
+    We identified seven issues during this short engagement, three of which are high severity. The first issue
+    <a href="#page-9-1">
+     (TOB-TARA-1)
+    </a>
+    shows how not using a "safe" ERC20 transfer function can lead to loss of funds for users when dealing with particular non-standard ERC20 tokens.
+   </p>
+   <p block-type="Text">
+    The second issue (
+    <a href="#page-12-0">
+     TOB-TARA-4)
+    </a>
+    allows anyone to arbitrarily inflate the votes for a given PillarBlock during finalization; i.e., it is possible to finalize PillarBlocks that did not receive enough votes from validators to pass the threshold. This issue highlights the importance of validating all inputs and correctly handling all edge-cases.
+   </p>
+   <p block-type="Text">
+    The third high-severity issue (
+    <a href="#page-16-0">
+     TOB-TARA-6)
+    </a>
+    shows a reentrancy-related vulnerability that allows hook-enabled tokens (ERC777) to be drained from a ERC20 locking connector. Additionally, whenever this reentrancy is performed, it will corrupt the internal state; this would break the contract and require an upgrade to fix. This issue highlights the danger of not adhering to the Checks-Effects-Interactions pattern and/or not using reentrancy guards. Additionally, this issue highlights the usefulness of using
+    <a href="https://github.com/crytic/slither">
+     Slither
+    </a>
+    to perform static analysis on Solidity smart contracts, as Slither detects this issue.
+   </p>
+   <p block-type="Text">
+    We also want to highlight that the inline documentation could be significantly improved. This would have likely uncovered
+    <a href="#page-14-0">
+     TOB-TARA-5,
+    </a>
+    and overall would make the implementation
+   </p>
+   <p>
+    <img src="_page_6_Picture_10.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="7">
+   <p block-type="Text">
+    easier to understand. In particular, many if-statements are hard to understand since there is no comment explaining why the conditions are defined as they are.
+   </p>
+   <p block-type="Text">
+    Our review of the beacon-light-client repo was a best-effort review that uncovered one finding (
+    <a href="#page-11-0">
+     TOB-TARA-3)
+    </a>
+    . A full review of this repository could uncover more issues and is recommended.
+   </p>
+   <h2>
+    Recommendations
+   </h2>
+   <p block-type="Text">
+    Based on the findings identified during the security review, Trail of Bits recommends that Taraxa Labs take the following steps:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      <b>
+       Remediate the findings disclosed in this report.
+      </b>
+      These findings should be addressed as part of a direct remediation or as part of any refactor that may occur when addressing other recommendations.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Improve the inline documentation.
+      </b>
+      Writing inline comments may cause issues to become obvious. Additionally, this would make it easier to understand the implementation, especially the various if-statements it contains.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Perform a full audit of the beacon-light-client repository.
+      </b>
+      During this short review, we performed only a best-effort review of the beacon-light-client repo. Additionally, as stated in the Engagement Overview, the changing of commits required us to re-review the entire bridge repo; as a result, we had very limited time to review the beacon-light-client.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Perform another audit of the bridge repository once it is finalized.
+      </b>
+      As stated in the Engagement Overview section, due to changing of commits, the level of depth we achieved during this short review was insufficient for us to be reasonably confident that no more bugs are present. Performing another audit would increase confidence in the security of the implementation and would likely uncover more issues. Additionally, examination of the amount of changes between the previous and current commits of our reviews suggests that the bridge repo is not yet in a finished state. We recommend reviewing it once it has been finalized and no more changes are planned.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_7_Picture_8.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="8">
+   <h1>
+    <span id="page-8-0">
+    </span>
+    Summary of Findings
+   </h1>
+   <p block-type="Text">
+    The table below summarizes the findings of the review, including type and severity details.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       ID
+      </th>
+      <th>
+       Title
+      </th>
+      <th>
+       Type
+      </th>
+      <th>
+       Severity
+      </th>
+     </tr>
+     <tr>
+      <td>
+       1
+      </td>
+      <td>
+       Lack of safeTransfer usage for ERC20
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       2
+      </td>
+      <td>
+       The add() function can revert
+      </td>
+      <td>
+       Denial of Service
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+     <tr>
+      <td>
+       3
+      </td>
+      <td>
+       G1 and G2 from() method lack field point
+       <br/>
+       validation
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+     <tr>
+      <td>
+       4
+      </td>
+      <td>
+       Missing validation allows signatures to be
+       <br/>
+       duplicated to finalize any PillarBlock
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       5
+      </td>
+      <td>
+       Incorrect mapping key used in validation inside
+       <br/>
+       registerContract
+      </td>
+      <td>
+       Undefined
+       <br/>
+       Behavior
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+     <tr>
+      <td>
+       6
+      </td>
+      <td>
+       Reentrancy in applyState can lead to breaking the
+       <br/>
+       contract and stealing hook-enabled tokens
+      </td>
+      <td>
+       Undefined
+       <br/>
+       Behavior
+      </td>
+      <td>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td>
+       7
+      </td>
+      <td>
+       Confusing application of settlementFee to locking
+       <br/>
+       native assets
+      </td>
+      <td>
+       Arithmetic
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="9">
+   <h1>
+    <span id="page-9-0">
+    </span>
+    Detailed Findings
+   </h1>
+   <span id="page-9-1">
+   </span>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="3">
+       1.
+       <br/>
+       Lack
+       <br/>
+       of
+       <br/>
+       safeTransfer
+       <br/>
+       usage
+       <br/>
+       for
+       <br/>
+       ERC20
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Severity:
+       <br/>
+       High
+      </td>
+      <td>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Medium
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-TARA-1
+      </td>
+     </tr>
+     <tr>
+      <td colspan="3">
+       Target:
+       <br/>
+       bridge/src/connectors/ERC20LockingConnectorLogic.sol
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The applyState function in the ERC20LockingConnectorLogic contract uses the transfer function instead of the safeTransfer function provided by the SafeERC20 library. This can cause tokens whose transfer function does not conform to the ERC20 specification to behave incorrectly. In particular, it could result in no tokens being transferred to a recipient while the contract behaves as though the tokens did get transferred and does not revert, leading to loss of funds.
+   </p>
+   <pre>22 function applyState(bytes calldata _state) public virtual override onlyBridge
+{
+23 Transfer[] memory transfers = decodeTransfers(_state);
+24 uint256 transfersLength = transfers.length;
+25 for (uint256 i = 0; i &lt; transfersLength;) {
+26 IERC20(token).transfer(transfers[i].account, transfers[i].amount);
+27 unchecked {
+28 ++i;
+29 }
+30 }
+31 }</pre>
+   <p>
+    <i>
+     Figure 1.1: The use of the ERC20 transfer function in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/connectors/ERC20LockingConnectorLogic.sol#L22-L31">
+      ERC20LockingConnectorLogic.sol#L22-L31
+     </a>
+    </i>
+   </p>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    Alice, a user of the Taraxa bridge, wants to transfer her USDT to the Taraxa chain. However, the transfer unexpectedly reverts. Because the error is uncaught, Alice loses her USDT tokens.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, use the safeTransfer function of the SafeERC20 library.
+   </p>
+   <p block-type="Text">
+    Long term, keep up to date with the usage of third-party libraries and ensure that they are used appropriately throughout the codebase.
+   </p>
+   <p>
+    <img src="_page_9_Picture_11.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="10">
+   <h1>
+    <span id="page-10-0">
+    </span>
+    2. The add function can revert Severity:
+    <b>
+     Informational
+    </b>
+    Difficulty:
+    <b>
+     High
+    </b>
+    Type: Denial of Service Finding ID: TOB-TARA-2 Target: lib/Maths.sol
+   </h1>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The add function in the Maths library fails to account for an arithmetic edge case involving the negation of a signed integer. In particular, the negation of int256.min will revert, as it does not have an appropriate two's complement representation.
+   </p>
+   <pre>5 function add(uint256 a, int256 b) internal pure returns (uint256) {
+6 if (b &lt; 0) {
+7 return a - uint256(-b);
+8 }
+9 return a + uint256(b);
+10 }</pre>
+   <p>
+    <i>
+     Figure 2.1: The add function in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/lib/Maths.sol#L5-L10">
+      Maths.sol#L5-L10
+     </a>
+    </i>
+   </p>
+   <h3>
+    Recommendations
+   </h3>
+   <p block-type="Text">
+    Short term, ensure that the edge case in the library is handled appropriately by using an unchecked block for a b value of int256.min.
+   </p>
+   <p block-type="Text">
+    Long term, improve unit testing to uncover edge cases and ensure intended behavior throughout the system.
+   </p>
+  </div>
+  <div class="page" data-page-id="11">
+   <h1>
+    <span id="page-11-0">
+    </span>
+    3. G1 and G2 from method lack field point validation Severity:
+    <b>
+     Informational
+    </b>
+    Difficulty:
+    <b>
+     Low
+    </b>
+    Type: Data Validation Finding ID: TOB-TARA-3 Target: beacon-light-client/src/bls12381/{G1,G2}.sol
+   </h1>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    Both the G1.sol and G2.sol files' from method lack validation that the BLS12Fp points used to create G1 and G2 subgroup elements are valid field elements. In particular, they do not check that each of the BLS12Fp field elements fit into the modulus. This could lead to multiple issues and undefined behavior downstream when using various elliptic curve point functionalities, including pairings.
+   </p>
+   <pre>93 /// @dev Derive Bls12G1 from uint256[4].
+94 /// @param x uint256[4].
+95 /// @return Bls12G1.
+96 function from(uint256[4] memory x) internal pure returns (Bls12G1 memory) {
+97 return Bls12G1(Bls12Fp(x[0], x[1]), Bls12Fp(x[2], x[3]));
+98 }</pre>
+   <p>
+    <i>
+     Figure 3.1: The from method in
+     <a href="https://github.com/Taraxa-project/beacon-light-client/blob/b2eafadf37e466f7cbed3c5b1ca0a917f152137a/src/bls12381/G1.sol#L93-L98">
+      G1.sol#L93-L
+     </a>
+     98
+    </i>
+   </p>
+   <pre>120 /// @dev Derive Bls12G1 from uint256[8].
+121 /// @param x uint256[4].
+122 /// @return Bls12G2.
+123 function from(uint256[8] memory x) internal pure returns (Bls12G2 memory) {
+124 return Bls12G2(
+125 Bls12Fp2(Bls12Fp(x[0], x[1]), Bls12Fp(x[2], x[3])),
+Bls12Fp2(Bls12Fp(x[4], x[5]), Bls12Fp(x[6], x[7]))
+126 );
+127 }</pre>
+   <p>
+    <i>
+     Figure 3.2: The from method in
+     <a href="https://github.com/Taraxa-project/beacon-light-client/blob/b2eafadf37e466f7cbed3c5b1ca0a917f152137a/src/bls12381/G2.sol#L120-L127">
+      G2.sol#L120-L127
+     </a>
+    </i>
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, call is_valid on each of the BLS12Fp points used to create G1 and G2 group elements.
+   </p>
+   <p block-type="Text">
+    Long term, improve unit testing to uncover edge cases and ensure intended behavior throughout the system.
+   </p>
+   <p>
+    <img src="_page_11_Picture_10.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="12">
+   <h2>
+    <span id="page-12-0">
+    </span>
+    4. Missing validation allows signatures to be duplicated to finalize any PillarBlock
+   </h2>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       High
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-TARA-4
+      </td>
+     </tr>
+     <tr>
+      <td colspan="3">
+       bridge/src/eth/TaraClient.sol
+       <br/>
+       Target:
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The finalizeBlocks function lacks proper validation of the lastBlockSigs argument and therefore allows any caller to arbitrarily inflate the number of signatures by duplicating the same signature in lastBlockSigs. This allows a PillarBlock that did not gain the required amount of validator votes to pass and be accepted as valid.
+   </p>
+   <p block-type="Text">
+    Figure 4.1 shows that the lastBlockSigs argument is not validated and passed into the getSignaturesWeight function.
+   </p>
+   <pre>81 function finalizeBlocks(PillarBlock.WithChanges[] memory blocks,
+CompactSignature[] memory lastBlockSigs) public {
+ 82 uint256 blocksLength = blocks.length;
+ 83 uint256 weightThreshold = totalWeight / 2 + 1;
+ 84 for (uint256 i = 0; i &lt; blocksLength;) {
+...
+102 // skip verification for the first(genesis) block. And verify
+signatures only for the last block in the batch
+103 if (finalized.block.period != 0 &amp;&amp; i == (blocks.length - 1)) {
+104 uint256 weight =
+105
+getSignaturesWeight(PillarBlock.getVoteHash(blocks[i].block.period, pbh),
+lastBlockSigs);
+106 if (weight &lt; weightThreshold) {
+107 revert ThresholdNotMet({threshold: weightThreshold, weight:
+weight});
+108 }
+109 }
+...
+117 }
+118 }</pre>
+   <p>
+    <i>
+     Figure 4.1: The finalizeBlocks function in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/eth/TaraClient.sol#L81-L118">
+      TaraClient.sol#L81-L118
+     </a>
+    </i>
+   </p>
+   <p block-type="Text">
+    Figure 4.2 shows the getSignaturesWeight function. This function does not in any way prevent duplicate signatures in the list to cause a revert. As long as the signature signed the PillarBlock hash (pbh variable), it is deemed valid, and the accompanying signer's
+   </p>
+  </div>
+  <div class="page" data-page-id="13">
+   <p block-type="Text">
+    (=validator) vote count is added to the weight variable. This weight variable is returned to finalizeBlocks after all signatures have been processed. The finalizeBlocks function will then continue with validating that this weight is at least weightThreshold (highlighted in red in figure 4.1). By inflating the amount of signatures due to duplicate signatures, a malicious user can circumvent this check for PillarBlocks that lack the required amount of votes.
+   </p>
+   <pre>126 function getSignaturesWeight(bytes32 h, CompactSignature[] memory
+signatures)
+127 public
+128 view
+129 returns (uint256 weight)
+130 {
+131 uint256 signaturesLength = signatures.length;
+132 for (uint256 i = 0; i &lt; signaturesLength; i++) {
+133 address signer = ECDSA.recover(h, signatures[i].r,
+signatures[i].vs);
+134 weight += validatorVoteCounts[signer];
+135 }
+136 }</pre>
+   <p>
+    <i>
+     Figure 4.2: The getSignaturesWeight function in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/eth/TaraClient.sol#L126-L136">
+      TaraClient.sol#L126-L136
+     </a>
+    </i>
+   </p>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    Eve calls the finalizeBlocks function with a PillarBlock whose last block has some votes, but not enough votes. Eve duplicates one of the signatures so many times as to pass the weightThreshold. The call succeeds, and a PillarBlock without enough votes was deemed valid and finalized.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, prevent duplicate signatures from being accepted inside the getSignaturesWeight function, and instead trigger a revert in case of duplicate signatures.
+   </p>
+   <p block-type="Text">
+    Long term, always validate inputs as much as possible. Also think of and handle edge cases such as duplicating values, passing zero values, and other ways of invalid input.
+   </p>
+  </div>
+  <div class="page" data-page-id="14">
+   <h1>
+    <span id="page-14-0">
+    </span>
+    5. Incorrect mapping key used in validation inside registerContract Severity:
+    <b>
+     Informational
+    </b>
+    Difficulty:
+    <b>
+     Low
+    </b>
+    Type: Undefined Behavior Finding ID: TOB-TARA-5 Target: bridge/src/lib/BridgeBase.sol
+   </h1>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    A check inside the registerContract function uses the wrong value for the key into the connectors mapping, which will likely result in this check always passing. In terms of the check itself, this does not currently pose a problem due to the other validations, one of which uses the right value for this same mapping to perform the same check a couple lines further down.
+   </p>
+   <p block-type="Text">
+    The connectors mapping is used to look up which connector should be used for a specific source contract. As such, the mapping's key is a source contract address, and the value is a connector address. At the end of figure 5.1 a line is highlighted in orange, which shows the correct setting of a value in this mapping where the key is the srcContract address and the value is a connector address.
+   </p>
+   <p block-type="Text">
+    Figure 5.1 shows that the wrong value is used for the key in the connectors mapping (highlighted in yellow). However, a couple of lines down, the same check is performed with the right value for the key (highlighted in blue), so this important validation is performed.
+   </p>
+   <pre>142 function registerContract(IBridgeConnector connector) public payable {
+143 if (msg.value &lt; registrationFee) {
+144 revert InsufficientFunds(registrationFee, msg.value);
+145 }
+146
+147 address srcContract = connector.getSourceContract();
+148 address dstContract = connector.getDestinationContract();
+149
+150 if (connectors[address(connector)] != IBridgeConnector(address(0))) {
+151 return;
+152 }
+153 if (srcContract == address(0)) {
+154 revert ZeroAddressCannotBeRegistered();
+155 }
+156 if (localAddress[dstContract] != address(0) ||
+address(connectors[srcContract]) != address(0)) {
+157 revert ConnectorAlreadyRegistered({connector: address(connector),
+token: srcContract});</pre>
+  </div>
+  <div class="page" data-page-id="15">
+   <pre>158 }
+159
+160 address owner = OwnableUpgradeable(address(connector)).owner();
+161 if (owner != address(this)) {
+162 revert IncorrectOwner(owner, address(this));
+163 }
+164
+165 connectors[srcContract] = connector;
+166 localAddress[dstContract] = srcContract;
+167 tokenAddresses.push(srcContract);
+168 emit ConnectorRegistered(address(connector), srcContract, dstContract);
+169 }</pre>
+   <p>
+    <i>
+     Figure 5.1: The registerContract function in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/eth/TaraClient.sol#L81-L118">
+      TaraClient.sol#L81-L118
+     </a>
+    </i>
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, remove lines 150, 151, and 152, as this same check is already performed on line 156.
+   </p>
+   <p block-type="Text">
+    Long term, add more inline documentation to the implementation. In particular, add comments that explain what if-statements are checking. This would have likely uncovered this incorrect mapping usage.
+   </p>
+  </div>
+  <div class="page" data-page-id="16">
+   <h3>
+    <span id="page-16-0">
+    </span>
+    6. Reentrancy in applyState can lead to breaking the contract and stealing hook-enabled tokens
+   </h3>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       High
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Medium
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Undefined
+       <br/>
+       Behavior
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-TARA-6
+      </td>
+     </tr>
+     <tr>
+      <td colspan="3">
+       bridge/src/lib/BridgeBase.sol
+       <br/>
+       Target:
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The lack of reentrancy guards on the applyState function allows the stealing of hook-supporting tokens by calling applyState recursively. Since no popular tokens support this standard or hooks in general, this limits the impact of this issue. However, because the epoch incorrectly increments whenever applyState is called through reentrancy, this will likely prevent the broken bridge contract's applyState function from accepting valid bridge messages, since the epoch does not match what is expected.
+   </p>
+   <p block-type="Text">
+    The applyState function can be called by anyone and will apply bridged messages (either from Ethereum to Taraxa, or vice versa). Inside this function, the epoch in the input arguments is validated to be one above the current epoch (called appliedEpoch, as highlighted in yellow in figure 6.1). At the very end of the function, the appliedEpoch is incremented (as highlighted in blue in figure 6.1). In the middle of the function, a loop over all of the bridged messages is performed; this will call the applyState function of the configured connector (as highlighted in green in figure 6.1). These will then transfer the tokens to the recipient (this could involve transferring an ERC20 token amount, minting an ERC20 token amount, or transferring an amount of the chain's native token).
+   </p>
+   <p block-type="Text">
+    In the case of an ERC20 transfer in which the token to be transferred is an ERC777 (or an otherwise hook-supporting token) contract, the recipient can use reentrancy to call back into the BridgeBase.applyState function with the same arguments. This works since appliedEpoch is incremented only at the end of the function.
+   </p>
+   <pre>175 function applyState(SharedStructs.StateWithProof calldata state_with_proof)
+public {
+176 uint256 gasleftbefore = gasleft();
+177 // get bridge root from light client and compare it (it should be proved
+there)
+178 if (
+179 SharedStructs.getBridgeRoot(state_with_proof.state.epoch,
+state_with_proof.state_hashes)
+180 !=
+lightClient.getFinalizedBridgeRoot(state_with_proof.state.epoch)</pre>
+  </div>
+  <div class="page" data-page-id="17">
+   <pre>181 ) {
+182 revert StateNotMatchingBridgeRoot({
+183 stateRoot:
+SharedStructs.getBridgeRoot(state_with_proof.state.epoch,
+state_with_proof.state_hashes),
+184 bridgeRoot:
+lightClient.getFinalizedBridgeRoot(state_with_proof.state.epoch)
+185 });
+186 }
+187 if (state_with_proof.state.epoch != appliedEpoch + 1) {
+188 revert NotSuccessiveEpochs({epoch: appliedEpoch, nextEpoch:
+state_with_proof.state.epoch});
+189 }
+190 uint256 statesLength = state_with_proof.state.states.length;
+191 uint256 idx = 0;
+192 while (idx &lt; statesLength) {
+193 SharedStructs.ContractStateHash calldata proofStateHash =
+state_with_proof.state_hashes[idx];
+194 SharedStructs.StateWithAddress calldata state =
+state_with_proof.state.states[idx];
+195 if (localAddress[proofStateHash.contractAddress] == address(0)) {
+196 unchecked {
+197 ++idx;
+198 }
+199 continue;
+200 }
+201 bytes32 stateHash = keccak256(state.state);
+202 if (stateHash != proofStateHash.stateHash) {
+203 unchecked {
+204 ++idx;
+205 }
+206 revert InvalidStateHash(stateHash, proofStateHash.stateHash);
+207 }
+208 if
+(isContract(address(connectors[localAddress[proofStateHash.contractAddress]]))) {
+209 try
+connectors[localAddress[proofStateHash.contractAddress]].applyState(state.state) {}
+catch {}
+210 }
+211 unchecked {
+212 ++idx;
+213 }
+214 }
+215 uint256 used = (gasleftbefore - gasleft()) * tx.gasprice;
+216 uint256 payout = used * feeMultiplier / 100;
+217 if (address(this).balance &gt;= payout) {
+218 (bool success,) = payable(msg.sender).call{value: payout}("");
+219 if (!success) {
+220 revert TransferFailed(msg.sender, payout);
+221 }
+222 }
+223 ++appliedEpoch;
+224 }</pre>
+  </div>
+  <div class="page" data-page-id="18">
+   <p>
+    <i>
+     Figure 6.1: The applyState function in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/lib/BridgeBase.sol#L175-L224">
+      BridgeBase.sol#L175-L224
+     </a>
+    </i>
+   </p>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    Eve holds 1,000 of an ERC777 token called TokenX in a contract she has deployed (called AttackerContract). Eve bridges these 1,000 TokenX from Ethereum to Taraxa. Eve's 1,000 tokens are now locked inside the configured ERC20LockingConnector on Ethereum. After bridging to Taraxa, she immediately initiates a bridge of 1,000 TokenX from Taraxa back to Ethereum.
+   </p>
+   <p block-type="Text">
+    She now monitors the Ethereum chain to spot the first time anyone tries to call the EthBridge.applyState function to bridge messages, which includes her bridging message. Once she spots it, she front-runs the transaction and calls EthBridge.applyState with the same arguments.
+   </p>
+   <p block-type="Text">
+    The message handling loop will now call the TokenX.transfer function to transfer the 1,000 tokens to AttackerContract, after which the ERC777 _callTokensToReceived hook will call AttackerContract. Inside the called AttackerContract function, a call is made back to EthBridge.applyState with the same arguments as the original call. This will lead to a loop where each time EthBridge.applyState is called, the AttackerContract will receive 1,000 TokenX tokens.
+   </p>
+   <p block-type="Text">
+    The only limitations of this attack are gas, the amount of TokenX inside the ERC20LockingConnector, and the failure of other bridging messages due to lack of tokens or multiple executions.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, add reentrancy guards to the BridgeBase.applyState function. This will prevent the aforementioned issue.
+   </p>
+   <h4>
+    Long term:
+   </h4>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Use
+      <a href="https://github.com/crytic/slither">
+       Slither
+      </a>
+      to detect this issue, and integrate it into the CI using
+      <a href="https://github.com/crytic/slither-action">
+       slither-action.
+      </a>
+     </li>
+     <li block-type="ListItem">
+      Review all non-view functions and consider adding reentrancy guards to each of these functions.
+     </li>
+     <li block-type="ListItem">
+      Update the implementation to follow the
+      <a href="https://docs.soliditylang.org/en/latest/security-considerations.html#reentrancy">
+       Checks-Effects-Interactions
+      </a>
+      pattern. This pattern is considered a best practice and structures the code in a manner that helps prevent reentrancy vulnerabilities.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_18_Picture_12.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="19">
+   <h1>
+    <span id="page-19-0">
+    </span>
+    7. Confusing application of settlementFee to locking native assets Severity:
+    <b>
+     Informational
+    </b>
+    Difficulty:
+    <b>
+     Low
+    </b>
+    Type: Arithmetic Finding ID: TOB-TARA-7 Target: bridge/src/lib/BridgeBase.sol
+   </h1>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    The process of deducting the fee from the passed in msg.value is confusing and makes it difficult for callers to transfer a specific amount of native assets.
+   </p>
+   <p block-type="Text">
+    Figure 7.1 shows the lock function, which deducts the settlementFee from the amount to be bridged. A more user-friendly way of doing this would be to add an argument to the lock function called amount that indicates the exact amount to bridge. In the body of the function, a check is then performed that ensures that the difference between msg.value and amount is exactly the settlementFee.
+   </p>
+   <pre>37 function lock() public payable {
+38 uint256 fee = bridge.settlementFee();
+39 uint256 lockingValue = msg.value;
+40
+41 // Charge the fee only if the user has no balance in current state
+42 if (!state.hasBalance(msg.sender)) {
+43 if (msg.value &lt; fee) {
+44 revert InsufficientFunds(fee, lockingValue);
+45 }
+46 lockingValue -= fee;
+47 }
+48
+49 if (lockingValue == 0) {
+50 revert ZeroValueCall();
+51 }
+52 state.addAmount(msg.sender, lockingValue);
+53 emit Locked(msg.sender, lockingValue);
+54 }</pre>
+   <p>
+    <i>
+     Figure 7.1: The lock function in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/connectors/NativeConnectorLogic.sol#L37-L54">
+      NativeConnectorLogic.sol#L37-L54
+     </a>
+    </i>
+   </p>
+   <h2>
+    Recommendations
+   </h2>
+   <p block-type="Text">
+    Short term, replace the existing deduct-fee-from-msg.value with an amount argument in the lock function and a check: require(msg.value - amount == settlementFee).
+   </p>
+  </div>
+  <div class="page" data-page-id="20">
+   <p block-type="Text">
+    Long term, design functions so that they are simple and easy to use for external parties. This improves the usability and prevents confusion for integrators.
+   </p>
+  </div>
+  <div class="page" data-page-id="21">
+   <h1>
+    <span id="page-21-0">
+    </span>
+    A. Vulnerability Categories
+   </h1>
+   <p block-type="Text">
+    The following tables describe the vulnerability categories, severity levels, and difficulty levels used in this document.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="3">
+       Vulnerability Categories
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Category
+      </th>
+      <th>
+       Description
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Access Controls
+      </th>
+      <td>
+       Insufficient authorization or assessment of rights
+      </td>
+     </tr>
+     <tr>
+      <th>
+       Auditing and Logging
+      </th>
+      <th>
+       Insufficient auditing of actions or logging of problems
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Authentication
+      </th>
+      <th>
+       Improper identification of users
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Configuration
+      </th>
+      <th>
+       Misconfigured servers, devices, or software components
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Cryptography
+      </th>
+      <th>
+       A breach of system confidentiality or integrity
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Data Exposure
+      </th>
+      <th>
+       Exposure of sensitive information
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Data Validation
+      </th>
+      <td>
+       Improper reliance on the structure or values of data
+      </td>
+     </tr>
+     <tr>
+      <th>
+       Denial of Service
+      </th>
+      <td>
+       A system failure with an availability impact
+      </td>
+     </tr>
+     <tr>
+      <th>
+       Error Reporting
+      </th>
+      <td>
+       Insecure or insufficient reporting of error conditions
+      </td>
+     </tr>
+     <tr>
+      <th>
+       Patching
+      </th>
+      <th>
+       Use of an outdated software package or library
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Session Management
+      </th>
+      <th>
+       Improper identification of authenticated users
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Testing
+      </th>
+      <th>
+       Insufficient test methodology or test coverage
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Timing
+      </th>
+      <th>
+       Race conditions or other order-of-operations flaws
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Undefined Behavior
+      </th>
+      <th>
+       Undefined behavior triggered within the system
+      </th>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="22">
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="2">
+       Severity Levels
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Severity
+      </th>
+      <th>
+       Description
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Informational
+      </th>
+      <th>
+       The issue does not pose an immediate risk but is relevant to security best
+       <br/>
+       practices.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Undetermined
+      </th>
+      <th>
+       The extent of the risk was not determined during this engagement.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Low
+      </th>
+      <th>
+       The risk is small or is not one the client has indicated is important.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Medium
+      </th>
+      <th>
+       User information is at risk; exploitation could pose reputational, legal, or
+       <br/>
+       moderate financial risks.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       High
+      </th>
+      <th>
+       The flaw could affect numerous users and have serious reputational, legal,
+       <br/>
+       or financial implications.
+      </th>
+     </tr>
+    </tbody>
+   </table>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="3">
+       Diffi
+       <br/>
+       culty Levels
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Diffi
+       <br/>
+       culty
+      </th>
+      <th>
+       Description
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Undetermined
+      </th>
+      <th>
+       The difficulty of exploitation was not determined during this engagement.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Low
+      </th>
+      <td>
+       The flaw is well known; public tools for its exploitation exist or can be
+       <br/>
+       scripted.
+      </td>
+     </tr>
+     <tr>
+      <th>
+       Medium
+      </th>
+      <th>
+       An attacker must write an exploit or will need in-depth knowledge of the
+       <br/>
+       system.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       High
+      </th>
+      <th>
+       An attacker must have privileged access to the system, may need to know
+       <br/>
+       complex technical details, or must discover other weaknesses to exploit this
+       <br/>
+       issue.
+      </th>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="23">
+   <h1>
+    <span id="page-23-0">
+    </span>
+    B. Code Quality Recommendations
+   </h1>
+   <p block-type="Text">
+    The following recommendations are not associated with any specific vulnerabilities. However, they will enhance code readability and may prevent the introduction of vulnerabilities in the future.
+   </p>
+   <p block-type="Text">
+    ●
+    <b>
+     Remove the integer increment before the revert call.
+    </b>
+    There is no added benefit to doing an integer increment if the operation after it is always a revert. Instead, save some gas by skipping the increment and simply executing the revert.
+   </p>
+   <pre>202 if (stateHash != proofStateHash.stateHash) {
+203 unchecked {
+204 ++idx;
+205 }
+206 revert InvalidStateHash(stateHash, proofStateHash.stateHash);
+207 }</pre>
+   <p>
+    <i>
+     Figure B.1: Excerpt from the applyState function in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/lib/BridgeBase.sol#L202-L207">
+      BridgeBase.sol#L202–L207
+     </a>
+    </i>
+   </p>
+   <p block-type="Text">
+    <b>
+     ● Use address.code.length instead of the custom isContract function.
+    </b>
+    Since Solidity 0.8.0, the address.code member is available. To get the size of the code at an address, use address.code.length. Since Solidity 0.8.1, the address.code.length operation uses extcodesize under the hood instead of copying all the code before checking the length, which is very gas inefficient. We therefore recommend directly using address.code.length and removing the isContract function.
+   </p>
+   <pre>130 function isContract(address addr) internal view returns (bool) {
+131 uint256 size;
+132 assembly {
+133 size := extcodesize(addr)
+134 }
+135 return size &gt; 0;
+136 }</pre>
+   <p>
+    <i>
+     Figure B.2: The isContract function in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/lib/BridgeBase.sol#L130-L136">
+      BridgeBase.sol#L130–L136
+     </a>
+    </i>
+   </p>
+   <p block-type="Text">
+    <b>
+     ● Normalize the EthBridge and TaraBridge files.
+    </b>
+    Both of these files contain initialize functions and they both serve the same purpose, although on a different chain. We recommend normalizing the initialization function setup (i.e., also using an unchained function in the TaraBridge contract).
+   </p>
+   <pre>8 contract EthBridge is BridgeBase {
+9 function initialize(
+10 IBridgeLightClient _lightClient,
+11 uint256 _finalizationInterval,
+12 uint256 _feeMultiplier,</pre>
+  </div>
+  <div class="page" data-page-id="24">
+   <pre>13 uint256 _registrationFee,
+14 uint256 _settlementFee
+15 ) public initializer {
+16 __initialize_EthBridge_unchained(
+17 _lightClient, _finalizationInterval, _feeMultiplier,
+_registrationFee, _settlementFee
+18 );
+19 }
+20
+21 function __initialize_EthBridge_unchained(
+22 IBridgeLightClient _lightClient,
+23 uint256 _finalizationInterval,
+24 uint256 _feeMultiplier,
+25 uint256 _registrationFee,
+26 uint256 _settlementFee
+27 ) internal onlyInitializing {
+28 __BridgeBase_init(_lightClient, _finalizationInterval,
+_feeMultiplier, _registrationFee, _settlementFee);
+29 }
+30 }</pre>
+   <p>
+    <i>
+     Figure B.3: The EthBridge contract in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/eth/EthBridge.sol#L8-L30">
+      EthBridge.sol#L8-L30
+     </a>
+    </i>
+   </p>
+   <pre>7 contract TaraBridge is BridgeBase {
+ 8 function initialize(
+ 9 IBridgeLightClient _lightClient,
+10 uint256 _finalizationInterval,
+11 uint256 _feeMultiplier,
+12 uint256 _registrationFee,
+13 uint256 _settlementFee
+14 ) public initializer {
+15 __BridgeBase_init(_lightClient, _finalizationInterval,
+_feeMultiplier, _registrationFee, _settlementFee);
+16 }
+17 }</pre>
+   <p>
+    <i>
+     Figure B.4: The TaraBridge contract in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/tara/TaraBridge.sol#L7-L17">
+      TaraBridge.sol#L7-L17
+     </a>
+    </i>
+   </p>
+   <p block-type="Text">
+    <b>
+     ● Fix incorrect comment in BridgeBase.
+    </b>
+    The connectors mapping is a mapping from
+    <i>
+     source
+    </i>
+    (or
+    <i>
+     destination
+    </i>
+    , depending on how you look at it when bridging) addresses to connector addresses.
+   </p>
+   <pre>25 /// Mapping of connectors to their source and destination addresses
+26 mapping(address =&gt; IBridgeConnector) public connectors;</pre>
+   <p>
+    <i>
+     Figure B.5: The connectors variable in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/lib/BridgeBase.sol#L25-L26">
+      BridgeBase.sol#L25-L26
+     </a>
+    </i>
+   </p>
+   <p block-type="Text">
+    <b>
+     ● Remove the variable and directly return false.
+    </b>
+    This code could be simplified by removing the shouldFinalize variable and directly returning false after the loop. Alternatively, since the default value of a Boolean is false, this could be done by altogether skipping the return false, which would implicitly return false.
+   </p>
+  </div>
+  <div class="page" data-page-id="25">
+   <pre>231 function shouldFinalizeEpoch() public view returns (bool) {
+232 bool shouldFinalize = false;
+233 for (uint256 i = 0; i &lt; tokenAddresses.length; i++) {
+234 if (!connectors[tokenAddresses[i]].isStateEmpty()) {
+235 return true;
+236 }
+237 }
+238 return shouldFinalize;
+239 }</pre>
+   <p>
+    <i>
+     Figure B.6: The shouldFinalizeEpoch function in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/lib/BridgeBase.sol#L231-L239">
+      BridgeBase.sol#L231-L239
+     </a>
+    </i>
+   </p>
+   <p block-type="Text">
+    <b>
+     ● Rename the registerContract function to registerConnector.
+    </b>
+    This name more clearly describes what the function does.
+   </p>
+   <pre>142 function registerContract(IBridgeConnector connector) public payable {</pre>
+   <p>
+    <i>
+     Figure B.7: The signature of the registerContract function in
+     <a href="https://github.com/Taraxa-project/bridge/blob/f82dd87c7e23358c74f7dc37451ca61110b60942/src/lib/BridgeBase.sol#L142">
+      BridgeBase.sol#L142
+     </a>
+    </i>
+   </p>
+  </div>
+  <div class="page" data-page-id="26">
+   <h1>
+    <span id="page-26-0">
+    </span>
+    C. Fix Review Results
+   </h1>
+   <p block-type="Text">
+    When undertaking a fix review, Trail of Bits reviews the fixes implemented for issues identified in the original report. This work involves a review of specific areas of the source code and system configuration, not comprehensive analysis of the system.
+   </p>
+   <p block-type="Text">
+    On August 9, 2024, Trail of Bits reviewed the fixes and mitigations implemented by the Taraxa team for the issues identified in this report. We reviewed each fix to determine its effectiveness in resolving the associated issue.
+   </p>
+   <p block-type="Text">
+    In summary, Taraxa has resolved all seven issues.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       ID
+      </th>
+      <th>
+       Title
+      </th>
+      <th>
+       Status
+      </th>
+     </tr>
+     <tr>
+      <td>
+       1
+      </td>
+      <td>
+       Lack of safeTransfer usage for ERC20
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       2
+      </td>
+      <td>
+       The add() function can revert
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       3
+      </td>
+      <td>
+       G1 and G2 from() method lack field point validation
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       4
+      </td>
+      <td>
+       Missing validation allows signatures to be duplicated to finalize any
+       <br/>
+       PillarBlock
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       5
+      </td>
+      <td>
+       Incorrect mapping key used in validation inside registerContract
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       6
+      </td>
+      <td>
+       Reentrancy in applyState can lead to breaking the contract and stealing
+       <br/>
+       hook-enabled tokens
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+     <tr>
+      <td>
+       7
+      </td>
+      <td>
+       Confusing application of settlementFee to locking native assets
+      </td>
+      <td>
+       Resolved
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="27">
+   <h2>
+    <span id="page-27-0">
+    </span>
+    Detailed Fix Review Results
+   </h2>
+   <h4>
+    <b>
+     TOB-TARA-1: lack of safeTransfer usage for ERC20
+    </b>
+   </h4>
+   <p block-type="Text">
+    Resolved in commit
+    <a href="https://github.com/Taraxa-project/bridge/commit/8897359bbd0c0cb31b8a9bd2941ad36225a2d619">
+     8897359.
+    </a>
+    The transfer call has been replaced with a safeTransfer call.
+   </p>
+   <h4>
+    <b>
+     TOB-TARA-2: The add() function can revert
+    </b>
+   </h4>
+   <p block-type="Text">
+    Resolved in commit
+    <a href="https://github.com/Taraxa-project/bridge/commit/c905118c952d260a7da4b98be17711b94ea11254">
+     c905118.
+    </a>
+    A special case was added to handle type(int256).min. Additionally, tests were added for the Maths.sol library.
+   </p>
+   <h4>
+    <b>
+     TOB-TARA-3: G1 and G2 from() method lacks field point validation
+    </b>
+   </h4>
+   <p block-type="Text">
+    Resolved in commit
+    <a href="https://github.com/Taraxa-project/beacon-light-client/commit/034d00430bc6bdf47328be4f76ee1ea6dcfc93ea">
+     034d004
+    </a>
+    . The implementation was updated to call is_valid on each of the BLS12Fp points.
+   </p>
+   <h4>
+    <b>
+     TOB-TARA-4: Missing validation allows signatures to be duplicated to finalize any PillarBlock
+    </b>
+   </h4>
+   <p block-type="Text">
+    Resolved in commit
+    <a href="https://github.com/Taraxa-project/bridge/commit/dd5026078377212ff350a9bf0ed4519d0c880155">
+     dd50260.
+    </a>
+    The implementation has been updated to enforce passing in the signatures (CompactSignature[]) sorted descending based on the CompactSignature.r value. This prevents duplicate signatures from being allowed.
+   </p>
+   <h4>
+    <b>
+     TOB-TARA-5: Incorrect mapping key used in validation inside registerContract
+    </b>
+   </h4>
+   <p block-type="Text">
+    Resolved in commit
+    <a href="https://github.com/Taraxa-project/bridge/commit/43292b0da01744b4d5c90bdc49817fe467124396">
+     43292b0
+    </a>
+    . The incorrect check has been removed from the implementation. No new check needed to be added since the correct check already was present further down inside the same function.
+   </p>
+   <h4>
+    <b>
+     TOB-TARA-6: Reentrancy in applystate can lead to breaking the contract and stealing hook-enabled tokens
+    </b>
+   </h4>
+   <p block-type="Text">
+    Resolved in commit
+    <a href="https://github.com/Taraxa-project/bridge/commit/df9e7f3303f59b0fb62938980754db890830283d">
+     df9e7f3
+    </a>
+    . The appliedEpoch increment has been moved before the external call. Therefore, the described reentrancy issue is no longer possible.
+   </p>
+   <h4>
+    <b>
+     TOB-TARA-7: Confusing application of settlementFee to locking native assets
+    </b>
+   </h4>
+   <p block-type="Text">
+    Resolved in commit
+    <a href="https://github.com/Taraxa-project/bridge/commit/cc6b08fddfeebe9395bee3c27470dff140f845ee">
+     cc6b08f.
+    </a>
+    An amount argument was added to the function to allow the caller to exactly specify which amount he wants to bridge.
+   </p>
+   <p>
+    <img src="_page_27_Picture_15.jpeg"/>
+   </p>
+  </div>
+ </body>
+</html>

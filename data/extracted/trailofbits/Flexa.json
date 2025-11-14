@@ -1,0 +1,220 @@
+{
+  "doc_id": "trailofbits_Flexa",
+  "source_pdf": "Flexa.pdf",
+  "source_mtime": "2025-11-01T12:04:45+00:00",
+  "extracted_at": "2025-11-12T02:21:33.135999+00:00",
+  "extractor_version": "poc-0.4",
+  "repositories": [
+    {
+      "url": "https://github.com/crytic/slither",
+      "org": "crytic",
+      "repo": "slither",
+      "commit": null,
+      "evidence": {
+        "page": 2,
+        "snippet": "The review focused on the Flexa staking system's Merkle tree operations, where off-chain and on-chain operations complement each other. Situations where system operations and state transitions could l..."
+      }
+    },
+    {
+      "url": "https://github.com/trailofbits/slither",
+      "org": "trailofbits",
+      "repo": "slither",
+      "commit": null,
+      "evidence": {
+        "page": 7,
+        "snippet": "### <span id=\"page-7-0\"></span>Long Term ❑ **Use SafeMath for all arithmetic operations.** It is a best practice to use SafeMath to prevent arithmetic issues. ❑ **Write an incident response plan that ..."
+      }
+    },
+    {
+      "url": "https://github.com/Dexaran/ERC223-token-standard",
+      "org": "Dexaran",
+      "repo": "ERC223-token-standard",
+      "commit": null,
+      "evidence": {
+        "page": 20,
+        "snippet": "After each token transfer, an event is emitted. If the token transfer is made on a contract with external call capabilities (such as [ERC223](https://github.com/Dexaran/ERC223-token-standard) or [ERC7..."
+      }
+    },
+    {
+      "url": "https://github.com/trufflesuite/truffle",
+      "org": "trufflesuite",
+      "repo": "truffle",
+      "commit": null,
+      "evidence": {
+        "page": 25,
+        "snippet": "- **● Rename IERC20**. IERC20 is used by the openzeppelin dependency. A [known](https://github.com/trufflesuite/truffle/issues/1087) bug in [Truffle](https://github.com/trufflesuite/truffle/issues/108..."
+      }
+    },
+    {
+      "url": "https://github.com/crytic/crytic-compile",
+      "org": "crytic",
+      "repo": "crytic-compile",
+      "commit": null,
+      "evidence": {
+        "page": 25,
+        "snippet": "- **● Rename IERC20**. IERC20 is used by the openzeppelin dependency. A [known](https://github.com/trufflesuite/truffle/issues/1087) bug in [Truffle](https://github.com/trufflesuite/truffle/issues/108..."
+      }
+    },
+    {
+      "url": "https://github.com/crytic/echidna",
+      "org": "crytic",
+      "repo": "echidna",
+      "commit": null,
+      "evidence": {
+        "page": 25,
+        "snippet": "- **● Rename IERC20**. IERC20 is used by the openzeppelin dependency. A [known](https://github.com/trufflesuite/truffle/issues/1087) bug in [Truffle](https://github.com/trufflesuite/truffle/issues/108..."
+      }
+    },
+    {
+      "url": "https://github.com/trailofbits/manticore",
+      "org": "trailofbits",
+      "repo": "manticore",
+      "commit": null,
+      "evidence": {
+        "page": 25,
+        "snippet": "- **● Rename IERC20**. IERC20 is used by the openzeppelin dependency. A [known](https://github.com/trufflesuite/truffle/issues/1087) bug in [Truffle](https://github.com/trufflesuite/truffle/issues/108..."
+      }
+    }
+  ],
+  "report_schema": [
+    {
+      "key": "Severity",
+      "meaning": "How serious the impact of this finding is.",
+      "expected_values": "Informational / Low / Medium / High"
+    },
+    {
+      "key": "Difficulty",
+      "meaning": "How hard it is to exploit this issue.",
+      "expected_values": "Low / Medium / High"
+    },
+    {
+      "key": "Type",
+      "meaning": "The category or classification of the vulnerability.",
+      "expected_values": "Data Validation / Timing / Auditing and Logging"
+    },
+    {
+      "key": "Finding ID",
+      "meaning": "A unique identifier for the finding.",
+      "expected_values": "string starting with TOB- followed by a number"
+    },
+    {
+      "key": "Target",
+      "meaning": "The specific file or contract affected by the finding.",
+      "expected_values": "path to affected file / contract"
+    }
+  ],
+  "vulnerability_sections": [
+    {
+      "index": 1,
+      "page_start": 9,
+      "heading": "1. Initialconfiguration may allowan attacker to refund an unconfirmed deposit early on",
+      "markdown": "### 1. Initialconfiguration may allowan attacker to refund an unconfirmed deposit early on\n\nSeverity: Low Difficulty: Medium\n\nType: Data Validation Finding ID: TOB-Flexa-001\n\nTarget: Staking.sol\n\n#### **Description**\n\nInteger overflow allows users to refund deposits during the initial Staking configuration.\n\nTo refund a deposit, the withdrawal period must be active:\n\n```\n function refundPendingDeposit ( uint256 depositNonce ) external {\n address depositor = _nonceToPendingDeposit[depositNonce].depositor;\n require (\n msg . sender == _owner || msg . sender == depositor,\n \"Only the owner or depositor can initiate the refund of a pending deposit\"\n );\n require (\n _fallbackSetDate + _fallbackWithdawalDelaySeconds <= block . timestamp ,\n \"Fallback withdrawal period is not active, so refunds are not permitted\"\n );\n```\n\n*Figure 1.1: refundPendingDeposit (Staking.sol#L327-L336).*\n\nThe withdrawal period check is vulnerable to an integer overflow:\n\n```\n _fallbackSetDate + _fallbackWithdawalDelaySeconds <= block . timestam\n```\n\nThe initial value of \\_fallbackSetDate is 2\\*\\*(256-1) and\n\n\\_fallbackWithdawalDelaySeconds is 1 weeks :\n\n```\n uint256 public _fallbackSetDate = 2 ^ 256 - 1 ;\n```\n\n*Figure 1.2: \\_fallbackSetDate initial value (Staking.sol#L41.)*\n\n```\nuint256 public _fallbackWithdawalDelaySeconds = 1 weeks ;\n```\n\n*Figure 1.3: \\_fallbackWithdawalDelaySeconds initial value (Staking.sol#L25).*\n\nThese values will trigger the integer overflow. As a result, the withdrawal period is enabled upon the contract's deployment. Additionally, the overflow can be reached by an incorrect configuration.\n\n#### **Exploit Scenario**\n\n\nBob deploys the contract. Bob plans to wait a few days before publishing the fallback withdrawal root. Eve spams the network with deposits that she withdraws immediately.\n\n#### **Recommendation**\n\nShort term, change the initial value of \\_fallbackSetDate to prevent the overflow. Prevent overflow on the withdrawal period verification in withdrawFallback and refundPendingDeposit.\n\nLong term, use SafeMath for all arithmetic operations.\n",
+      "finding_id": null,
+      "description": "#### **Description**\n\nInteger overflow allows users to refund deposits during the initial Staking configuration.\n\nTo refund a deposit, the withdrawal period must be active:\n\n```\n function refundPendingDeposit ( uint256 depositNonce ) external {\n address depositor = _nonceToPendingDeposit[depositNonce].depositor;\n require (\n msg . sender == _owner || msg . sender == depositor,\n \"Only the owner or depositor can initiate the refund of a pending deposit\"\n );\n require (\n _fallbackSetDate + _fallbackWithdawalDelaySeconds <= block . timestamp ,\n \"Fallback withdrawal period is not active, so refunds are not permitted\"\n );\n```\n\n*Figure 1.1: refundPendingDeposit (Staking.sol#L327-L336).*\n\nThe withdrawal period check is vulnerable to an integer overflow:\n\n```\n _fallbackSetDate + _fallbackWithdawalDelaySeconds <= block . timestam\n```\n\nThe initial value of \\_fallbackSetDate is 2\\*\\*(256-1) and\n\n\\_fallbackWithdawalDelaySeconds is 1 weeks :\n\n```\n uint256 public _fallbackSetDate = 2 ^ 256 - 1 ;\n```\n\n*Figure 1.2: \\_fallbackSetDate initial value (Staking.sol#L41.)*\n\n```\nuint256 public _fallbackWithdawalDelaySeconds = 1 weeks ;\n```\n\n*Figure 1.3: \\_fallbackWithdawalDelaySeconds initial value (Staking.sol#L25).*\n\nThese values will trigger the integer overflow. As a result, the withdrawal period is enabled upon the contract's deployment. Additionally, the overflow can be reached by an incorrect configuration.\n",
+      "metadata": {
+        "Severity": "Low",
+        "Difficulty": "Medium",
+        "Type": "Data Validation",
+        "Finding ID": "TOB-Flexa-001",
+        "Target": "Staking.sol"
+      },
+      "heading_cleaned": "Initialconfiguration may allowan attacker to refund an unconfirmed deposit early on"
+    },
+    {
+      "index": 2,
+      "page_start": 11,
+      "heading": "2. Front-running fallback root update might lead to additionalwithdrawal",
+      "markdown": "### 2. Front-running fallback root update might lead to additionalwithdrawal\n\nSeverity: High Difficulty: High\n\nType: Timing Finding ID: TOB-Flexa-002\n\nTarget: Staking.sol\n\n#### **Description**\n\nA front-running attack might allow an attacker to withdraw a deposit one additional time if the system is not updated before the fallback withdrawal period is reached.\n\nThe fallback withdrawal mechanism allows users to withdraw their deposits if the system is not updated after a given period. If the fallback root is updated at the same time that the fallback withdrawal period is active, an attacker can front-run the update and withdraw deposits that will be included by the update. If the fallback tree is not updated again, and the withdrawal period is activated a second time, the attacker will be able to withdraw the funds once more.\n\n#### **Exploit Scenario**\n\n- The fallback withdrawal period is reached.\n- **●** Eve creates a deposit of \\$10,000.\n- **●** Bob updates the fallback root, and include Eve's deposit.\n- Eve front runs Bob's transaction, and withdraws her deposit.\n- Bob is not able to update the fallback root. The fallback withdrawal period is reached again.\n- Eve withdraws her funds once more.\n\n#### **Recommendation**\n\nShort term, we recommend updating the fallback root in two calls if the withdrawal period is active:\n\n- The first call will set a tree that does not contain any deposits that were not already included.\n- The second call will set the tree that contains all the deposits that were validated on the block that contained the first call.\n\nLong term, write an incident response plan that includes strategies to handle compromise and network congestion.\n",
+      "finding_id": null,
+      "description": "#### **Description**\n\nA front-running attack might allow an attacker to withdraw a deposit one additional time if the system is not updated before the fallback withdrawal period is reached.\n\nThe fallback withdrawal mechanism allows users to withdraw their deposits if the system is not updated after a given period. If the fallback root is updated at the same time that the fallback withdrawal period is active, an attacker can front-run the update and withdraw deposits that will be included by the update. If the fallback tree is not updated again, and the withdrawal period is activated a second time, the attacker will be able to withdraw the funds once more.\n",
+      "metadata": {
+        "Severity": "High",
+        "Difficulty": "High",
+        "Type": "Timing",
+        "Finding ID": "TOB-Flexa-002",
+        "Target": "Staking.sol"
+      },
+      "heading_cleaned": "Front-running fallback root update might lead to additionalwithdrawal"
+    },
+    {
+      "index": 3,
+      "page_start": 12,
+      "heading": "3. Missing nonce on PendingDepositRefund event might lead to a double spend",
+      "markdown": "### 3. Missing nonce on PendingDepositRefund event might lead to a double spend\n\nSeverity: High Difficulty: Undetermined Type: Auditing and Logging Finding ID: TOB-Flexa-003\n\nTarget: Staking.sol\n\n#### **Description**\n\nA lack of nonce information on the deposit refund event might allow a third-party tool to confound which deposit was refunded.\n\nA deposit is identified by its unique nonce:\n\n```\ndepositNonce = ++ _depositNonce;\n_nonceToPendingDeposit[depositNonce].depositor = msg . sender ;\n_nonceToPendingDeposit[depositNonce].amount = amount;\n```\n\n*Figure 3.1: Deposit creation (Staking.sol#L160-L162).*\n\nUpon deposit refund, PendingDepositRefund is emitted:\n\n```\nemit PendingDepositRefund (depositor, amount);\n```\n\n*Figure 3.2:* PendingDepositRefund *event Staking.sol#L351).*\n\nThe event does not include the nonce. As a result, third-party tools watching the event might confound which deposit was refunded.\n\nTrail of Bits did not review the Flexa off-chain code, and could not assess the likelihood of the issue occurring in the deposit off-chain triage code.\n\n#### **Exploit Scenario**\n\n- Eve has two pending deposits of \\$10,000, one with a nonce of 10 (A) and one with a nonce of 20 (B).\n- The withdrawal fallback period is active.\n- Eve refunds Deposit A by calling refundPendingDeposit (Eve has \\$10,000).\n- The off-chain code decodes the event, and thinks B was refunded. Deposit A is accepted off-chain.\n- Eve unlocks the funds from Deposit A and withdraws them (Eve has \\$20,000).\n- The system fails, and the withdraw fallback period is active again.\n- Even calls refundPendingDeposit for Deposit B, and receives \\$10,000.\n- Eve ends up with \\$30,000 for \\$20,000 invested.\n\n#### **Recommendation**\n\n\nShort term, add the nonce to the PendingDepositRefund event. Ensure the off-chain code uses it.\n\nLong term, thoroughly document every field that is needed for the off-chain code and ensure their information is correctly emitted in the on-chain code.\n",
+      "finding_id": null,
+      "description": "#### **Description**\n\nA lack of nonce information on the deposit refund event might allow a third-party tool to confound which deposit was refunded.\n\nA deposit is identified by its unique nonce:\n\n```\ndepositNonce = ++ _depositNonce;\n_nonceToPendingDeposit[depositNonce].depositor = msg . sender ;\n_nonceToPendingDeposit[depositNonce].amount = amount;\n```\n\n*Figure 3.1: Deposit creation (Staking.sol#L160-L162).*\n\nUpon deposit refund, PendingDepositRefund is emitted:\n\n```\nemit PendingDepositRefund (depositor, amount);\n```\n\n*Figure 3.2:* PendingDepositRefund *event Staking.sol#L351).*\n\nThe event does not include the nonce. As a result, third-party tools watching the event might confound which deposit was refunded.\n\nTrail of Bits did not review the Flexa off-chain code, and could not assess the likelihood of the issue occurring in the deposit off-chain triage code.\n",
+      "metadata": {
+        "Severity": "High",
+        "Difficulty": "Undetermined",
+        "Type": "Auditing and Logging",
+        "Finding ID": "TOB-Flexa-003",
+        "Target": "Staking.sol"
+      },
+      "heading_cleaned": "Missing nonce on PendingDepositRefund event might lead to a double spend"
+    },
+    {
+      "index": 4,
+      "page_start": 14,
+      "heading": "4. Awithdrawal rootcould be added again ater removal",
+      "markdown": "### 4. Awithdrawal rootcould be added again ater removal\n\nSeverity: Informational Difficulty: Low\n\nType: Data Validation Finding ID: TOB-Flexa-004\n\nTarget: Staking.sol\n\n#### **Description**\n\nA deleted withdrawal root can be added again, leading to unexpected behavior for users.\n\nWithin the addWithdrawalRoot function there are validations to prevent a withdrawal root from being added if it is already present. However, in the event of a withdrawal root being removed and added again, there is no method to track whether the root has been previously added.\n\n```\n function addWithdrawalRoot (\n bytes32 root ,\n uint256 nonce ,\n bytes32[] calldata replacedRoots\n ) external {\n require (\n msg . sender == _owner || msg . sender == _withdrawalPublisher,\n \"Only the owner and withdrawal publisher can add and replace withdrawal root\nhashes\"\n );\n require (\n _maxWithdrawalRootNonce + 1 == nonce,\n \"Nonce must be exactly max nonce + 1\"\n );\n require (\n _withdrawalRootToNonce[root] == 0 ,\n \"Root already exists and is associated with a different nonce\"\n );\n _withdrawalRootToNonce[root] = nonce;\n _maxWithdrawalRootNonce = nonce;\n emit WithdrawalRootHashAddition (root, nonce);\n for ( uint256 i = 0 ; i < replacedRoots. length ; i ++ ) {\n deleteWithdrawalRoot (replacedRoots[i]);\n }\n }\n```\n\n*Figure 4.1: The* addWithdrawalRoot *function definition.*\n\n#### **Exploit Scenario**\n\n\n- Bob adds the Merkle root AAAA with the nonce 10.\n- Bob removes the root, and adds it again, with the nonce 11.\n- As a result, users relying on AAAA are confused.\n\n#### **Recommendation**\n\nShort term, ensure documentation is provided on the expected functionality of the withdrawal root–related functions, including the potential for duplicate roots to be posted.\n\n#### Long term, consider either:\n\n- Adding a method of validating whether a root has been previously encountered, or\n- Adding the nonce as a leaf of the root.\n",
+      "finding_id": null,
+      "description": "#### **Description**\n\nA deleted withdrawal root can be added again, leading to unexpected behavior for users.\n\nWithin the addWithdrawalRoot function there are validations to prevent a withdrawal root from being added if it is already present. However, in the event of a withdrawal root being removed and added again, there is no method to track whether the root has been previously added.\n\n```\n function addWithdrawalRoot (\n bytes32 root ,\n uint256 nonce ,\n bytes32[] calldata replacedRoots\n ) external {\n require (\n msg . sender == _owner || msg . sender == _withdrawalPublisher,\n \"Only the owner and withdrawal publisher can add and replace withdrawal root\nhashes\"\n );\n require (\n _maxWithdrawalRootNonce + 1 == nonce,\n \"Nonce must be exactly max nonce + 1\"\n );\n require (\n _withdrawalRootToNonce[root] == 0 ,\n \"Root already exists and is associated with a different nonce\"\n );\n _withdrawalRootToNonce[root] = nonce;\n _maxWithdrawalRootNonce = nonce;\n emit WithdrawalRootHashAddition (root, nonce);\n for ( uint256 i = 0 ; i < replacedRoots. length ; i ++ ) {\n deleteWithdrawalRoot (replacedRoots[i]);\n }\n }\n```\n\n*Figure 4.1: The* addWithdrawalRoot *function definition.*\n",
+      "metadata": {
+        "Severity": "Informational",
+        "Difficulty": "Low",
+        "Type": "Data Validation",
+        "Finding ID": "TOB-Flexa-004",
+        "Target": "Staking.sol"
+      },
+      "heading_cleaned": "Awithdrawal rootcould be added again ater removal"
+    },
+    {
+      "index": 5,
+      "page_start": 16,
+      "heading": "5. Missing validations on administration functions",
+      "markdown": "### 5. Missing validations on administration functions\n\nSeverity: Medium Difficulty: High\n\nType: Data Validation Finding ID: TOB-Flexa-005\n\nTarget: Staking.sol\n\n#### **Description**\n\nStaking relies on correct parametrization from the owner. Several administration functions lack proper input validation, which might lead to a misconfigured system or loss of privileged access.\n\nWithin the setOwner function (Figure 5.1), there is no check to ensure the 0x0 address is not provided as the newOwnerAddress parameter. This could lead to an accidental invocation of setOwner with an uninitialized value, resulting in an irrevocable loss of contract ownership.\n\n```\n function setOwner ( address newOwnerAddress ) external {\n require (\n msg . sender == _owner,\n \"Only the owner can set the new owner\"\n );\n address oldValue = _owner;\n _owner = newOwnerAddress;\n emit OwnerUpdate (oldValue, _owner);\n }\n```\n\n*Figure 5.1: The* setOwner *function definition.*\n\nAdditional validations are missing within the addWithdrawalRoot (Figure 5.2) and setFallbackRoot (Figure 5.3) functions, where the root parameter could potentially be 0 in both, and the nonce can potentially be 0. In the setFallbackWithdrawalDelay function (Figure 5.4), the newFallbackDelaySeconds could be 0.\n\n```\n function addWithdrawalRoot (\n bytes32 root ,\n uint256 nonce ,\n bytes32[] calldata replacedRoots\n ) external {\n require (\n msg . sender == _owner || msg . sender == _withdrawalPublisher,\n \"Only the owner and withdrawal publisher can add and replace withdrawal root\nhashes\"\n );\n require (\n _maxWithdrawalRootNonce + 1 == nonce,\n \"Nonce must be exactly max nonce + 1\"\n```\n\n\n```\n );\n require (\n _withdrawalRootToNonce[root] == 0 ,\n \"Root already exists and is associated with a different nonce\"\n );\n _withdrawalRootToNonce[root] = nonce;\n _maxWithdrawalRootNonce = nonce;\n emit WithdrawalRootHashAddition (root, nonce);\n for ( uint256 i = 0 ; i < replacedRoots. length ; i ++ ) {\n deleteWithdrawalRoot (replacedRoots[i]);\n }\n }\n```\n\n*Figure 5.2: The* addWithdrawalRoot *function definition.*\n\n```\n function setFallbackRoot ( bytes32 root , uint256 maxDepositIncluded ) external {\n require (\n msg . sender == _owner || msg . sender == _fallbackPublisher,\n \"Only the owner and fallback publisher can set the fallback root hash\"\n );\n require (\n maxDepositIncluded >= _fallbackMaxDepositIncluded,\n \"Max deposit included must remain the same or increase\"\n );\n require (\n maxDepositIncluded <= _depositNonce,\n \"Cannot invalidate future deposits\"\n );\n _fallbackRoot = root;\n _fallbackMaxDepositIncluded = maxDepositIncluded;\n _fallbackSetDate = block . timestamp ;\n emit FallbackRootHashSet (\n root,\n _fallbackMaxDepositIncluded,\n block . timestamp\n );\n }\n```\n\n*Figure 5.3: The* setFallbackRoot *function definition.*\n\n```\n function setFallbackWithdrawalDelay ( uint256 newFallbackDelaySeconds ) external {\n require (\n msg . sender == _owner,\n \"Only the owner can set the fallback withdrawal delay\"\n );\n uint256 oldDelay = _fallbackWithdawalDelaySeconds;\n```\n\n\n```\n _fallbackWithdawalDelaySeconds = newFallbackDelaySeconds;\n emit FallbackWithdrawalDelayUpdate (oldDelay, newFallbackDelaySeconds);\n }\n```\n\n*Figure 5.4: The* setFallbackWithdrawalDelay *function definition.*\n\n#### **Exploit Scenario**\n\n- Alice deploys the Staking contract.\n- She calls setOwner, but incorrectly sets the owner to zero.\n- As a result, she loses administration access.\n\n#### **Recommendation**\n\nShort term, ensure all inputs are appropriately validated for their zero values, including:\n\n- newOwnerAddress != 0 in setOwner (Staking.sol#L362-370).\n- newFallbackDelaySeconds != 0 in setFallbackWithdrawalDelay (Staking.sol#L442-L451).\n- root != 0 in addWithdrawalRoot (Staking.sol#L460-L488) and setFallbackRoot (Staking.sol#L517-L540).\n\nLong term, expand testing to include zero-value tests and ensure validation is appropriate even for unexpected inputs. Document the expected inputs for each function.\n",
+      "finding_id": null,
+      "description": "#### **Description**\n\nStaking relies on correct parametrization from the owner. Several administration functions lack proper input validation, which might lead to a misconfigured system or loss of privileged access.\n\nWithin the setOwner function (Figure 5.1), there is no check to ensure the 0x0 address is not provided as the newOwnerAddress parameter. This could lead to an accidental invocation of setOwner with an uninitialized value, resulting in an irrevocable loss of contract ownership.\n\n```\n function setOwner ( address newOwnerAddress ) external {\n require (\n msg . sender == _owner,\n \"Only the owner can set the new owner\"\n );\n address oldValue = _owner;\n _owner = newOwnerAddress;\n emit OwnerUpdate (oldValue, _owner);\n }\n```\n\n*Figure 5.1: The* setOwner *function definition.*\n\nAdditional validations are missing within the addWithdrawalRoot (Figure 5.2) and setFallbackRoot (Figure 5.3) functions, where the root parameter could potentially be 0 in both, and the nonce can potentially be 0. In the setFallbackWithdrawalDelay function (Figure 5.4), the newFallbackDelaySeconds could be 0.\n\n```\n function addWithdrawalRoot (\n bytes32 root ,\n uint256 nonce ,\n bytes32[] calldata replacedRoots\n ) external {\n require (\n msg . sender == _owner || msg . sender == _withdrawalPublisher,\n \"Only the owner and withdrawal publisher can add and replace withdrawal root\nhashes\"\n );\n require (\n _maxWithdrawalRootNonce + 1 == nonce,\n \"Nonce must be exactly max nonce + 1\"\n```\n\n\n```\n );\n require (\n _withdrawalRootToNonce[root] == 0 ,\n \"Root already exists and is associated with a different nonce\"\n );\n _withdrawalRootToNonce[root] = nonce;\n _maxWithdrawalRootNonce = nonce;\n emit WithdrawalRootHashAddition (root, nonce);\n for ( uint256 i = 0 ; i < replacedRoots. length ; i ++ ) {\n deleteWithdrawalRoot (replacedRoots[i]);\n }\n }\n```\n\n*Figure 5.2: The* addWithdrawalRoot *function definition.*\n\n```\n function setFallbackRoot ( bytes32 root , uint256 maxDepositIncluded ) external {\n require (\n msg . sender == _owner || msg . sender == _fallbackPublisher,\n \"Only the owner and fallback publisher can set the fallback root hash\"\n );\n require (\n maxDepositIncluded >= _fallbackMaxDepositIncluded,\n \"Max deposit included must remain the same or increase\"\n );\n require (\n maxDepositIncluded <= _depositNonce,\n \"Cannot invalidate future deposits\"\n );\n _fallbackRoot = root;\n _fallbackMaxDepositIncluded = maxDepositIncluded;\n _fallbackSetDate = block . timestamp ;\n emit FallbackRootHashSet (\n root,\n _fallbackMaxDepositIncluded,\n block . timestamp\n );\n }\n```\n\n*Figure 5.3: The* setFallbackRoot *function definition.*\n\n```\n function setFallbackWithdrawalDelay ( uint256 newFallbackDelaySeconds ) external {\n require (\n msg . sender == _owner,\n \"Only the owner can set the fallback withdrawal delay\"\n );\n uint256 oldDelay = _fallbackWithdawalDelaySeconds;\n```\n\n\n```\n _fallbackWithdawalDelaySeconds = newFallbackDelaySeconds;\n emit FallbackWithdrawalDelayUpdate (oldDelay, newFallbackDelaySeconds);\n }\n```\n\n*Figure 5.4: The* setFallbackWithdrawalDelay *function definition.*\n",
+      "metadata": {
+        "Severity": "Medium",
+        "Difficulty": "High",
+        "Type": "Data Validation",
+        "Finding ID": "TOB-Flexa-005",
+        "Target": "Staking.sol"
+      },
+      "heading_cleaned": "Missing validations on administration functions"
+    },
+    {
+      "index": 6,
+      "page_start": 19,
+      "heading": "6. setOwnershould be split into two separate functions",
+      "markdown": "### 6.setOwnershould be split into two separate functions\n\nSeverity: Informational Difficulty: High\n\nType: Access Controls Finding ID: TOB-FLX-006\n\nTarget: Staking.sol\n\n#### **Description**\n\nsetOwner changes ownership of the contract in a single transaction. If an incorrect newOwnerAddress is provided, ownership may never be recovered. A best practice is to split the ownership into two functions: transfer and accept.\n\nBy splitting the functionality of setOwner into two functions—transferOwnership and acceptOwnership—the original owner will retain owner abilities until the new owner calls acceptOwnership. This will prevent accidental transfer of ownership to an uncontrolled address.\n\n```\n function setOwner ( address newOwnerAddress ) external {\n require (\n msg . sender == _owner,\n \"Only the owner can set the new owner\"\n );\n address oldValue = _owner;\n _owner = newOwnerAddress;\n emit OwnerUpdate (oldValue, _owner);\n }\n```\n\n*Figure 6.1: The* setOwner *function definition.*\n\n#### **Exploit Scenario**\n\n- Alice deploys the Staking contract, then decides to change the owner to another address under her control.\n- Subsequently, she enters the new address as the newOwnerAddress, but mistakenly enters the last hex value of the address incorrectly.\n- Upon invocation of setOwner with the malformed input, Alice loses all ownership of the contract.\n\n#### **Recommendation**\n\nShort term, ensure in the off-chain code that the newOwnerAddress is always under control before invocation of setOwner.\n\nLong term, use a two-step process of transferOwnership and acceptOwnership to ensure an address is controllable before confirming ownership transfer.\n",
+      "finding_id": null,
+      "description": "#### **Description**\n\nsetOwner changes ownership of the contract in a single transaction. If an incorrect newOwnerAddress is provided, ownership may never be recovered. A best practice is to split the ownership into two functions: transfer and accept.\n\nBy splitting the functionality of setOwner into two functions—transferOwnership and acceptOwnership—the original owner will retain owner abilities until the new owner calls acceptOwnership. This will prevent accidental transfer of ownership to an uncontrolled address.\n\n```\n function setOwner ( address newOwnerAddress ) external {\n require (\n msg . sender == _owner,\n \"Only the owner can set the new owner\"\n );\n address oldValue = _owner;\n _owner = newOwnerAddress;\n emit OwnerUpdate (oldValue, _owner);\n }\n```\n\n*Figure 6.1: The* setOwner *function definition.*\n",
+      "metadata": {
+        "Severity": "Informational",
+        "Difficulty": "High",
+        "Type": "Access Controls",
+        "Finding ID": "TOB-FLX-006",
+        "Target": "Staking.sol"
+      },
+      "heading_cleaned": "setOwnershould be split into two separate functions"
+    },
+    {
+      "index": 7,
+      "page_start": 20,
+      "heading": "7. Reentrancy could cause incorrect information to be emitted",
+      "markdown": "### 7. Reentrancy could cause incorrect information to be emitted\n\nSeverity: Informational Difficulty: Undetermined Type: Data Validation Finding ID: TOB-Flexa-007\n\nTarget: Staking.sol\n\n#### **Description**\n\nReentrancies on token transfer might trigger the incorrect order of events. The reentrancies require a token with external call capabilities, which is not possible with the current token implementation.\n\nAfter each token transfer, an event is emitted. If the token transfer is made on a contract with external call capabilities (such as [ERC223](https://github.com/Dexaran/ERC223-token-standard) or [ERC777](https://eips.ethereum.org/EIPS/eip-777)), a reentrancy might cause events to be emitted in the wrong order:\n\n```\n bool transferred = myIERC20 (_tokenAddress). transfer (\n toAddress,\n amount\n );\n require (transferred, \"Transfer failed\" );\n emit Withdrawal (\n toAddress,\n amount,\n withdrawalPermissionRootNonce,\n maxAuthorizedAccountNonce\n );\n```\n\n*Figure 7.1: withdraw (Staking.sol#L251-L263).*\n\n```\n bool transferred = myIERC20 (_tokenAddress). transfer (\n depositor,\n amount\n );\n require (transferred, \"Transfer failed\" );\n emit PendingDepositRefund (depositor, amount);\n```\n\n*Figure 7.2: refundPendingDeposit (Staking.sol#L345-L351).*\n\n```\n bool transferred = myIERC20 (_tokenAddress). transfer (\n toAddress,\n```\n\n\n```\n withdrawalAmount\n );\n require (transferred, \"Transfer failed\" );\n emit FallbackWithdrawal (\n toAddress,\n withdrawalAmount\n );\n }\n```\n\n*Figure 7.3: withdrawFallback (Staking.sol#L309-L320).*\n\n```\n bool transferred = myIERC20 (_tokenAddress). transferFrom (\n msg . sender ,\n address ( this ),\n amount\n );\n require (transferred, \"Transfer failed\" );\n depositNonce = ++ _depositNonce;\n _nonceToPendingDeposit[depositNonce].depositor = msg . sender ;\n _nonceToPendingDeposit[depositNonce].amount = amount;\n emit Deposit (\n msg . sender ,\n amount,\n depositNonce\n );\n```\n\n*Figure 7.4: deposit (Staking.sol#L153-L168).*\n\nIn addition, the nonce associated with a deposit might not follow the correct order (Figure 7.4).\n\n#### **Exploit Scenario**\n\nStaking is deployed with an ERC777 token. Eve uses the reentrancy to trigger incorrect events and confuse the staking off-chain monitor.\n\n#### **Recommendation**\n\nShort term, use the [Checks-Effects-Interactions](https://solidity.readthedocs.io/en/v0.5.0/security-considerations.html#use-the-checks-effects-interactions-pattern) pattern for all the token interactions (deposit, withdraw, withdrawFallback, refundPendingDeposit).\n\nLong term, continuously run [Slither](https://github.com/trailofbits/slither/) on the codebase or use [crytic.io.](https://cryptic.io/)\n",
+      "finding_id": null,
+      "description": "#### **Description**\n\nReentrancies on token transfer might trigger the incorrect order of events. The reentrancies require a token with external call capabilities, which is not possible with the current token implementation.\n\nAfter each token transfer, an event is emitted. If the token transfer is made on a contract with external call capabilities (such as [ERC223](https://github.com/Dexaran/ERC223-token-standard) or [ERC777](https://eips.ethereum.org/EIPS/eip-777)), a reentrancy might cause events to be emitted in the wrong order:\n\n```\n bool transferred = myIERC20 (_tokenAddress). transfer (\n toAddress,\n amount\n );\n require (transferred, \"Transfer failed\" );\n emit Withdrawal (\n toAddress,\n amount,\n withdrawalPermissionRootNonce,\n maxAuthorizedAccountNonce\n );\n```\n\n*Figure 7.1: withdraw (Staking.sol#L251-L263).*\n\n```\n bool transferred = myIERC20 (_tokenAddress). transfer (\n depositor,\n amount\n );\n require (transferred, \"Transfer failed\" );\n emit PendingDepositRefund (depositor, amount);\n```\n\n*Figure 7.2: refundPendingDeposit (Staking.sol#L345-L351).*\n\n```\n bool transferred = myIERC20 (_tokenAddress). transfer (\n toAddress,\n```\n\n\n```\n withdrawalAmount\n );\n require (transferred, \"Transfer failed\" );\n emit FallbackWithdrawal (\n toAddress,\n withdrawalAmount\n );\n }\n```\n\n*Figure 7.3: withdrawFallback (Staking.sol#L309-L320).*\n\n```\n bool transferred = myIERC20 (_tokenAddress). transferFrom (\n msg . sender ,\n address ( this ),\n amount\n );\n require (transferred, \"Transfer failed\" );\n depositNonce = ++ _depositNonce;\n _nonceToPendingDeposit[depositNonce].depositor = msg . sender ;\n _nonceToPendingDeposit[depositNonce].amount = amount;\n emit Deposit (\n msg . sender ,\n amount,\n depositNonce\n );\n```\n\n*Figure 7.4: deposit (Staking.sol#L153-L168).*\n\nIn addition, the nonce associated with a deposit might not follow the correct order (Figure 7.4).\n",
+      "metadata": {
+        "Severity": "Informational",
+        "Difficulty": "Undetermined",
+        "Type": "Data Validation",
+        "Finding ID": "TOB-Flexa-007",
+        "Target": "Staking.sol"
+      },
+      "heading_cleaned": "Reentrancy could cause incorrect information to be emitted"
+    }
+  ]
+}

@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8"/>
+ </head>
+ <body>
+  <div class="page" data-page-id="0">
+   <p>
+    <img src="_page_0_Picture_0.jpeg"/>
+   </p>
+   <h2>
+    Urbit
+   </h2>
+   <h1>
+    <b>
+     Stardust Smart Contract Security Review
+    </b>
+   </h1>
+   <p block-type="Text">
+    <i>
+     Version: 1.0
+    </i>
+   </p>
+  </div>
+  <div class="page" data-page-id="1">
+   <h2>
+    <b>
+     Contents
+    </b>
+   </h2>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+      </th>
+      <th>
+       Introduction
+      </th>
+      <th>
+       2
+      </th>
+     </tr>
+     <tr>
+      <th>
+      </th>
+      <th>
+       Disclaimer
+       <br/>
+      </th>
+      <th>
+       2
+      </th>
+     </tr>
+     <tr>
+      <th>
+      </th>
+      <th>
+       Document Structure
+       <br/>
+      </th>
+      <th>
+       2
+      </th>
+     </tr>
+     <tr>
+      <th>
+      </th>
+      <th>
+       Overview
+      </th>
+      <th>
+       2
+      </th>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+       Security Assessment Summary
+      </td>
+      <td>
+       3
+      </td>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+       Findings Summary
+       <br/>
+      </td>
+      <td>
+       3
+      </td>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+       Detailed Findings
+      </td>
+      <td>
+       4
+      </td>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+       Summary of Findings
+      </td>
+      <td>
+       5
+      </td>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+       Treasury Cannot Recover Star Mistakenly Transferred To It
+      </td>
+      <td>
+       6
+      </td>
+     </tr>
+     <tr>
+      <th>
+      </th>
+      <th>
+       Treasury Cannot Recover StarToken Tokens Mistakenly Transferred To It
+       <br/>
+      </th>
+      <th>
+       7
+      </th>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+       Multiple Treasury and StarToken Contracts Allowed
+       <br/>
+      </td>
+      <td>
+       8
+      </td>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+       Potentially Unclaimable Star Upon Losing Tokens
+       <br/>
+      </td>
+      <td>
+       9
+      </td>
+     </tr>
+     <tr>
+      <th>
+      </th>
+      <th>
+       Lack of Return Value in redeem() Function
+       <br/>
+      </th>
+      <th>
+       10
+      </th>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+       Different Star Valuations Motivates Arbitrage and Flashloan
+       <br/>
+      </td>
+      <td>
+       12
+      </td>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+       Operator Not Supported and Redundant Checks on Function deposit()
+       <br/>
+      </td>
+      <td>
+       13
+      </td>
+     </tr>
+     <tr>
+      <td>
+      </td>
+      <td>
+       ERC-777 Related Reentrancy Considerations
+      </td>
+      <td>
+       15
+      </td>
+     </tr>
+     <tr>
+      <th>
+      </th>
+      <th>
+       Miscellaneous Treasury General Comments
+       <br/>
+      </th>
+      <th>
+       17
+      </th>
+     </tr>
+     <tr>
+      <td>
+       A
+      </td>
+      <td>
+       Test Suite
+      </td>
+      <td>
+       18
+      </td>
+     </tr>
+     <tr>
+      <td>
+       B
+      </td>
+      <td>
+       Vulnerability Severity Classification
+      </td>
+      <td>
+       19
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="2">
+   <p block-type="Text">
+    Stardust Introduction
+   </p>
+   <h2>
+    <span id="page-2-0">
+    </span>
+    <b>
+     Introduction
+    </b>
+   </h2>
+   <p block-type="Text">
+    Sigma Prime was commercially engaged by Tlon Corportation to perform a time-boxed security review of a set of smart contracts related to the Stardust project. The review focused solely on the security aspects of the Solidity implementation of the contract, though general recommendations and informational comments are also provided.
+   </p>
+   <h4>
+    <span id="page-2-1">
+    </span>
+    <b>
+     Disclaimer
+    </b>
+   </h4>
+   <p block-type="Text">
+    Sigma Prime makes all effort but holds no responsibility for the findings of this security review. Sigma Prime does not provide any guarantees relating to the function of the smart contract. Sigma Prime makes no judgements on, or provides any security review, regarding the underlying business model or the individuals involved in the project.
+   </p>
+   <h4>
+    <span id="page-2-2">
+    </span>
+    <b>
+     Document Structure
+    </b>
+   </h4>
+   <p block-type="Text">
+    The first section provides an overview of the functionality of the smart contract contained within the scope of the security review. A summary followed by a detailed review of the discovered vulnerabilities is then given which assigns each vulnerability a severity rating (see
+    <a href="#page-19-0">
+     Vulnerability Severity Classification)
+    </a>
+    , an
+    <i>
+     open/closed/resolved
+    </i>
+    status and a recommendation. Additionally, findings which do not have direct security implications (but are potentially of interest) are marked as
+    <i>
+     informational
+    </i>
+    .
+   </p>
+   <p block-type="Text">
+    Outputs of automated testing that were developed during this assessment are also included for reference (in the Appendix:
+    <a href="#page-18-0">
+     Test Suite)
+    </a>
+    .
+   </p>
+   <p block-type="Text">
+    The appendix provides additional documentation, including the severity matrix used to classify vulnerabilities within the Urbit smart contract.
+   </p>
+   <h4>
+    <span id="page-2-3">
+    </span>
+    <b>
+     Overview
+    </b>
+   </h4>
+   <p block-type="Text">
+    <b>
+     Urbit
+    </b>
+    is designed as a peer-to-peer personal operating system running on cloud infrastructures.
+    <b>
+     Azimuth
+    </b>
+    is one of the core subsystems in Urbit that manages identities or
+    <a href="https://urbit.org/blog/the-urbit-address-space">
+     address space.
+    </a>
+    It is essentially a public key infrastructure built on top of smart contract-based blockchains. Its structure is similar to how IPv4 is designed, with dedicated terms such as galaxies, stars, planets, and moons, that identify the granularity of the identity, similar to classful addressing in IPv4. While the Azimuth contract is used to store all identity information, all operations to Azimuth must go through the Ecliptic contract, which owns Azimuth.
+   </p>
+   <p block-type="Text">
+    The
+    <b>
+     Stardust
+    </b>
+    project is a set of smart contracts developed by community members allowing owners of Azimuth identities to deposit their related ERC-721 tokens and obtain a fungible token (
+    <b>
+     StarToken
+    </b>
+    , an ERC-777 token) representing this ownership. Specifically, the Treasury contract allows a star owner to deposit the star and receive 1
+    <i>
+     e
+    </i>
+    18 $STAR tokens. Anyone can also redeem a star from the Treasury contract for a fix amount of 1
+    <i>
+     e
+    </i>
+    18 $STAR tokens. $STAR tokens are therefore only minted when a star is deposited, and burned when a star is redeemed.
+   </p>
+   <p>
+    <img src="_page_2_Picture_12.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="3">
+   <h2>
+    <span id="page-3-0">
+    </span>
+    <b>
+     Security Assessment Summary
+    </b>
+   </h2>
+   <p block-type="Text">
+    This review was conducted on the Treasury contract hosted on the
+    <a href="https://github.com/ransonhobbes/stardust">
+     Stardust repository,
+    </a>
+    assessed at commit
+    <a href="https://github.com/ransonhobbes/stardust/tree/c446b1f12f53fa75ea6c347daee1e15df562a81d">
+     c446b1f.
+    </a>
+   </p>
+   <p block-type="Text">
+    <i>
+     Note: the Azimuth, Ecliptic and StarToken contracts were excluded from the scope of this assessment but used extensively during testing. Additionally, OpenZepplin contracts and libraries were also excluded from the scope of this review.
+    </i>
+   </p>
+   <p block-type="Text">
+    The manual code review section of the report, focused on identifying any and all issues/vulnerabilities associated with the business logic implementation of the contracts. Specifically, their internal interactions, intended functionality and correct implementation with respect to the underlying functionality of the Ethereum Virtual Machine (for example, verifying correct storage/memory layout). Additionally, the manual review process focused on all known Solidity anti-patterns and attack vectors. These include, but are not limited to, the following vectors: re-entrancy, front-running, integer overflow/underflow and correct visibility specifiers. For a more thorough, but non-exhaustive list of examined vectors, see
+    <a href="#page-19-1">
+     [1,
+    </a>
+    <a href="#page-19-2">
+     2]
+    </a>
+    .
+   </p>
+   <p block-type="Text">
+    To support this review, the testing team used the following automated testing tools:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Mythril:
+      <a href="https://github.com/ConsenSys/mythril">
+       https://github.com/ConsenSys/mythril
+      </a>
+     </li>
+     <li block-type="ListItem">
+      Slither:
+      <a href="https://github.com/trailofbits/slither">
+       https://github.com/trailofbits/slither
+      </a>
+     </li>
+     <li block-type="ListItem">
+      Surya:
+      <a href="https://github.com/ConsenSys/surya">
+       https://github.com/ConsenSys/surya
+      </a>
+     </li>
+    </ul>
+   </p>
+   <p block-type="Text">
+    Output for these automated tools is available upon request.
+   </p>
+   <h4>
+    <span id="page-3-1">
+    </span>
+    <b>
+     Findings Summary
+    </b>
+   </h4>
+   <p block-type="Text">
+    The testing team identified a total of 9 issues during this assessment. Categorized by their severity:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Low: 2 issues.
+     </li>
+     <li block-type="ListItem">
+      Informational: 7 issues.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_3_Picture_15.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="4">
+   <h2>
+    <span id="page-4-0">
+    </span>
+    <b>
+     Detailed Findings
+    </b>
+   </h2>
+   <p block-type="Text">
+    This section provides a detailed description of the vulnerabilities identified within the scope of this review. Each vulnerability has a severity classification which is determined from the likelihood and impact of each issue by the matrix given in the Appendix:
+    <a href="#page-19-0">
+     Vulnerability Severity Classification.
+    </a>
+   </p>
+   <p block-type="Text">
+    A number of additional properties of the contracts, including gas optimisations, are also described in this section and are labelled as "informational".
+   </p>
+   <p block-type="Text">
+    Each vulnerability is also assigned a
+    <b>
+     status
+    </b>
+    :
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      <i>
+       Open:
+      </i>
+      the issue has not been addressed by the project team.
+     </li>
+     <li block-type="ListItem">
+      <i>
+       Resolved:
+      </i>
+      the issue was acknowledged by the project team and updates to the affected contract(s) have been made to mitigate the related risk.
+     </li>
+     <li block-type="ListItem">
+      <i>
+       Closed:
+      </i>
+      the issue was acknowledged by the project team but no further actions have been taken.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_4_Picture_8.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="5">
+   <h2>
+    <b>
+     Summary of Findings
+    </b>
+   </h2>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       ID
+      </th>
+      <th>
+       Description
+      </th>
+      <th>
+       Severity
+      </th>
+      <th>
+       Status
+      </th>
+     </tr>
+     <tr>
+      <td>
+       UTR-01
+      </td>
+      <td>
+       Treasury Cannot Recover Star Mistakenly Transferred To It
+      </td>
+      <td>
+       Low
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       UTR-02
+      </td>
+      <td>
+       Treasury Cannot Recover StarToken Tokens Mistakenly Transferred
+       <br/>
+       To It
+      </td>
+      <td>
+       Low
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       UTR-03
+      </td>
+      <td>
+       Multiple Treasury and StarToken Contracts Allowed
+      </td>
+      <td>
+       Informational
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       UTR-04
+      </td>
+      <td>
+       Potentially Unclaimable Star Upon Losing Tokens
+      </td>
+      <td>
+       Informational
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       UTR-05
+      </td>
+      <td>
+       Lack of Return Value in redeem() Function
+      </td>
+      <td>
+       Informational
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       UTR-06
+      </td>
+      <td>
+       Different Star Valuations Motivates Arbitrage and Flashloan
+      </td>
+      <td>
+       Informational
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       UTR-07
+      </td>
+      <td>
+       Operator
+       <br/>
+       Not
+       <br/>
+       Supported
+       <br/>
+       and
+       <br/>
+       Redundant
+       <br/>
+       Checks
+       <br/>
+       on
+       <br/>
+       Function
+       <br/>
+       deposit()
+      </td>
+      <td>
+       Informational
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       UTR-08
+      </td>
+      <td>
+       ERC-777 Related Reentrancy Considerations
+      </td>
+      <td>
+       Informational
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       UTR-09
+      </td>
+      <td>
+       Miscellaneous Treasury General Comments
+      </td>
+      <td>
+       Informational
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="6">
+   <span id="page-6-0">
+   </span>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       UTR-01
+      </th>
+      <th colspan="3">
+       Treasury Cannot Recover Star Mistakenly Transferred To It
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Asset
+      </td>
+      <td>
+       Treasury.sol
+      </td>
+      <td>
+      </td>
+      <td>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Status
+      </td>
+      <td>
+       Open
+      </td>
+      <td>
+      </td>
+      <td>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Rating
+      </td>
+      <td>
+       Severity: Low
+      </td>
+      <td>
+       Impact: Low
+      </td>
+      <td>
+       Likelihood: Low
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    <b>
+     Description
+    </b>
+   </h4>
+   <p block-type="Text">
+    A user can mistakenly transfer ownership of a star to the Treasury contract. Consider the following case:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      1. Alice spawns a star;
+     </li>
+     <li block-type="ListItem">
+      2. Instead of setting Treasury as a proxy through Ecliptic.setSpawnProxy() , Alice calls a different function, Ecliptic.transferPoint() . The star ownership changes from Alice to Treasury ;
+     </li>
+     <li block-type="ListItem">
+      3. Treasury was not notified of such transfer and therefore the star is not recorded in the assets ;
+     </li>
+     <li block-type="ListItem">
+      4. Alice cannot take back the mistakenly transferred star.
+     </li>
+    </ul>
+   </p>
+   <h4>
+    <b>
+     Recommendations
+    </b>
+   </h4>
+   <p block-type="Text">
+    Consider adding a function to account for transferred stars into the assets array. For this purpose, a mapping can help check whether the star has been included in assets :
+   </p>
+   <pre>mapping ( uint16 =&gt; bool ) assetMap ;</pre>
+   <p block-type="Text">
+    Then, the following function can be used.
+   </p>
+   <pre>function addToAsset ( uint16 _star ) public {
+ require ( assetMap [ _star ] == false , " Treasury : The star is in the assets ");</pre>
+   <p block-type="Text">
+    Notice that additional instructions are necessary on the functions deposit() and redeem() . In the deposit() function, the following instruction can be added on line [
+    <b>
+     111
+    </b>
+    ]:
+   </p>
+   <pre>assetMap [ _star ] = true ;</pre>
+   <p block-type="Text">
+    While in the redeem() function, the following instruction can be added on line [
+    <b>
+     130
+    </b>
+    ]:
+   </p>
+   <pre>delete assetMap [ _star ];</pre>
+   <p>
+    <img src="_page_6_Picture_17.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="7">
+   <span id="page-7-0">
+   </span>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       UTR-02
+      </th>
+      <th>
+      </th>
+      <th>
+       Treasury Cannot Recover StarToken Tokens Mistakenly Transferred To It
+      </th>
+      <th>
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Asset
+      </td>
+      <td>
+       Treasury.sol
+      </td>
+      <td>
+      </td>
+      <td>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Status
+      </td>
+      <td>
+       Open
+      </td>
+      <td>
+      </td>
+      <td>
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Rating
+      </td>
+      <td>
+       Severity: Low
+      </td>
+      <td>
+       Impact: Low
+      </td>
+      <td>
+       Likelihood: Low
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    <b>
+     Description
+    </b>
+   </h4>
+   <p block-type="Text">
+    A Treasury contract is coupled with a StarToken (ERC-777 standard) token. StarToken tokens are minted to a user who deposits a star to the Treasury contract and burned when a user redeems a star. The Treasury contract does not have a function to sweep over Startoken tokens mistakenly sent to it.
+   </p>
+   <p block-type="Text">
+    Consider the following scenario:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      1. Alice deposits a star and receives 1
+      <i>
+       e
+      </i>
+      18 StarToken ;
+     </li>
+     <li block-type="ListItem">
+      2. Alice mistakenly transfers some of her StarToken tokens, say 100 tokens, to Treasury contract;
+     </li>
+     <li block-type="ListItem">
+      3. Alice cannot recover the mistakenly transferred tokens, while the Treasury contract also cannot recover the tokens.
+     </li>
+    </ul>
+   </p>
+   <h4>
+    <b>
+     Recommendations
+    </b>
+   </h4>
+   <p block-type="Text">
+    Consider introducing a function where a privileged account (e.g. a governance contract, say Governor), can recover any excess tokens:
+   </p>
+   <pre>function recoverTokens ( address _to ) onlyGovernor public {
+ uint256 tokenAmount ;
+ tokenAmount = startoken . balanceOf ( address ( this )) % ( assets . length * oneStar );
+ tokenAmount = startoken . balanceOf ( address ( this ));
+  startoken . transferFrom ( address ( this ), _to , tokenAmount );</pre>
+   <p block-type="Text">
+    <span id="page-7-1">
+    </span>
+    <i>
+     Note that this would require the governor to have an allowance on behalf of the Treasury contract in the StarToken contrat
+    </i>
+   </p>
+  </div>
+  <div class="page" data-page-id="8">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       UTR-03
+      </th>
+      <th>
+       Multiple Treasury and StarToken Contracts Allowed
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Asset
+      </td>
+      <td>
+       Treasury.sol
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Status
+      </td>
+      <td colspan="2">
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Rating
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    <b>
+     Description
+    </b>
+   </h4>
+   <p block-type="Text">
+    The Treasury contract deploys a new StarToken contract during contract creation, as indicated on line [
+    <b>
+     26
+    </b>
+    ]:
+   </p>
+   <pre>StarToken public startoken = new StarToken (0 , new address [](0));</pre>
+   <p block-type="Text">
+    It is possible to deploy multiple Treasury contracts. It also means that there can be multiple StarToken contracts, where tokens in one StarToken contract cannot redeem a star in other Treasury contracts. This can potentially be confusing or misleading for users.
+   </p>
+   <h4>
+    <b>
+     Recommendations
+    </b>
+   </h4>
+   <p block-type="Text">
+    <span id="page-8-0">
+    </span>
+    Make sure this behaviour is intended and consider deploying a dedicated StarToken contract and hardcoding its address in the Treasury contract.
+   </p>
+  </div>
+  <div class="page" data-page-id="9">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       UTR-04
+      </th>
+      <th colspan="2">
+       Potentially Unclaimable Star Upon Losing Tokens
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Asset
+      </td>
+      <td>
+       Treasury.sol
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Status
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Rating
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h3>
+    <b>
+     Description
+    </b>
+   </h3>
+   <p block-type="Text">
+    The Treasury contract requires a fixed amount of 1
+    <i>
+     e
+    </i>
+    18 STAR tokens to redeem a star asset. Since STAR tokens are only minted when users deposit stars, the amount of tokens held by the Treasury must be 1
+    <i>
+     e
+    </i>
+    18 multiplied by Treasury 's asset count (equal to the number of deposited stars). That way, when all stars are redeemed, the total balance of STAR equals to zero.
+   </p>
+   <p block-type="Text">
+    This coupling between Treasury and STAR tokens means that if even one token is lost, i.e. sent to an address without a known related private key, then there should be at least one unclaimable star in the Treasury 's asset.
+   </p>
+   <h4>
+    <b>
+     Recommendations
+    </b>
+   </h4>
+   <p block-type="Text">
+    <span id="page-9-0">
+    </span>
+    Make sure this behaviour is intended.
+   </p>
+  </div>
+  <div class="page" data-page-id="10">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       UTR-05
+      </th>
+      <th>
+       Lack of Return Value in redeem() Function
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Asset
+      </td>
+      <td>
+       Treasury.sol
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Status
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Rating
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p block-type="Text">
+    arb:market
+   </p>
+   <h4>
+    <b>
+     Description
+    </b>
+   </h4>
+   <p block-type="Text">
+    The Treasury contract can be interacted with from
+    <i>
+     "externally owned accounts"
+    </i>
+    (EOAs) and other smart contracts. When calling the redeem() function, an EOA's UI can track which _star it receives from Treasury contract through emitted events.
+   </p>
+   <p block-type="Text">
+    However, a contract account cannot read events data, and therefore, cannot necessarily easily work out what _star it receives.
+   </p>
+   <p block-type="Text">
+    What a
+    <i>
+     redeeming
+    </i>
+    contract can do is predict what _star it will receive from Treasury by retrieving the last item in the Treasury.assets array.
+   </p>
+   <h4>
+    <b>
+     Recommendations
+    </b>
+   </h4>
+   <p block-type="Text">
+    Consider updating the redeem() function to introduce a return value:
+   </p>
+   <pre>function redeem () public returns ( uint16 ) {
+ uint16 _star = assets [ assets . length -1];
+ require ( azimuth . isOwner (_star , address ( this )));</pre>
+   <p block-type="Text">
+    Such that a calling contract may catch the return value as follows:
+   </p>
+   <p>
+    <img src="_page_10_Picture_11.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="11">
+   <pre>event eStarRedeem ( uint16 point );
+ require ( treasury . startoken (). balanceOf ( address ( this )) &gt;= ONE_STAR ,
+ " Recipient : STAR balance not enough ");
+ uint16 _star = treasury . redeem ();</pre>
+   <p block-type="Text">
+    Note that the snippets above does not account for other suggestions in this report, i.e. changing _star data type from uint16 to uint32 for code consistency.
+   </p>
+   <p block-type="Text">
+    <span id="page-11-0">
+    </span>
+    The recommended change's impact on gas costs is insignificant, that is, from 230
+    <i>
+     ,
+    </i>
+    327 gas in the original function to 230
+    <i>
+     ,
+    </i>
+    398 gas in the modified function, or 0
+    <i>
+     .
+    </i>
+    03% gas increase.
+   </p>
+   <p>
+    <img src="_page_11_Picture_4.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="12">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       UTR-06
+      </th>
+      <th colspan="2">
+       Different Star Valuations Motivates Arbitrage and Flashloan
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Asset
+      </td>
+      <td>
+       Treasury.sol
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Status
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Rating
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    <span id="page-12-1">
+    </span>
+    <b>
+     Description
+    </b>
+   </h4>
+   <p block-type="Text">
+    Urbit's stars are NFTs that do not necessarily have equal value, as can be seen on
+    <a href="https://opensea.io/collection/urbit-id">
+     Opensea
+    </a>
+    where stars are traded at different prices (at the time of writing, the highest asking price for an Urbit star is
+    <a href="https://opensea.io/assets/0x9ef27de616154ff8b38893c59522b69c7ba8a81c/13975">
+     888 ETH
+    </a>
+    and the lowest is
+    <a href="https://opensea.io/assets/0x9ef27de616154ff8b38893c59522b69c7ba8a81c/15828">
+     1.8 ETH)
+    </a>
+    .
+   </p>
+   <p block-type="Text">
+    On the other hand, the Treasury contract treats all stars equally from a valuation perspective which opens up two potentially interesting scenarios:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      A user deposits a star with a market price less than 1
+      <i>
+       e
+      </i>
+      18 $STAR tokens. In this case, the user profits from the difference between the market value and the received $STAR tokens. This activity is similar to an arbitrage and can be applied to the DeFi context (would simply require a market pair with $STAR token on a decentralised exchange such as Uniswap).
+     </li>
+     <li block-type="ListItem">
+      A user finds a star worth more than 1
+      <i>
+       e
+      </i>
+      18 $STAR tokens in the Treasury contract's assets inventory. The user knows that the inventory release is done in
+      <i>
+       LIFO
+      </i>
+      (Last In First Out) fashion. To take out the wanted star from the inventory, say in
+      <i>
+       n-th
+      </i>
+      position from the last, the user takes a
+      <i>
+       n
+      </i>
+      ∗ 1
+      <i>
+       e
+      </i>
+      18 $STAR tokens loan from the market, calls the redeem() function
+      <i>
+       n
+      </i>
+      times, keeps the star they want, then returns
+      <i>
+       n
+      </i>
+      − 1 stars to the Treasury contract by calling the deposit() function
+      <i>
+       n
+      </i>
+      − 1 times. The user then sells the acquired star on the market and pays the loan interest by using profits.
+     </li>
+    </ul>
+   </p>
+   <h4>
+    <b>
+     Recommendations
+    </b>
+   </h4>
+   <p block-type="Text">
+    <span id="page-12-0">
+    </span>
+    Make sure this behaviour is understood and intended.
+   </p>
+  </div>
+  <div class="page" data-page-id="13">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       UTR-07
+      </th>
+      <th colspan="3">
+       Operator Not Supported and Redundant Checks on Function deposit()
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Asset
+      </td>
+      <td>
+       Treasury.sol
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Status
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Rating
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    <b>
+     Description
+    </b>
+   </h4>
+   <p block-type="Text">
+    The Ecliptic contracts allows for an operator to perform actions on behalf of a point (or in this context, star) owner, for example, to call the function transferPoint() . This is reflected on line [
+    <b>
+     457
+    </b>
+    ] of Ecliptic.sol as follows.
+   </p>
+   <pre></pre>
+   <p block-type="Text">
+    While Azimuth.canTransfer() is implemented on line [
+    <b>
+     1098-1108
+    </b>
+    ] of Azimuth.sol as follows:
+   </p>
+   <pre>function canTransfer ( uint32 _point , address _who )
+ returns ( bool result )
+  Deed storage deed = rights [ _point ];
+  return ( (0 x0 != _who ) &amp;&amp;</pre>
+   <p block-type="Text">
+    The snippets above indicate that, other than the owner and the transfer proxy, an appointed operator should be allowed to transfer point ownership through the function Ecliptic.transferPoint() .
+   </p>
+   <p block-type="Text">
+    This capability is useful if the real owner (EOA) wants to manage their point s in a management contract and wishes to interact with the Treasury contract through that management contract instead of directly from the EOA.
+   </p>
+   <p block-type="Text">
+    However, the following code path on line [
+    <b>
+     86-90
+    </b>
+    ] in the Treasury contract prevents an operator from depositing a spawned star.
+   </p>
+   <pre>azimuth . getSpawnCount ( _star ) cd == 0 &amp;&amp;
+azimuth . isTransferProxy (_star , address ( this ))</pre>
+   <p>
+    <img src="_page_13_Picture_11.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="14">
+   <h3>
+    <b>
+     Recommendations
+    </b>
+   </h3>
+   <p block-type="Text">
+    If there is no specific reason why only spawned star owners are allowed to call the function deposit() , we recommend adjusting the Treasury contract to enable interactions with appointed operators by changing the condition checking in line [
+    <b>
+     87
+    </b>
+    ] and line [
+    <b>
+     89
+    </b>
+    ].
+   </p>
+   <pre></pre>
+   <p block-type="Text">
+    Note that depositing an unspawned star requires direct interaction with the star's prefix owner or its spawn proxy as specified in Azimuth.sol on line [
+    <b>
+     979-988
+    </b>
+    ] below, and therefore the operator cannot deposit unspawned star.
+   </p>
+   <pre>function canSpawnAs ( uint32 _point , address _who )
+ returns ( bool result )
+  Deed storage deed = rights [ _point ];</pre>
+   <p block-type="Text">
+    Also, a set of checks have been conducted in Function Ecliptic.spawn() , and therefore redundant checks can be removed from Treasury.deposit() . A simplified version of the deposit() function could be as follows:
+   </p>
+   <pre>function deposit ( uint16 _star )
+ public
+   ecliptic . transferPoint (_star , address ( this ), true );
+   ecliptic . spawn (_star , address ( this ));
+  assets . push ( _star );</pre>
+   <p>
+    <img src="_page_14_Picture_8.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="15">
+   <span id="page-15-0">
+   </span>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       UTR-08
+      </th>
+      <th colspan="2">
+       ERC-777 Related Reentrancy Considerations
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Asset
+      </td>
+      <td>
+       StarToken.sol
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Status
+      </td>
+      <td>
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Rating
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    <b>
+     Description
+    </b>
+   </h4>
+   <p block-type="Text">
+    The StarToken contract implements the ERC777 token standard using the related
+    <a href="https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC777/ERC777.sol">
+     OpenZeppelin library.
+    </a>
+    One of the most distinguishable features of the ERC777 standard compared to ERC20 is that if the token receiver is a contract, then the contract can implement the ERC777Recipient interface which defines the function tokensReceived() . This function is a hook that will be triggered every time the contract receives a token. To enable the hook trigger, the receiving contract must register itself to the ERC1820 contract registry.
+   </p>
+   <p block-type="Text">
+    This unique ERC777 feature can be weaponised to trigger a
+    <b>
+     reentrancy
+    </b>
+    <a href="#page-19-3">
+     [3]
+    </a>
+    condition. To be successful, this attack would require the victim contract to be affected by a security flaw as the result of not abiding by the recommended
+    <a href="https://docs.soliditylang.org/en/v0.8.7/security-considerations.html#use-the-checks-effects-interactions-pattern">
+     Checks-Effects-Interactions
+    </a>
+    pattern.
+   </p>
+   <p block-type="Text">
+    This reentrancy condition can allow attackers to use two stars to switch for any other star in the list (see
+    <a href="#page-12-1">
+     this
+    </a>
+    <a href="#page-12-1">
+     relevant issue)
+    </a>
+    .
+   </p>
+   <p block-type="Text">
+    Say we have assets = [a, b, c] and we have a balance of 2
+    <i>
+     e
+    </i>
+    18 StarTokens . The standard redeem() workflow would normally only allow us to redeem the Star c . However, consider the following:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      1. redeem()
+      <b>
+       (1)
+      </b>
+      :
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        pop(c) -&gt; assets = [a, b]
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        ownerBurn(1e18)  reenter on tokensToSend() before we've burnt our balance of 2
+        <i>
+         e
+        </i>
+        18
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      2. redeem()
+      <b>
+       (2)
+      </b>
+      :
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        pop(b) -&gt; assets = [a]
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        ownerBurn(1e18)  reenter on tokensToSend() before we've burnt our balance of 2
+        <i>
+         e
+        </i>
+        18
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      3. redeem()
+      <b>
+       (3)
+      </b>
+      :
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        pop(a) -&gt; assets = []
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        ownerBurn(1e18) -&gt; balance = 1
+        <i>
+         e
+        </i>
+        18
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        transferPoint(a, attacker)
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      4. continue redeem(
+      <b>
+       2
+      </b>
+      ) :
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        ownerBurn(1e18) -&gt; balance = 0
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        transferPoint(b, attacker)
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      5. deposit(b) :
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        transferPoint(b, treasury)
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </p>
+  </div>
+  <div class="page" data-page-id="16">
+   <pre>• push(b) -&gt; assets =[b]
+    • mint(1e18, attacker) -&gt; balance = 1e18
+6. continue redeem(3) :
+    • ownerBurn(1e18) -&gt; balance = 0
+    • transferPoint(c, attacker)
+7. deposit(c) :
+    • transferPoint(c, treasury)
+    • push(c) -&gt; assets = [b, c]
+    • mint(1e18, attacker) -&gt; balance = 1e18</pre>
+   <p block-type="Text">
+    The attacker managed to own star a and only spend 1
+    <i>
+     e
+    </i>
+    18 for it, bypassing the LIFO (
+    <i>
+     "Last In First Out"
+    </i>
+    ) queue.
+   </p>
+   <p block-type="Text">
+    The testing team could not identify an exploitable attack vector for reentrancy on the Treasury contract. However, the testing team notes that the ERC777 and ERC1820 contracts were not included in the scope of this review. As a result, the testing team cannot express any opinions related to the security posture of these contracts.
+   </p>
+   <h4>
+    <b>
+     Recommendations
+    </b>
+   </h4>
+   <p block-type="Text">
+    <span id="page-16-0">
+    </span>
+    ERC777 token contracts do significantly increase the attack surface available to malicious users, compared to simpler ERC20 token contracts. Consider whether the added complexity is worth the extra features provided.
+   </p>
+  </div>
+  <div class="page" data-page-id="17">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       UTR-09
+      </th>
+      <th>
+       Miscellaneous Treasury General Comments
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Asset
+      </td>
+      <td>
+       Treasury.sol
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Status
+      </td>
+      <td colspan="2">
+       Open
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Rating
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    <b>
+     Description
+    </b>
+   </h4>
+   <p block-type="Text">
+    This section details miscellaneous findings discovered by the testing team that do not have direct security implications:
+   </p>
+   <h4>
+    1.
+    <b>
+     No Clear Revert Message
+    </b>
+   </h4>
+   <p block-type="Text">
+    The Treasury contract does not provide clear revert messages upon reverting. Therefore, users or developers may find it hard to track why a transaction fails.
+   </p>
+   <p block-type="Text">
+    We suggest introducing the following revert messages:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      line [
+      <b>
+       81
+      </b>
+      ]:
+      <i>
+       "Treasury: Must be a star"
+      </i>
+      .
+     </li>
+     <li block-type="ListItem">
+      line [
+      <b>
+       122
+      </b>
+      ]:
+      <i>
+       "Treasury: Not enough balance"
+      </i>
+      .
+     </li>
+     <li block-type="ListItem">
+      line [
+      <b>
+       125
+      </b>
+      ]:
+      <i>
+       "Treasury: No star available to redeem"
+      </i>
+      .
+     </li>
+     <li block-type="ListItem">
+      line [
+      <b>
+       132
+      </b>
+      ]:
+      <i>
+       "Treasury: Treasury does not own the star asset to redeem"
+      </i>
+      .
+     </li>
+    </ul>
+   </p>
+   <h4>
+    2.
+    <b>
+     Redundant Star Ownership Check
+    </b>
+   </h4>
+   <p block-type="Text">
+    Treasury contract acquires stars from users who called function deposit() . In this function, the deposited stars' ownership is transferred from the users to Treasury contract and stored in assets list.
+   </p>
+   <p block-type="Text">
+    Function redeem() redeems a star by burning 1e18 STAR tokens and transfers the ownership of a star from assets list to the redeeming user. However, there is an extra star ownership check in line [
+    <b>
+     132
+    </b>
+    ] which is not necessary.
+   </p>
+   <p block-type="Text">
+    As a recommendation, the code on line [
+    <b>
+     132
+    </b>
+    ] can safely be removed.
+   </p>
+   <h4>
+    3.
+    <b>
+     Data Type Unmatched: uint16 for _star and uint32 for point
+    </b>
+   </h4>
+   <p block-type="Text">
+    Variable _star used in Treasury contract is a uint16. This variable matches the point variable in the Azimuth and Ecliptic contracts. _star and point are of type uint16 and uint32 respectively. Although a _star address is represented in
+    <a href="https://urbit.org/docs/glossary/star">
+     16 bits data,
+    </a>
+    we recommend keeping the _star data type to uint32 for code consistency.
+   </p>
+   <h4>
+    <b>
+     Recommendations
+    </b>
+   </h4>
+   <p block-type="Text">
+    Ensure that the comments are understood and acknowledged, and consider implementing the suggestions above.
+   </p>
+  </div>
+  <div class="page" data-page-id="18">
+   <p block-type="Text">
+    Stardust Test Suite
+   </p>
+   <h2>
+    <span id="page-18-0">
+    </span>
+    <b>
+     Appendix A Test Suite
+    </b>
+   </h2>
+   <p block-type="Text">
+    A non-exhaustive list of tests were constructed to aid this security review and are provided alongside this document. The brownie framework was used to perform these tests and the output is given below.
+   </p>
+   <pre>test_const PASSED [3%]
+test_mint PASSED [6%]
+test_burn PASSED [9%]
+test_approve PASSED [12%]
+test_authorizeOperator PASSED [15%]
+test_revokeOperator PASSED [18%]
+test_operatorBurn PASSED [21%]
+test_operatorSend PASSED [24%]
+test_ownerBurn PASSED [27%]
+test_renounceOwnership PASSED [30%]
+test_send PASSED [33%]
+test_transfer PASSED [36%]
+test_transferFrom PASSED [39%]
+test_transferOwnership PASSED [42%]
+test_constructor PASSED [45%]
+test_constructor_multi_deployments PASSED [48%]
+test_initial_state PASSED [51%]
+test_deposit_spawned PASSED [54%]
+test_deposit_spawned_proxy_not_set PASSED [57%]
+test_deposit_spawned_transfer_to_treasury PASSED [60%]
+test_deposit_unspawned PASSED [63%]
+test_deposit_lost_token_redeem_failed PASSED [66%]
+test_redeem_owner PASSED [69%]
+test_redeem_alice PASSED [72%]
+test_redeem_extrabalance PASSED [75%]
+test_redeem_no_star PASSED [78%]
+test_redeem_many_stars PASSED [81%]
+test_deposit_redeem_recipient PASSED [84%]
+test_deposit_redeem_recipient_mod PASSED [87%]
+test_deposit_redeem_recipient_malicious PASSED [90%]
+test_azimuth PASSED [93%]
+test_startoken PASSED [96%]
+test_gldToken PASSED [100%]</pre>
+   <p>
+    <img src="_page_18_Picture_4.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="19">
+   <h2>
+    <span id="page-19-0">
+    </span>
+    <b>
+     Appendix B Vulnerability Severity Classification
+    </b>
+   </h2>
+   <p block-type="Text">
+    This security review classifies vulnerabilities based on their potential impact and likelihood of occurance. The total severity of a vulnerability is derived from these two metrics based on the following matrix.
+   </p>
+   <p>
+    <img src="_page_19_Figure_4.jpeg"/>
+   </p>
+   <p>
+    Table 1: Severity Matrix - How the severity of a vulnerability is given based on the
+    <i>
+     impact
+    </i>
+    and the
+    <i>
+     likelihood
+    </i>
+    of a vulnerability.
+   </p>
+   <h2>
+    <b>
+     References
+    </b>
+   </h2>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      <span id="page-19-1">
+      </span>
+      [1] Sigma Prime. Solidity Security. Blog, 2018, Available:
+      <a href="https://blog.sigmaprime.io/solidity-security.html">
+       https://blog.sigmaprime.io/solidity-security.
+      </a>
+      <a href="https://blog.sigmaprime.io/solidity-security.html">
+       html
+      </a>
+      . [Accessed 2018].
+     </li>
+     <li block-type="ListItem">
+      <span id="page-19-2">
+      </span>
+      [2] NCC Group. DASP - Top 10. Website, 2018, Available:
+      <a href="http://www.dasp.co/">
+       http://www.dasp.co/
+      </a>
+      . [Accessed 2018].
+     </li>
+     <li block-type="ListItem">
+      <span id="page-19-3">
+      </span>
+      [3] Sigma Prime. Solidity Security - Reentrancy. Blog, 2018, Available:
+      <a href="https://blog.sigmaprime.io/solidity-security.html#reentrancy">
+       https://blog.sigmaprime.io/
+      </a>
+      <a href="https://blog.sigmaprime.io/solidity-security.html#reentrancy">
+       solidity-security.html#reentrancy
+      </a>
+      . [Accessed 2018].
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_19_Picture_10.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="20">
+   <p>
+    <img src="_page_20_Picture_0.jpeg"/>
+   </p>
+  </div>
+ </body>
+</html>

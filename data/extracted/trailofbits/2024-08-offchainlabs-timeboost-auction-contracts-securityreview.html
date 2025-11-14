@@ -1,0 +1,2398 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8"/>
+ </head>
+ <body>
+  <div class="page" data-page-id="0">
+   <p>
+    <img src="_page_0_Picture_0.jpeg"/>
+   </p>
+   <h1>
+    <b>
+     Timeboost Auction Contracts
+    </b>
+   </h1>
+   <p block-type="Text">
+    Security Assessment
+   </p>
+   <p block-type="Text">
+    <b>
+     September 25, 2024
+    </b>
+   </p>
+   <p block-type="Text">
+    <i>
+     Prepared for:
+    </i>
+   </p>
+   <p block-type="Text">
+    <b>
+     Offchain Labs
+    </b>
+   </p>
+   <p block-type="Text">
+    <i>
+     Prepared by:
+    </i>
+    <b>
+     Gustavo Grieco, Priyanka Bose, and Michael Colburn
+    </b>
+   </p>
+  </div>
+  <div class="page" data-page-id="1">
+   <h1>
+    <span id="page-1-0">
+    </span>
+    About Trail of Bits
+   </h1>
+   <p block-type="Text">
+    Founded in 2012 and headquartered in New York, Trail of Bits provides technical security assessment and advisory services to some of the world's most targeted organizations. We combine high-end security research with a real-world attacker mentality to reduce risk and fortify code. With 100+ employees around the globe, we've helped secure critical software elements that support billions of end users, including Kubernetes and the Linux kernel.
+   </p>
+   <p block-type="Text">
+    We maintain an exhaustive list of publications at
+    <a href="https://github.com/trailofbits/publications">
+     https://github.com/trailofbits/publications,
+    </a>
+    with links to papers, presentations, public audit reports, and podcast appearances.
+   </p>
+   <p block-type="Text">
+    In recent years, Trail of Bits consultants have showcased cutting-edge research through presentations at CanSecWest, HCSS, Devcon, Empire Hacking, GrrCon, LangSec, NorthSec, the O'Reilly Security Conference, PyCon, REcon, Security BSides, and SummerCon.
+   </p>
+   <p block-type="Text">
+    We specialize in software testing and code review projects, supporting client organizations in the technology, defense, and finance industries, as well as government entities. Notable clients include HashiCorp, Google, Microsoft, Western Digital, and Zoom.
+   </p>
+   <p block-type="Text">
+    Trail of Bits also operates a center of excellence with regard to blockchain security. Notable projects include audits of Algorand, Bitcoin SV, Chainlink, Compound, Ethereum 2.0, MakerDAO, Matic, Uniswap, Web3, and Zcash.
+   </p>
+   <p block-type="Text">
+    To keep up to date with our latest news and announcements, please follow
+    <a href="https://twitter.com/trailofbits">
+     @trailofbits
+    </a>
+    on Twitter and explore our public repositories at
+    <a href="https://github.com/trailofbits">
+     https://github.com/trailofbits.
+    </a>
+    To engage us directly, visit our "Contact" page at
+    <a href="https://www.trailofbits.com/contact">
+     https://www.trailofbits.com/contact,
+    </a>
+    or email us at
+    <a href="mailto:info@trailofbits.com">
+     info@trailofbits.com.
+    </a>
+   </p>
+   <h4>
+    <b>
+     Trail of Bits, Inc.
+    </b>
+   </h4>
+   <p block-type="Text">
+    497 Carroll St., Space 71, Seventh Floor Brooklyn, NY 11215 https://www.trailofbits.com
+    <a href="mailto:info@trailofbits.com">
+     info@trailofbits.com
+    </a>
+   </p>
+   <p>
+    <img src="_page_1_Picture_9.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="2">
+   <h1>
+    <span id="page-2-0">
+    </span>
+    Notices and Remarks
+   </h1>
+   <h3>
+    Copyright and Distribution
+   </h3>
+   <p block-type="Text">
+    © 2024 by Trail of Bits, Inc.
+   </p>
+   <p block-type="Text">
+    All rights reserved. Trail of Bits hereby asserts its right to be identified as the creator of this report in the United Kingdom.
+   </p>
+   <p block-type="Text">
+    This report is considered by Trail of Bits to be public information; it is licensed to Offchain Labs under the terms of the project statement of work and has been made public at Offchain Labs' request. Material within this report may not be reproduced or distributed in part or in whole without the express written permission of Trail of Bits.
+   </p>
+   <p block-type="Text">
+    The sole canonical source for Trail of Bits publications is the Trail of Bits
+    <a href="https://github.com/trailofbits/publications">
+     Publications
+    </a>
+    page. Reports accessed through any source other than that page may have been modified and should not be considered authentic.
+   </p>
+   <h3>
+    Test Coverage Disclaimer
+   </h3>
+   <p block-type="Text">
+    All activities undertaken by Trail of Bits in association with this project were performed in accordance with a statement of work and agreed upon project plan.
+   </p>
+   <p block-type="Text">
+    Security assessment projects are time-boxed and often reliant on information that may be provided by a client, its affiliates, or its partners. As a result, the findings documented in this report should not be considered a comprehensive list of security issues, flaws, or defects in the target system or codebase.
+   </p>
+   <p block-type="Text">
+    Trail of Bits uses automated testing techniques to rapidly test the controls and security properties of software. These techniques augment our manual security review work, but each has its limitations: for example, a tool may not generate a random edge case that violates a property or may not fully complete its analysis during the allotted time. Their use is also limited by the time and resource constraints of a project.
+   </p>
+  </div>
+  <div class="page" data-page-id="3">
+   <h1>
+    <span id="page-3-0">
+    </span>
+    Table of Contents
+   </h1>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+      </th>
+      <th>
+      </th>
+     </tr>
+     <tr>
+      <th>
+       About
+       <br/>
+       Trail
+       <br/>
+       of
+       <br/>
+       Bits
+      </th>
+      <th>
+       1
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Notices
+       <br/>
+       and
+       <br/>
+       Remarks
+      </td>
+      <td>
+       2
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Table
+       <br/>
+       of
+       <br/>
+       Contents
+      </td>
+      <td>
+       3
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Project
+       <br/>
+       Summary
+      </td>
+      <td>
+       4
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Executive
+       <br/>
+       Summary
+      </td>
+      <td>
+       5
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Project
+       <br/>
+       Goals
+      </td>
+      <td>
+       7
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Project
+       <br/>
+       Targets
+      </td>
+      <td>
+       8
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Project
+       <br/>
+       Coverage
+      </td>
+      <td>
+       9
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Codebase
+       <br/>
+       Maturity
+       <br/>
+       Evaluation
+      </td>
+      <td>
+       10
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Summary
+       <br/>
+       of
+       <br/>
+       Findings
+      </td>
+      <td>
+       12
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Detailed
+       <br/>
+       Findings
+      </td>
+      <td>
+       13
+      </td>
+     </tr>
+     <tr>
+      <td>
+       1.
+       <br/>
+       Bids
+       <br/>
+       cannot
+       <br/>
+       be
+       <br/>
+       resolved
+       <br/>
+       if
+       <br/>
+       reservePrice
+       <br/>
+       is
+       <br/>
+       zero
+      </td>
+      <td>
+       13
+      </td>
+     </tr>
+     <tr>
+      <td>
+       2.
+       <br/>
+       Discrepancies
+       <br/>
+       in
+       <br/>
+       the
+       <br/>
+       structure
+       <br/>
+       and
+       <br/>
+       use
+       <br/>
+       of
+       <br/>
+       signatures
+       <br/>
+       between
+       <br/>
+       the
+       <br/>
+       specification
+       <br/>
+       and
+       <br/>
+       implementation
+      </td>
+      <td>
+       15
+      </td>
+     </tr>
+     <tr>
+      <td>
+       3.
+       <br/>
+       No
+       <br/>
+       way
+       <br/>
+       to
+       <br/>
+       burn
+       <br/>
+       auction
+       <br/>
+       proceeds
+      </td>
+      <td>
+       17
+      </td>
+     </tr>
+     <tr>
+      <td>
+       A.
+       <br/>
+       Vulnerability
+       <br/>
+       Categories
+      </td>
+      <td>
+       19
+      </td>
+     </tr>
+     <tr>
+      <td>
+       B.
+       <br/>
+       Code
+       <br/>
+       Maturity
+       <br/>
+       Categories
+      </td>
+      <td>
+       21
+      </td>
+     </tr>
+     <tr>
+      <td>
+       C.
+       <br/>
+       Code
+       <br/>
+       Quality
+       <br/>
+       Recommendations
+      </td>
+      <td>
+       23
+      </td>
+     </tr>
+     <tr>
+      <td>
+       D.
+       <br/>
+       Smart
+       <br/>
+       Contract
+       <br/>
+       Fuzzing
+       <br/>
+       Recommendations
+      </td>
+      <td>
+       24
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <p>
+    <img src="_page_3_Picture_2.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="4">
+   <h1>
+    <span id="page-4-0">
+    </span>
+    Project Summary
+   </h1>
+   <h3>
+    Contact Information
+   </h3>
+   <p block-type="Text">
+    The following project manager was associated with this project:
+   </p>
+   <p block-type="Text">
+    <b>
+     Mary O'Brien
+    </b>
+    , Project Manager
+    <a href="mailto:mary.obrien@trailofbits.com">
+     mary.obrien@trailofbits.com
+    </a>
+   </p>
+   <p block-type="Text">
+    The following engineering director was associated with this project:
+   </p>
+   <p block-type="Text">
+    <b>
+     Josselin Feist
+    </b>
+    , Engineering Director, Blockchain
+    <a href="mailto:josselin.feist@trailofbits.com">
+     josselin.feist@trailofbits.com
+    </a>
+   </p>
+   <p block-type="Text">
+    The following consultants were associated with this project:
+   </p>
+   <p block-type="Text">
+    <b>
+     Gustavo Grieco
+    </b>
+    , Consultant
+    <b>
+     Priyanka Bose
+    </b>
+    , Consultant
+    <a href="mailto:gustavo.grieco@trailofbits.com">
+     gustavo.grieco@trailofbits.com
+    </a>
+    <a href="mailto:priyanka.bose@trailofbits.com">
+     priyanka.bose@trailofbits.com
+    </a>
+   </p>
+   <p block-type="Text">
+    <b>
+     Michael Colburn
+    </b>
+    , Consultant
+    <a href="mailto:michael.colburn@trailofbits.com">
+     michael.colburn@trailofbits.com
+    </a>
+   </p>
+   <h3>
+    Project Timeline
+   </h3>
+   <p block-type="Text">
+    The significant events and milestones of the project are listed below.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Date
+      </th>
+      <th>
+       Event
+      </th>
+     </tr>
+     <tr>
+      <th>
+       August
+       <br/>
+       28,
+       <br/>
+       2024
+      </th>
+      <th>
+       Delivery
+       <br/>
+       of
+       <br/>
+       report
+       <br/>
+       draft
+      </th>
+     </tr>
+     <tr>
+      <th>
+       August
+       <br/>
+       28,
+       <br/>
+       2024
+      </th>
+      <th>
+       Report
+       <br/>
+       readout
+       <br/>
+       meeting
+      </th>
+     </tr>
+     <tr>
+      <th>
+       September
+       <br/>
+       25,
+       <br/>
+       2024
+      </th>
+      <th>
+       Delivery
+       <br/>
+       of
+       <br/>
+       comprehensive
+       <br/>
+       report
+      </th>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="5">
+   <h1>
+    <span id="page-5-0">
+    </span>
+    Executive Summary
+   </h1>
+   <h3>
+    Engagement Overview
+   </h3>
+   <p block-type="Text">
+    Offchain Labs engaged Trail of Bits to review the security of their Timeboost auction contracts. These contracts implement the on-chain components of a sealed-bid, second-price auction for the rights to assign an express lane controller whose transactions are processed faster by the sequencer for a set period of time.
+   </p>
+   <p block-type="Text">
+    A team of three consultants conducted the review from August 19 to August 27, 2024, for a total of three engineer-weeks of effort. With full access to source code and documentation, we performed static and dynamic testing of the codebase using automated and manual processes.
+   </p>
+   <h3>
+    Observations and Impact
+   </h3>
+   <p block-type="Text">
+    The codebase includes extensive NatSpec documentation, and the project's specification provides a comprehensive description of the system's functionality, the roles involved, and the auction mechanism, though we did note several minor discrepancies between the written specification and the implementation.
+   </p>
+   <p block-type="Text">
+    During the review, we evaluated the access controls, the accuracy of updating the round timing info, the possibility of malicious bidders evading bidding amount, the potential for introducing bias during the selection of the winning bid, and any possibility that could halt the auction's progression. Our review resulted in three issues ranging in severity from medium to informational. The medium-severity issue highlights an unhandled edge case that could prevent an auction round from being finalized
+    <a href="#page-13-1">
+     (TOB-ELA-1)
+    </a>
+    , and the remaining informational issues are related to discrepancies with the specification
+    <a href="#page-15-0">
+     (TOB-ELA-2,
+    </a>
+    <a href="#page-17-0">
+     TOB-ELA-3)
+    </a>
+    .
+   </p>
+   <h3>
+    Recommendations
+   </h3>
+   <p block-type="Text">
+    Based on the codebase maturity evaluation and findings identified during the security review, Trail of Bits recommends that Offchain Labs take the following steps:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      <b>
+       Remediate the TOB-ELA-002 issue disclosed in this report.
+      </b>
+      This finding should be addressed as part of a direct remediation or as part of any refactor that may occur when addressing other recommendations.
+     </li>
+     <li block-type="ListItem">
+      <b>
+       Add a stateful fuzzing test suite.
+      </b>
+      Trail of Bits considers stateful fuzzing to be a baseline requirement for DeFi protocols and applications and recommends fuzzing the system's user flows and arithmetic calculations.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_5_Picture_11.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="6">
+   <p block-type="Text">
+    ●
+    <b>
+     Align implementation with the specification.
+    </b>
+    A number of discrepancies exist between the specification and the actual implementation. These two should be aligned to eliminate any gaps between them.
+   </p>
+   <h3>
+    Finding Severities and Categories
+   </h3>
+   <p block-type="Text">
+    The following tables provide the number of findings by severity and category.
+   </p>
+   <h4>
+    EXPOSURE ANALYSIS
+   </h4>
+   <p>
+    <img src="_page_6_Picture_4.jpeg"/>
+   </p>
+   <h4>
+    CATEGORY BREAKDOWN
+   </h4>
+   <p>
+    <img src="_page_6_Figure_6.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="7">
+   <h1>
+    <span id="page-7-0">
+    </span>
+    Project Goals
+   </h1>
+   <p block-type="Text">
+    The engagement was scoped to provide a security assessment of Offchain Labs' Timeboost design. Specifically, we sought to answer the following non-exhaustive list of questions:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Are proper access controls used in the contracts that users interact with?
+     </li>
+     <li block-type="ListItem">
+      Could an unauthorized user disrupt the auction?
+     </li>
+     <li block-type="ListItem">
+      Could one user withdraw another user's tokens?
+     </li>
+     <li block-type="ListItem">
+      Are any of the components vulnerable to price manipulation?
+     </li>
+     <li block-type="ListItem">
+      Could a user's funds become frozen or stuck?
+     </li>
+     <li block-type="ListItem">
+      Are events used appropriately?
+     </li>
+     <li block-type="ListItem">
+      Is the actual implementation in line with the provided specification?
+     </li>
+     <li block-type="ListItem">
+      Do auction rounds always start and end at the expected time?
+     </li>
+     <li block-type="ListItem">
+      Can a round be resolved multiple times?
+     </li>
+     <li block-type="ListItem">
+      Could the use of signed arithmetic in the system's timekeeping allow the system to be put in an unexpected state?
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_7_Picture_12.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="8">
+   <h1>
+    <span id="page-8-0">
+    </span>
+    Project Targets
+   </h1>
+   <p block-type="Text">
+    The engagement involved a review and testing of the following targets.
+   </p>
+   <h4>
+    express-lane-auction (PR 214)
+   </h4>
+   <p block-type="Text">
+    Repository
+    <a href="https://github.com/OffchainLabs/nitro-contracts">
+     https://github.com/OffchainLabs/nitro-contracts
+    </a>
+   </p>
+   <p block-type="Text">
+    Version 9dc19d21c0ba0df89529cc0085915fa9565ecafd (initial)
+   </p>
+   <p block-type="Text">
+    84ade5042533fb35c3f30ae7bfec85580eba461d (fixes)
+   </p>
+   <p block-type="Text">
+    Type Solidity
+   </p>
+   <p block-type="Text">
+    Platform EVM
+   </p>
+   <h4>
+    timeboost-design
+   </h4>
+   <p block-type="Text">
+    Repository
+    <a href="https://github.com/OffchainLabs/timeboost-design">
+     https://github.com/OffchainLabs/timeboost-design
+    </a>
+   </p>
+   <p block-type="Text">
+    Version 02846291b669d559c4bbf13e2ea0d499864d043b
+   </p>
+   <p block-type="Text">
+    Type Markdown
+   </p>
+  </div>
+  <div class="page" data-page-id="9">
+   <h1>
+    <span id="page-9-0">
+    </span>
+    Project Coverage
+   </h1>
+   <p block-type="Text">
+    This section provides an overview of the analysis coverage of the review, as determined by our high-level engagement goals. Our approaches included the following:
+   </p>
+   <p block-type="Text">
+    ●
+    <b>
+     Timeboost auction smart contracts
+    </b>
+    . The on-chain part of the Timeboost auction protocol is implemented using several smart contracts, which will allow any user to deposit funds, withdraw their funds, or temporarily select the express lane controller if they win the auction. Privileged users can also perform administrative operations, such as change the protocol parameters or resolve auctions, by submitting bids received off-chain.
+   </p>
+   <p block-type="Text">
+    We reviewed these contracts for common Solidity issues as well as any issues related to access control violations, accuracy of updating round timing information, and any deviations of the implementation from the standard. We also explored the potential for malicious bidders to manipulate bidding amounts during the auction, the possibility of fund loss or theft from the contracts, and whether users from the protocol could block bids, or somehow delay or disrupt the auction.
+   </p>
+   <h3>
+    Coverage Limitations
+   </h3>
+   <p block-type="Text">
+    Because of the time-boxed nature of testing work, it is common to encounter coverage limitations. The following list outlines the coverage limitations of the engagement and indicates system elements that may warrant further review:
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      While we reviewed the informal specification of the Timeboost auction mechanism for inconsistencies, we did not review some aspects of this mechanism, such as the high-level impact to the rollups or the economic soundness.
+     </li>
+     <li block-type="ListItem">
+      We did not review the off-chain components of the Timeboost protocol.
+     </li>
+    </ul>
+   </p>
+  </div>
+  <div class="page" data-page-id="10">
+   <h1>
+    <span id="page-10-0">
+    </span>
+    Codebase Maturity Evaluation
+   </h1>
+   <p block-type="Text">
+    Trail of Bits uses a traffic-light protocol to provide each client with a clear understanding of the areas in which its codebase is mature, immature, or underdeveloped. Deficiencies identified here often stem from root causes within the software development life cycle that should be addressed through standardization measures (e.g., the use of common libraries, functions, or frameworks) or training and awareness programs.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Category
+      </th>
+      <th>
+       Summary
+      </th>
+      <th>
+       Result
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Arithmetic
+      </td>
+      <td>
+       Overall, the system does not rely on complex arithmetic,
+       <br/>
+       and arithmetic use seems safe. Additionally, the protocol
+       <br/>
+       is implemented using Solidity 0.8.9, which has overflow
+       <br/>
+       protection by default for arithmetic operations, and the
+       <br/>
+       contracts do not include any unchecked
+       <br/>
+       blocks. The
+       <br/>
+       system's operations depend on certain privileged actors
+       <br/>
+       manually executing essential tasks (via off-chain
+       <br/>
+       executions). However, certain features, such as the round
+       <br/>
+       offset that relies on signed numbers, should be properly
+       <br/>
+       documented in the code and the standard to ensure that
+       <br/>
+       their properties are not violated by other contracts.
+      </td>
+      <td>
+       Satisfactory
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Auditing
+      </td>
+      <td>
+       All system operations emit events that include sufficient
+       <br/>
+       context for effective off-chain monitoring. However,
+       <br/>
+       there is a general lack of documentation about the
+       <br/>
+       implications of each event and what kind of events could
+       <br/>
+       indicate unexpected behavior.
+      </td>
+      <td>
+       Satisfactory
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Authentication /
+       <br/>
+       Access Controls
+      </td>
+      <td>
+       The system heavily relies on access controls to protect
+       <br/>
+       arbitrary users from calling privileged functions. The core
+       <br/>
+       contract divides these responsibilities across seven
+       <br/>
+       different roles, in addition to the default admin role.
+       <br/>
+       Most functions are restricted to either a special privileged
+       <br/>
+       user or the DAO governance to call.
+      </td>
+      <td>
+       Satisfactory
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Complexity
+       <br/>
+       Management
+      </td>
+      <td>
+       The functions and contracts are organized and scoped
+       <br/>
+       appropriately and contain inline documentation that
+       <br/>
+       explains their workings.
+      </td>
+      <td>
+       Satisfactory
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Decentralization
+      </td>
+      <td>
+       As the client has indicated, the use of off-chain
+       <br/>
+       components and the privileged users lowers the
+       <br/>
+       decentralization level of the protocol, but this is well
+      </td>
+      <td>
+       Moderate
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="11">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+      </th>
+      <th>
+       documented. For example, the auctioneer is trusted to
+       <br/>
+       not censor bids and resolve auctions according to the
+       <br/>
+       specification.
+      </th>
+      <th>
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Documentation
+      </td>
+      <td>
+       The project has good high-level documentation, a
+       <br/>
+       specification indicating the behavior of the system, and
+       <br/>
+       good use of NatSpec and inline comments. However, the
+       <br/>
+       system's invariants are not specified.
+      </td>
+      <td>
+       Satisfactory
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Testing and
+       <br/>
+       Verification
+      </td>
+      <td>
+       The codebase contains a number of unit and integration
+       <br/>
+       tests, as well a small amount of fuzz testing properties.
+       <br/>
+       However, the tests are insufficient to catch
+       <br/>
+       medium-severity issues, which indicates that the test
+       <br/>
+       suite should be improved. The codebase would benefit
+       <br/>
+       from expanded fuzz testing, as described in appendix D.
+      </td>
+      <td>
+       Moderate
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Transaction
+       <br/>
+       Ordering
+      </td>
+      <td>
+       While on-chain auction implementations are usually
+       <br/>
+       susceptible to transaction ordering, this does not apply
+       <br/>
+       directly since bids are resolved using a trusted user. This
+       <br/>
+       user only performs the resolution of the bid on-chain and
+       <br/>
+       is supposed to verify the state of the blockchain before
+       <br/>
+       submitting transactions to the network to ensure that
+       <br/>
+       user balances are sufficient.
+      </td>
+      <td>
+       Satisfactory
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="12">
+   <h1>
+    <span id="page-12-0">
+    </span>
+    Summary of Findings
+   </h1>
+   <p block-type="Text">
+    The table below summarizes the findings of the review, including type and severity details.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       ID
+      </th>
+      <th>
+       Title
+      </th>
+      <th>
+       Type
+      </th>
+      <th>
+       Severity
+      </th>
+     </tr>
+     <tr>
+      <td>
+       1
+      </td>
+      <td>
+       Bids cannot be resolved if reservePrice is zero
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Medium
+      </td>
+     </tr>
+     <tr>
+      <td>
+       2
+      </td>
+      <td>
+       Discrepancies in the structure and use of
+       <br/>
+       signatures between the specification and
+       <br/>
+       implementation
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+     <tr>
+      <td>
+       3
+      </td>
+      <td>
+       No way to burn auction proceeds
+      </td>
+      <td>
+       Data Validation
+      </td>
+      <td>
+       Informational
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="13">
+   <h1>
+    <span id="page-13-0">
+    </span>
+    Detailed Findings
+   </h1>
+   <span id="page-13-1">
+   </span>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="2">
+       1.
+       <br/>
+       Bids
+       <br/>
+       cannot
+       <br/>
+       be
+       <br/>
+       resolved
+       <br/>
+       if
+       <br/>
+       reservePrice
+       <br/>
+       is
+       <br/>
+       zero
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Severity:
+       <br/>
+       Medium
+      </td>
+      <td>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       High
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+       <br/>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-ELA-1
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       src/express-lane-auction/Balance.sol
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    Auction resolution will revert if the reserve price is zero, blocking the express lane controller address from being assigned for that round.
+   </p>
+   <p block-type="Text">
+    Express lane controller selection is performed through a second-bid auction, where a privileged user will call the resolveSingleBidAuction or resolveMultiBidAuction function to resolve an auction using valid signatures from users willing to pay a particular amount.
+   </p>
+   <pre>/// @inheritdoc IExpressLaneAuction
+   function resolveSingleBidAuction(Bid calldata firstPriceBid)
+       External
+392 /// @inheritdoc IExpressLaneAuction
+393 function resolveSingleBidAuction(Bid calldata firstPriceBid)
+394 external
+395 onlyRole(AUCTIONEER_ROLE)
+...
+422 /// @inheritdoc IExpressLaneAuction
+423 function resolveMultiBidAuction(Bid calldata firstPriceBid, Bid calldata
+secondPriceBid)
+424 external
+425 onlyRole(AUCTIONEER_ROLE)</pre>
+   <p>
+    <i>
+     Figure 1.1: The headers of the functions used by the auctioneer to resolve auctions (
+     <a href="https://github.com/OffchainLabs/nitro-contracts/blob/9dc19d21c0ba0df89529cc0085915fa9565ecafd/src/express-lane-auction/ExpressLaneAuction.sol#L392-L425">
+      src/express-lane-auction/ExpressLaneAuction.sol#L392-L425
+     </a>
+     )
+    </i>
+   </p>
+   <p block-type="Text">
+    When an auction is resolved, the price paid for the bid is taken from the balance of the bidder:
+   </p>
+   <pre>308 function resolveAuction(
+309 bool isMultiBid,
+310 Bid calldata firstPriceBid,
+311 address firstPriceBidder,
+312 uint256 priceToPay,</pre>
+  </div>
+  <div class="page" data-page-id="14">
+   <pre>313 uint64 biddingInRound,
+314 uint64 roundStart,
+315 uint64 roundEnd
+316 ) internal {
+317 // store that a round has been resolved
+318 uint64 biddingForRound = biddingInRound + 1;
+319 latestResolvedRounds.setResolvedRound(biddingForRound,
+firstPriceBid.expressLaneController);
+320
+321 // first price bidder pays the beneficiary
+322 _balanceOf[firstPriceBidder].reduce(priceToPay, biddingInRound);</pre>
+   <p>
+    <i>
+     Figure 1.2: A snippet of the resolveAuction function showing the price being deducted from the winning bidder's balance
+    </i>
+   </p>
+   <p block-type="Text">
+    <i>
+     (
+     <a href="https://github.com/OffchainLabs/nitro-contracts/blob/9dc19d21c0ba0df89529cc0085915fa9565ecafd/src/express-lane-auction/ExpressLaneAuction.sol#L308-L322">
+      src/express-lane-auction/ExpressLaneAuction.sol#L308-L322
+     </a>
+     )
+    </i>
+   </p>
+   <p block-type="Text">
+    However, if the price to pay is zero, the balance reduction will revert.
+   </p>
+   <pre>77 function reduce(
+78 Balance storage bal,
+79 uint256 amount,
+80 uint64 round
+81 ) internal {
+82 if (amount == 0) {
+83 revert ZeroAmount();
+84 }</pre>
+   <p>
+    <i>
+     Figure 1.3: A snippet of the reduce library function that expects a non-zero deduction (
+     <a href="https://github.com/OffchainLabs/nitro-contracts/blob/9dc19d21c0ba0df89529cc0085915fa9565ecafd/src/express-lane-auction/Balance.sol#L77-L84">
+      src/express-lane-auction/Balance.sol#L77-L84
+     </a>
+     )
+    </i>
+   </p>
+   <h4>
+    Exploit Scenario
+   </h4>
+   <p block-type="Text">
+    The reserve price is set to zero and Alice is the sole bidder for a round. Since this is a second-price auction, she should pay the reserve price when the auction for this round is resolved. The auctioneer calls the resolveSingleBidAuction function and passes in Alice's bid. The call reverts when it attempts to deduct zero tokens from Alice's balance. As a result, no express lane controller can be assigned for that round.
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, consider allowing the reduce function to decrement zero.
+   </p>
+   <p block-type="Text">
+    Long term, use fuzz testing to detect unexpected reverts caused by calling different functions of the smart contracts.
+   </p>
+   <h3>
+    Fix Status
+   </h3>
+   <p block-type="Text">
+    Resolved in PR
+    <a href="https://github.com/OffchainLabs/nitro-contracts/pull/243">
+     243
+    </a>
+    . The updated code allows for bids of zero tokens as long as the bidder has a non-zero balance.
+   </p>
+  </div>
+  <div class="page" data-page-id="15">
+   <h3>
+    <span id="page-15-0">
+    </span>
+    2. Discrepancies in the structure and use of signatures between the specification and implementation
+   </h3>
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Severity:
+       <br/>
+       Informational
+      </th>
+      <th>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+      </td>
+      <td>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-ELA-2
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       src/express-lane-auction/ExpressLaneAuction.sol
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    Bids that are submitted to an express lane auction round include signatures that must be validated on-chain. While reviewing the specification and implementation, we identified several minor discrepancies between the documentation and the contract's use of signatures. These differences do not compromise the integrity of the signatures used by the system, but may result in integration issues for third parties attempting to bid.
+   </p>
+   <p block-type="Text">
+    The written specification defines a bid as containing "(chainId, auctionContractAddress, roundNumber, bid, expressLaneControllerAddress, signature)" and defines the signature as being "signature by the bidder's private key on the tuple (chainId, auctionContractAddress, roundNumber, bid, expressLaneControllerAddress)". A code comment in the IExpressLaneAuction contract further specifies an EIP-191 personal_sign message format for the signature using all of the fields mentioned above (though with the order of the last two fields swapped).
+   </p>
+   <p block-type="Text">
+    However, the contract actually expects an EIP-712 signature with the chainId and auctionContractAddress in the domain separator, and the actual bid being constructed of the remaining three fields (again, with the order of the last two fields swapped relative to the specification), as shown in figure 2.1.
+   </p>
+   <pre>356 function getBidHash(
+357 uint64 round,
+358 address expressLaneController,
+359 uint256 amount
+360 ) public view returns (bytes32) {
+361 return
+362 _hashTypedDataV4(
+363 keccak256(abi.encode(BID_DOMAIN, round, expressLaneController,
+amount))
+364 );
+365 }</pre>
+   <p>
+    <i>
+     Figure 2.1: The getBidHash function definition showing the order of the bid parameters
+     <a href="https://github.com/OffchainLabs/nitro-contracts/blob/9dc19d21c0ba0df89529cc0085915fa9565ecafd/src/express-lane-auction/ExpressLaneAuction.sol#L356-L365">
+      src/express-lane-auction/ExpressLaneAuction.sol#L356-L365
+     </a>
+    </i>
+   </p>
+  </div>
+  <div class="page" data-page-id="16">
+   <p block-type="Text">
+    This also has trickle-down effects on how ties will be broken by the contract. The specification states that if the top two bidders submit bids with identical amounts, then "the tie is broken by hashing the bidder address concatenated with the respective byte-string representation of the bid using the Keccak256 hashing scheme." However, since the contract considers a bid to be constructed differently than the specification, the outcome of the tie breaking process will differ. Additionally, rather than concatenating the bidder's address with the full byte-string representation of the bid, the contract uses a hash of the bid (figure 2.2).
+   </p>
+   <pre>460 // when bids have the same amount we break ties based on the bid hash
+461 // although we include equality in the check we know this isnt possible due
+462 // to the check above that ensures the first price bidder and second price
+bidder are different
+463 if (
+464 firstPriceBid.amount == secondPriceBid.amount &amp;&amp;
+465 uint256(keccak256(abi.encodePacked(firstPriceBidder, firstBidHash))) &lt;
+466 uint256(keccak256(abi.encodePacked(secondPriceBidder, secondBidHash)))
+467 ) {
+468 revert TieBidsWrongOrder();
+469 }</pre>
+   <p>
+    <i>
+     Figure 2.2: A portion of the resolveMultiBidAuction function body showing the tie breaking logic
+     <a href="https://github.com/OffchainLabs/nitro-contracts/blob/9dc19d21c0ba0df89529cc0085915fa9565ecafd/src/express-lane-auction/ExpressLaneAuction.sol#L460-L469">
+      src/express-lane-auction/ExpressLaneAuction.sol#L460-L469
+     </a>
+    </i>
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, update the specification to match the implemented behavior.
+   </p>
+   <p block-type="Text">
+    Long term, review the Arbitrum-related specifications across components and resolve any discrepancies.
+   </p>
+   <h3>
+    Fix Status
+   </h3>
+   <p block-type="Text">
+    Unresolved.
+   </p>
+  </div>
+  <div class="page" data-page-id="17">
+   <span id="page-17-0">
+   </span>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="2">
+       3.
+       <br/>
+       No
+       <br/>
+       way
+       <br/>
+       to
+       <br/>
+       burn
+       <br/>
+       auction
+       <br/>
+       proceeds
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Severity:
+       <br/>
+       Informational
+      </td>
+      <td>
+       Diffi
+       <br/>
+       culty:
+       <br/>
+       Low
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Type:
+       <br/>
+       Data
+       <br/>
+       Validation
+       <br/>
+       Finding
+       <br/>
+       ID:
+       <br/>
+       TOB-ELA-3
+      </td>
+     </tr>
+     <tr>
+      <td colspan="2">
+       Target:
+       <br/>
+       src/express-lane-auction/ExpressLaneAuction.sol
+      </td>
+     </tr>
+    </tbody>
+   </table>
+   <h4>
+    Description
+   </h4>
+   <p block-type="Text">
+    According to the Timeboost specification, after deducting the funds from the highest bidder, the contract should "transfer those funds to a beneficiary account designated by governance, or burn them if governance specifies that the proceeds are to be burned." However, the contract does not include any mechanism to signal that the proceeds should be burned either at the time of auction resolution or when the funds are later transferred out of the contract. At the time of auction resolution, the funds are escrowed in an internal beneficiary account (figure 3.1) that can be emptied at a later date.
+   </p>
+   <pre>308 function resolveAuction(
+309 bool isMultiBid,
+310 Bid calldata firstPriceBid,
+311 address firstPriceBidder,
+312 uint256 priceToPay,
+313 uint64 biddingInRound,
+314 uint64 roundStart,
+315 uint64 roundEnd
+316 ) internal {
+317 // store that a round has been resolved
+318 uint64 biddingForRound = biddingInRound + 1;
+319 latestResolvedRounds.setResolvedRound(biddingForRound,
+firstPriceBid.expressLaneController);
+320
+321 // first price bidder pays the beneficiary
+322 _balanceOf[firstPriceBidder].reduce(priceToPay, biddingInRound);
+323 beneficiaryBalance += priceToPay;</pre>
+   <p>
+    <i>
+     Figure 3.1: A snippet of the resolveAuction function definition showing the proceeds being escrowed (
+     <a href="https://github.com/OffchainLabs/nitro-contracts/blob/9dc19d21c0ba0df89529cc0085915fa9565ecafd/src/express-lane-auction/ExpressLaneAuction.sol#L308-L323">
+      src/express-lane-auction/ExpressLaneAuction.sol#L308-L323
+     </a>
+     )
+    </i>
+   </p>
+   <p block-type="Text">
+    The only way to access the beneficiary account is via the flushBeneficiaryBalance function (figure 3.2). Any user can call this function, which will transfer the entire beneficiary balance to the currently designated beneficiary address.
+   </p>
+   <pre>291 function flushBeneficiaryBalance() public {
+292 uint256 bal = beneficiaryBalance;
+293 if (bal == 0) {</pre>
+  </div>
+  <div class="page" data-page-id="18">
+   <pre>294 revert ZeroAmount();
+295 }
+296 beneficiaryBalance = 0;
+297 biddingToken.safeTransfer(beneficiary, bal);
+298 }</pre>
+   <p>
+    <i>
+     Figure 3.2: The flushBeneficiaryBalance function (
+     <a href="https://github.com/OffchainLabs/nitro-contracts/blob/9dc19d21c0ba0df89529cc0085915fa9565ecafd/src/express-lane-auction/ExpressLaneAuction.sol#L291-L298">
+      src/express-lane-auction/ExpressLaneAuction.sol#L291-L298
+     </a>
+     )
+    </i>
+   </p>
+   <h4>
+    Recommendations
+   </h4>
+   <p block-type="Text">
+    Short term, add functionality to explicitly signal that tokens should be burned, or update the specification to reflect that the currently implemented behavior is correct.
+   </p>
+   <p block-type="Text">
+    Long term, review the Arbitrum-related specifications across components and resolve any discrepancies.
+   </p>
+   <h3>
+    Fix Status
+   </h3>
+   <p block-type="Text">
+    Resolved in PR
+    <a href="https://github.com/OffchainLabs/nitro-contracts/pull/242">
+     242
+    </a>
+    . The Offchain Labs team has added a new Burner contract that can be deployed if needed and set as the beneficiary in the event that governance decides to configure the system to burn auction proceeds.
+   </p>
+  </div>
+  <div class="page" data-page-id="19">
+   <h1>
+    <span id="page-19-0">
+    </span>
+    A. Vulnerability Categories
+   </h1>
+   <p block-type="Text">
+    The following tables describe the vulnerability categories, severity levels, and difficulty levels used in this document.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="2">
+       Vulnerability Categories
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Category
+      </th>
+      <th>
+       Description
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Access Controls
+      </th>
+      <td>
+       Insufficient authorization or assessment of rights
+      </td>
+     </tr>
+     <tr>
+      <th>
+       Auditing and Logging
+      </th>
+      <th>
+       Insufficient auditing of actions or logging of problems
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Authentication
+      </th>
+      <th>
+       Improper identification of users
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Configuration
+      </th>
+      <th>
+       Misconfigured servers, devices, or software components
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Cryptography
+      </th>
+      <th>
+       A breach of system confidentiality or integrity
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Data Exposure
+      </th>
+      <th>
+       Exposure of sensitive information
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Data Validation
+      </th>
+      <td>
+       Improper reliance on the structure or values of data
+      </td>
+     </tr>
+     <tr>
+      <th>
+       Denial of Service
+      </th>
+      <td>
+       A system failure with an availability impact
+      </td>
+     </tr>
+     <tr>
+      <th>
+       Error Reporting
+      </th>
+      <td>
+       Insecure or insufficient reporting of error conditions
+      </td>
+     </tr>
+     <tr>
+      <th>
+       Patching
+      </th>
+      <th>
+       Use of an outdated software package or library
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Session Management
+      </th>
+      <th>
+       Improper identification of authenticated users
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Testing
+      </th>
+      <th>
+       Insufficient test methodology or test coverage
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Timing
+      </th>
+      <th>
+       Race conditions or other order-of-operations flaws
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Undefined Behavior
+      </th>
+      <th>
+       Undefined behavior triggered within the system
+      </th>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="20">
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="2">
+       Severity Levels
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Severity
+      </th>
+      <th>
+       Description
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Informational
+      </th>
+      <th>
+       The issue does not pose an immediate risk but is relevant to security best
+       <br/>
+       practices.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Undetermined
+      </th>
+      <th>
+       The extent of the risk was not determined during this engagement.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Low
+      </th>
+      <th>
+       The risk is small or is not one the client has indicated is important.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Medium
+      </th>
+      <th>
+       User information is at risk; exploitation could pose reputational, legal, or
+       <br/>
+       moderate financial risks.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       High
+      </th>
+      <th>
+       The flaw could affect numerous users and have serious reputational, legal,
+       <br/>
+       or financial implications.
+      </th>
+     </tr>
+    </tbody>
+   </table>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="2">
+       Diffi
+       <br/>
+       culty Levels
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Diffi
+       <br/>
+       culty
+      </th>
+      <th>
+       Description
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Undetermined
+      </td>
+      <td>
+       The difficulty of exploitation was not determined during this engagement.
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Low
+      </td>
+      <td>
+       The flaw is well known; public tools for its exploitation exist or can be
+       <br/>
+       scripted.
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Medium
+      </td>
+      <td>
+       An attacker must write an exploit or will need in-depth knowledge of the
+       <br/>
+       system.
+      </td>
+     </tr>
+     <tr>
+      <td>
+       High
+      </td>
+      <td>
+       An attacker must have privileged access to the system, may need to know
+       <br/>
+       complex technical details, or must discover other weaknesses to exploit this
+       <br/>
+       issue.
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="21">
+   <h1>
+    <span id="page-21-0">
+    </span>
+    B. Code Maturity Categories
+   </h1>
+   <p block-type="Text">
+    The following tables describe the code maturity categories and rating criteria used in this document.
+   </p>
+   <table>
+    <tbody>
+     <tr>
+      <th colspan="2">
+       Code Maturity Categories
+      </th>
+     </tr>
+     <tr>
+      <td>
+       Category
+      </td>
+      <td>
+       Description
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Arithmetic
+      </td>
+      <td>
+       The proper use of mathematical operations and semantics
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Auditing
+      </td>
+      <td>
+       The use of event auditing and logging to support monitoring
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Authentication /
+       <br/>
+       Access Controls
+      </td>
+      <td>
+       The use of robust access controls to handle identification and
+       <br/>
+       authorization and to ensure safe interactions with the system
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Complexity
+       <br/>
+       Management
+      </td>
+      <td>
+       The presence of clear structures designed to manage system complexity,
+       <br/>
+       including the separation of system logic into clearly defined functions
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Cryptography and
+       <br/>
+       Key Management
+      </td>
+      <td>
+       The safe use of cryptographic primitives and functions, along with the
+       <br/>
+       presence of robust mechanisms for key generation and distribution
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Decentralization
+      </td>
+      <td>
+       The presence of a decentralized governance structure for mitigating
+       <br/>
+       insider threats and managing risks posed by contract upgrades
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Documentation
+      </td>
+      <td>
+       The presence of comprehensive and readable codebase documentation
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Low-Level
+       <br/>
+       Manipulation
+      </td>
+      <td>
+       The justified use of inline assembly and low-level calls
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Testing and
+       <br/>
+       Verification
+      </td>
+      <td>
+       The presence of robust testing procedures (e.g., unit tests, integration
+       <br/>
+       tests, and verification methods) and sufficient test coverage
+      </td>
+     </tr>
+     <tr>
+      <td>
+       Transaction
+       <br/>
+       Ordering
+      </td>
+      <td>
+       The system's resistance to transaction-ordering attacks
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="22">
+   <table>
+    <tbody>
+     <tr>
+      <th>
+       Rating Criteria
+      </th>
+      <th>
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Rating
+      </th>
+      <th>
+       Description
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Strong
+      </th>
+      <th>
+       No issues were found, and the system exceeds industry standards.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Satisfactory
+      </th>
+      <th>
+       Minor issues were found, but the system is compliant with best practices.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Moderate
+      </th>
+      <th>
+       Some issues that may affect system safety were found.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Weak
+      </th>
+      <th>
+       Many issues that affect system safety were found.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Missing
+      </th>
+      <th>
+       A required component is missing, significantly affecting system safety.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Not Applicable
+      </th>
+      <th>
+       The category is not applicable to this review.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Not Considered
+      </th>
+      <th>
+       The category was not considered in this review.
+      </th>
+     </tr>
+     <tr>
+      <th>
+       Further
+       <br/>
+       Investigation
+       <br/>
+       Required
+      </th>
+      <th>
+       Further investigation is required to reach a meaningful conclusion.
+      </th>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <div class="page" data-page-id="23">
+   <h1>
+    <span id="page-23-0">
+    </span>
+    C. Code Quality Recommendations
+   </h1>
+   <p block-type="Text">
+    The following recommendations are not associated with specific vulnerabilities. However, they enhance code readability and may prevent the introduction of vulnerabilities in the future.
+   </p>
+   <h3>
+    Smart Contracts
+   </h3>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Update the out-of-date comment at the top of the Balance contract that suggests that a pending withdrawal will block future deposits, as the current behavior will allow deposits at any time and remove any pending withdrawals instead.
+     </li>
+     <li block-type="ListItem">
+      Clarify the expected bounds on the roundDurationSeconds field of a RoundTimingInfo struct. The code comment for the field suggests that the valid range is strictly less than 86400, but the validation in the setRoundTimingInfoInternal function accepts a value less than or equal to 86400.
+     </li>
+    </ul>
+   </p>
+   <h3>
+    Unit Tests
+   </h3>
+   <p block-type="Text">
+    ● The testSetBeneficiary test has an unused variable named newBeneficiary2 that should be removed.
+   </p>
+   <pre>1741 function testSetBeneficiary() public {
+1742 ResolveSetup memory rs = deployDepositAndBids();
+1743 vm.stopPrank();
+1744
+1745 address newBeneficiary = vm.addr(9090);
+1746 address newBeneficiary2 = vm.addr(9091);
+1747
+1748 bytes memory revertString = abi.encodePacked(
+1749 "AccessControl: account ",
+1750 Strings.toHexString(uint160(address(this)), 20),
+1751 " is missing role ",
+1752 Strings.toHexString(uint256(rs.auction.BENEFICIARY_SETTER_ROLE()),
+32)
+1753 );
+1754 vm.expectRevert(revertString);
+1755 rs.auction.setBeneficiary(newBeneficiary);
+1756
+1757 vm.prank(beneficiarySetter);
+1758 vm.expectEmit(true, true, true, true);
+1759 emit SetBeneficiary(beneficiary, newBeneficiary);
+1760 rs.auction.setBeneficiary(newBeneficiary);
+1761 assertEq(rs.auction.beneficiary(), newBeneficiary, "new beneficiary");
+1762 }</pre>
+   <p>
+    <i>
+     Figure C.1: The testSetBeneficiary unit test with an unused variable (
+     <a href="https://github.com/OffchainLabs/nitro-contracts/blob/9dc19d21c0ba0df89529cc0085915fa9565ecafd/test/foundry/ExpressLaneAuction.t.sol#L1741-L1762">
+      test/foundry/ExpressLaneAuction.t.sol#L1741-L1762
+     </a>
+     )
+    </i>
+   </p>
+  </div>
+  <div class="page" data-page-id="24">
+   <h1>
+    <span id="page-24-0">
+    </span>
+    D. Smart Contract Fuzzing Recommendations
+   </h1>
+   <p block-type="Text">
+    The following recommendations are related to the use of fuzz testing on the Express Lane Auction smart contracts.
+   </p>
+   <p block-type="Text">
+    ● Make sure you cover both stateless and stateful invariants. The current code favors stateless tests, even if the code is used with different states. For instance, this is how the Balance contract tests that balances are reduced to zero after the withdrawal round:
+   </p>
+   <pre>51 function testBalanceAtRound(
+52 uint256 initialBalance,
+53 uint64 initialRound,
+54 uint64 withdrawalRound
+55 ) public {
+56 Balance memory bal = Balance(initialBalance, initialRound);
+57 BalanceImp b = new BalanceImp(bal);
+58 if (withdrawalRound &gt;= initialRound) {
+59 assertEq(b.balanceAtRound(withdrawalRound), 0);
+60 } else {
+61 assertEq(b.balanceAtRound(withdrawalRound), initialBalance);
+62 }
+63 }</pre>
+   <p>
+    <i>
+     Figure D.1: The testBalanceAtRound fuzz test for checking how the contract behaves depending on the withdrawal round (
+     <a href="https://github.com/OffchainLabs/nitro-contracts/blob/9dc19d21c0ba0df89529cc0085915fa9565ecafd/test/foundry/ExpressLaneBalance.t.sol#L51-L63">
+      test/foundry/ExpressLaneBalance.t.sol#L51-L63
+     </a>
+     )
+    </i>
+   </p>
+   <p block-type="Text">
+    Though the Balance contract can change its state over different transactions, this test is really stateless since the state is simulated using different parameter values instead of actually executing different operations (deployment, startWithdrawal, and endWithdrawal). This pattern should be avoided; instead, use invariant testing that initializes the Balance contract once and checks different types of invariants when different operations are executed (e.g., after a successful withdrawal, the balance of the user should be zero). Additional guidance on introducing stateful fuzzing can be found in Trail of Bits'
+    <a href="https://www.youtube.com/watch?v=QofNQxW_K08&amp;list=PLciHOL_J7Iwqdja9UH4ZzE8dP1IxtsBXI">
+     "Learn
+    </a>
+    how to fuzz like a pro" series on
+    <a href="https://www.youtube.com/watch?v=QofNQxW_K08&amp;list=PLciHOL_J7Iwqdja9UH4ZzE8dP1IxtsBXI">
+     YouTube
+    </a>
+    .
+   </p>
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Consider making a list of invariants of the protocol to check one by one if they are properly tested. We collected the following system invariants from the written specification that can be used as a starting point for defining a good set of invariants:
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        The express lane controller (ELC) is determined by a per-round auction.
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        The auction is implemented as a sealed-bid, second-price auction.
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_24_Picture_9.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="25">
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      The auction is managed on-chain by an auction contract, and by an "autonomous auctioneer."
+     </li>
+     <li block-type="ListItem">
+      The auctioneer is designated by governance.
+     </li>
+     <li block-type="ListItem">
+      The auction has a minimum reserve price.
+     </li>
+     <li block-type="ListItem">
+      The minimum reserve price is set by governance.
+     </li>
+     <li block-type="ListItem">
+      The contract stores the minimum and current reserve prices.
+     </li>
+     <li block-type="ListItem">
+      The contract enforces that the current reserve price is not less than the minimum reserve price.
+     </li>
+     <li block-type="ListItem">
+      Governance can designate a reserve pricer.
+     </li>
+     <li block-type="ListItem">
+      The reserve pricer can update the reserve price to any value equal or greater to the minimum.
+     </li>
+     <li block-type="ListItem">
+      There is a blackout period during which the reserve price cannot be updated by the pricer.
+     </li>
+     <li block-type="ListItem">
+      This window is ReserveSubmissionSeconds seconds before bidding for a round closes.
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        For a round that starts at time t, the blackout period begins at t  AuctionClosingSeconds - ReserveSubmissionSeconds and lasts until the round ends.
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      Bidders know the reserve price for at least ReserveSubmissionSeconds before they must submit their bids.
+     </li>
+     <li block-type="ListItem">
+      A party must deposit funds into the auction contract before bidding.
+     </li>
+     <li block-type="ListItem">
+      Deposits can be made at any time.
+     </li>
+     <li block-type="ListItem">
+      Funds can be added to an existing deposit at any time.
+     </li>
+     <li block-type="ListItem">
+      A party can initiate a withdrawal of all of its deposited funds at any time.
+     </li>
+     <li block-type="ListItem">
+      A withdrawal request submitted during round i will be claimable at round i + 2 or later.
+     </li>
+     <li block-type="ListItem">
+      The auction has a closing time.
+     </li>
+     <li block-type="ListItem">
+      The closing time is determined by AuctionClosingSeconds.
+     </li>
+     <li block-type="ListItem">
+      The default value of AuctionClosingSeconds is 15 seconds.
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_25_Picture_20.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="26">
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      Any party can submit a bid to the auctioneer via RPC until closing time.
+     </li>
+     <li block-type="ListItem">
+      A "bid" contains (chainID, auctionContractAddress, roundNumber, bid, expressLaneControllerAddress, signature) where:
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        chainID is the chain ID of the target chain
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        auctionContractAddress is the address of the auction contract the bid is to be submitted to
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        roundNumber is the round being bid for (i.e., the current round + 1)
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        bid is the value the party is offering to pay
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        expressLaneControllerAddress is the address to set as the express lane controller if their bid is successful
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        signature is the signature of the bidder's private key across all other items in the tuple
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      If two or more bids meet the reserve price and the bidders have sufficient deposits for their bids, the auctioneer will:
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        call resolveAuctionMultiBid, passing the two highest bids
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        if the two bids tie, they are sorted by keccak256(bidder address, byte-string of bid)
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the contract verifies:
+        <ul>
+         <li block-type="ListItem" class="list-indent-2">
+          the signatures of both bids
+         </li>
+        </ul>
+        <ul>
+         <li block-type="ListItem" class="list-indent-2">
+          both bids are signed by different addresses
+         </li>
+        </ul>
+        <ul>
+         <li block-type="ListItem" class="list-indent-2">
+          both bids are backed by funds deposited in the contract
+         </li>
+        </ul>
+        <ul>
+         <li block-type="ListItem" class="list-indent-2">
+          both bids meet the reserve price
+         </li>
+        </ul>
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the contract deducts the second-highest bid from the account of the highest bidder
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the funds are transferred to a beneficiary account or burned
+        <ul>
+         <li block-type="ListItem" class="list-indent-2">
+          governance specifies the beneficiary or if the tokens are to be burned
+         </li>
+        </ul>
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the expressLaneControllerAddress address from the highest bid will be the ELC for the round
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_26_Picture_20.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="27">
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      If exactly one bid meets the reserve price and the bidder has sufficient deposits for its bid:
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the auctioneer will call resolveAuctionSingleBid, passing the single bid
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the contract verifies:
+        <ul>
+         <li block-type="ListItem" class="list-indent-2">
+          the signature of the bid
+         </li>
+        </ul>
+        <ul>
+         <li block-type="ListItem" class="list-indent-2">
+          the bid is backed by funds deposited in the contract
+         </li>
+        </ul>
+        <ul>
+         <li block-type="ListItem" class="list-indent-2">
+          the bid meets the reserve price
+         </li>
+        </ul>
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the contract deducts the reserve price from the account of the bidder
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the funds are transferred to a beneficiary account or burned
+        <ul>
+         <li block-type="ListItem" class="list-indent-2">
+          governance specifies the beneficiary or if the tokens are to be burned
+         </li>
+        </ul>
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the expressLaneControllerAddress address from the highest bid will be the ELC for the round
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      If there are no bids that meet the reserve price or have sufficient deposits for their bids
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the auctioneer will call no functions
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        no address will be the ELC for the round
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      A round lasts RoundDurationSeconds seconds.
+     </li>
+     <li block-type="ListItem">
+      The next round begins when the current one ends.
+     </li>
+     <li block-type="ListItem">
+      For a round that becomes active at time t:
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the auctioneer closes the round between timestamps t  AuctionClosingSeconds and t
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the auctioneer is trusted to follow the instructions above
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        this may designate a party as the ELC for the round
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        if an ELC is designated, funds are deducted from that party's deposit account
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the deducted funds are distributed or burned
+       </li>
+      </ul>
+     </li>
+    </ul>
+   </p>
+   <p>
+    <img src="_page_27_Picture_21.jpeg"/>
+   </p>
+  </div>
+  <div class="page" data-page-id="28">
+   <p block-type="ListGroup">
+    <ul>
+     <li block-type="ListItem">
+      at any time between being designated the ELC and the end of the round (i.e., t + RoundDurationSeconds), the ELC can transfer the ELC right for that round to a different address
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        the previous ELC retains no rights once transferred
+       </li>
+      </ul>
+      <ul>
+       <li block-type="ListItem" class="list-indent-1">
+        this can be done multiple times per round, as long as it is executed by the then-current ELC
+       </li>
+      </ul>
+     </li>
+     <li block-type="ListItem">
+      at t + RoundDurationSeconds, the sequencer stops accepting express lane messages for the round
+     </li>
+    </ul>
+   </p>
+  </div>
+ </body>
+</html>
