@@ -35,8 +35,13 @@ Input JSON (from extract_report.py) is expected to look like:
           "page_start": 13,
           "heading": "...",
           "heading_cleaned": "...",
-          "markdown": "...",
+          "markdown": "...",       # original section markdown (cleaned)
+          "full_vuln_md": "...",   # optional: full vuln body (without heading/table noise)
           "description": "...",
+          "impact": "...",
+          "mitigation": "...",     # unified Recommendation/Mitigation/Resolution text
+          "poc": "...",
+          "other": "...",          # leftover text if any
           "metadata": {
             "Severity": "...",
             "Difficulty": "...",
@@ -172,7 +177,14 @@ def generate_scvd_records(
         heading_cleaned = vuln.get("heading_cleaned")
         heading = vuln.get("heading")
         markdown = vuln.get("markdown")
+        # New per-section fields from extract_report.py
         description_md = vuln.get("description")
+        impact_md = vuln.get("impact")
+        # Unified recommendation / mitigation / resolution text
+        mitigation_md = vuln.get("mitigation") or vuln.get("recommendation") or vuln.get("resolution")
+        poc_md = vuln.get("poc")
+        other_md = vuln.get("other")
+        full_vuln_md = vuln.get("full_vuln_md")
 
         metadata = vuln.get("metadata") or {}
         severity = metadata.get("Severity")
@@ -207,7 +219,12 @@ def generate_scvd_records(
             "title": title,
             "short_summary": None,          # future LLM summarization
             "description_md": description_md,
-            "full_markdown": markdown,
+            "impact_md": impact_md,
+            "mitigation_md": mitigation_md,
+            "poc_md": poc_md,
+            "other_md": other_md,
+            # Prefer the clean "full vulnerability" body if present
+            "full_markdown": full_vuln_md or markdown,
 
             # --- report metadata (from audit) ---
             "severity": severity,

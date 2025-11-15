@@ -13,7 +13,7 @@ Then open the URL Streamlit prints (usually http://localhost:8501).
 This app:
 - loads SCVD findings from a JSONL file,
 - shows basic stats and a table,
-- lets you inspect a single finding in detail.
+- lets you inspect a single finding in detail (all extracted sections + raw markdown).
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ import argparse
 import json
 from collections import Counter
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import pandas as pd
 import streamlit as st
@@ -79,7 +79,7 @@ def run_app(jsonl_path: str) -> None:
     )
 
     st.title("SCVD v0.1 Dashboard")
-    st.caption("Local POC: normalized smart contract audit findings")
+    st.caption("Local PoC: normalized smart contract audit findings")
 
     findings = load_findings(jsonl_path)
     df = findings_to_dataframe(findings)
@@ -154,7 +154,21 @@ def run_app(jsonl_path: str) -> None:
         st.warning("Selected finding not found in data.")
         return
 
-    # Left: main metadata & markdown; Right: provenance + raw metadata
+    # Convenience accessors for new section keys (all optional)
+    desc_md = selected.get("description_md") or ""
+    impact_md = selected.get("impact_md") or ""
+    recommendation_md = (
+        selected.get("recommendation_md")
+        or selected.get("mitigation_md")  # just in case you used this name
+        or ""
+    )
+    poc_md = selected.get("poc_md") or selected.get("proof_of_concept_md") or ""
+    other_md = selected.get("other_md") or ""
+    body_md = selected.get("body_md") or ""
+
+    full_md = selected.get("full_markdown") or ""
+
+    # Left: main metadata & markdown sections; Right: provenance + raw metadata
     col_left, col_right = st.columns((2, 1))
 
     with col_left:
@@ -181,10 +195,51 @@ def run_app(jsonl_path: str) -> None:
             language="bash",
         )
 
-        st.write("**Description / Markdown**")
-        desc = selected.get("description_md") or selected.get("full_markdown") or ""
-        # Let Streamlit render markdown (includes code blocks)
-        st.markdown(desc)
+        st.markdown("### Vulnerability text")
+
+        # DESCRIPTION (always try to show this first)
+        if desc_md:
+            st.markdown("**Description**")
+            st.markdown(desc_md)
+        else:
+            st.markdown("**Description**")
+            st.markdown("_No structured description extracted for this finding._")
+
+        # IMPACT
+        if impact_md:
+            st.markdown("---")
+            st.markdown("**Impact**")
+            st.markdown(impact_md)
+
+        # RECOMMENDATION / MITIGATION
+        if recommendation_md:
+            st.markdown("---")
+            st.markdown("**Recommendation / Mitigation**")
+            st.markdown(recommendation_md)
+
+        # PROOF OF CONCEPT
+        if poc_md:
+            st.markdown("---")
+            st.markdown("**Proof of Concept / PoC**")
+            st.markdown(poc_md)
+
+        # OTHER
+        if other_md:
+            st.markdown("---")
+            st.markdown("**Other details**")
+            st.markdown(other_md)
+
+        # BODY (core cleaned body, if you populated it)
+        if body_md:
+            st.markdown("---")
+            st.markdown("**Finding body (cleaned)**")
+            st.markdown(body_md)
+
+        # RAW FULL MARKDOWN (for transparency)
+        if full_md:
+            st.markdown("---")
+            with st.expander("Raw full markdown (as normalized)"):
+                st.markdown(full_md)
 
     with col_right:
         st.write("**Repository**")
