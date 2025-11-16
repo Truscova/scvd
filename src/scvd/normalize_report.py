@@ -176,15 +176,21 @@ def generate_scvd_records(
         page_start = vuln.get("page_start")
         heading_cleaned = vuln.get("heading_cleaned")
         heading = vuln.get("heading")
-        markdown = vuln.get("markdown")
-        # New per-section fields from extract_report.py
-        description_md = vuln.get("description")
-        impact_md = vuln.get("impact")
-        # Unified recommendation / mitigation / resolution text
-        mitigation_md = vuln.get("mitigation") or vuln.get("recommendation") or vuln.get("resolution")
-        poc_md = vuln.get("poc")
-        other_md = vuln.get("other")
-        full_vuln_md = vuln.get("full_vuln_md")
+
+        # Raw markdown blocks from extractor
+        full_md = vuln.get("markdown")
+        sections = vuln.get("sections") or {}
+
+        # Primary content fields
+        description_md = sections.get("description") or vuln.get("description")
+        impact_md = sections.get("impact")
+        recommendation_md = sections.get("recommendation")
+        poc_md = sections.get("poc")
+        other_md = sections.get("other")
+        fix_status_md = sections.get("fix_status")
+
+        # At SCVD level we keep full_markdown as the block for transparency
+        markdown_for_full = full_md
 
         metadata = vuln.get("metadata") or {}
         severity = metadata.get("Severity")
@@ -203,7 +209,7 @@ def generate_scvd_records(
         title = heading_cleaned or heading or f"Finding {index}"
 
         # Guess repo for this vuln
-        repo = choose_repo_for_vuln(repositories, page_start, target_path, markdown)
+        repo = choose_repo_for_vuln(repositories, page_start, target_path, markdown_for_full)
 
         record: Dict[str, Any] = {
             # --- meta ---
@@ -217,14 +223,16 @@ def generate_scvd_records(
 
             # --- content ---
             "title": title,
-            "short_summary": None,          # future LLM summarization
+            "short_summary": None,                # future LLM summarization
             "description_md": description_md,
+            "full_markdown": markdown_for_full,
+
+            # NEW: extra structured content fields
             "impact_md": impact_md,
-            "mitigation_md": mitigation_md,
+            "recommendation_md": recommendation_md,
             "poc_md": poc_md,
             "other_md": other_md,
-            # Prefer the clean "full vulnerability" body if present
-            "full_markdown": full_vuln_md or markdown,
+            "fix_status_md": fix_status_md,
 
             # --- report metadata (from audit) ---
             "severity": severity,
@@ -252,28 +260,29 @@ def generate_scvd_records(
                 "commit": repo.get("commit") if repo else None,
                 "branch": None,
                 "relative_file": target_path,
-                "lines": None,             # could later be [start_line, end_line]
+                "lines": None,
             },
 
             # --- taxonomy / classification ---
             "taxonomy": {
-                "swc": [],                 # future SWC tagging
-                "cwe": [],                 # future CWE mapping
-                "tags": [],                # free-form tags: ["reentrancy", ...]
+                "swc": [],
+                "cwe": [],
+                "tags": [],
             },
 
             # --- impact & status ---
             "status": {
-                "fix_status": None,        # e.g. "Resolved", "Unresolved"
+                # Store the raw Fix Status text here as well
+                "fix_status": fix_status_md,
                 "fixed_in_commit": None,
-                "fixed_in_pr": [],         # e.g. ["https://github.com/.../pull/243"]
+                "fixed_in_pr": [],
                 "exploited_in_the_wild": None,
-                "cvss": None,              # optional CVSS or custom risk vector
+                "cvss": None,
                 "bounty_reference": None,
             },
 
             # --- external references (txs, blog posts, etc.) ---
-            "references": [],              # can be filled later from markdown links
+            "references": [],
 
             # --- provenance ---
             "provenance": {
@@ -293,6 +302,8 @@ def generate_scvd_records(
         records.append(record)
 
     return records
+
+
 
 
 def parse_args(argv: List[str]) -> argparse.Namespace:
