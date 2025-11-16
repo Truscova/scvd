@@ -8,12 +8,10 @@ Usage:
 
     streamlit run dashboard.py -- --jsonl path/to/findings.jsonl
 
-Then open the URL Streamlit prints (usually http://localhost:8501).
-
 This app:
 - loads SCVD findings from a JSONL file,
 - shows basic stats and a table,
-- lets you inspect a single finding in detail (all extracted sections + raw markdown).
+- lets you inspect a single finding in detail (incl. Fix Status).
 """
 
 from __future__ import annotations
@@ -64,7 +62,6 @@ def findings_to_dataframe(findings: List[Dict[str, Any]]) -> pd.DataFrame:
             }
         )
     df = pd.DataFrame(rows)
-    # for nicer sorting
     if "finding_index" in df.columns:
         df = df.sort_values(["doc_id", "finding_index"])
     return df
@@ -79,7 +76,7 @@ def run_app(jsonl_path: str) -> None:
     )
 
     st.title("SCVD v0.1 Dashboard")
-    st.caption("Local PoC: normalized smart contract audit findings")
+    st.caption("Local POC: normalized smart contract audit findings")
 
     findings = load_findings(jsonl_path)
     df = findings_to_dataframe(findings)
@@ -135,14 +132,12 @@ def run_app(jsonl_path: str) -> None:
     # ---- Detail view ----
     st.markdown("#### Finding details")
 
-    if df.empty:
+    scvd_ids = df["scvd_id"].tolist()
+    if not scvd_ids:
         st.info("No findings available.")
         return
 
-    # Choose a finding to inspect (no filtering, just pick from all)
-    scvd_ids = df["scvd_id"].tolist()
     default_id = scvd_ids[0]
-
     selected_id = st.selectbox(
         "Select a finding",
         options=scvd_ids,
@@ -154,21 +149,7 @@ def run_app(jsonl_path: str) -> None:
         st.warning("Selected finding not found in data.")
         return
 
-    # Convenience accessors for new section keys (all optional)
-    desc_md = selected.get("description_md") or ""
-    impact_md = selected.get("impact_md") or ""
-    recommendation_md = (
-        selected.get("recommendation_md")
-        or selected.get("mitigation_md")  # just in case you used this name
-        or ""
-    )
-    poc_md = selected.get("poc_md") or selected.get("proof_of_concept_md") or ""
-    other_md = selected.get("other_md") or ""
-    body_md = selected.get("body_md") or ""
-
-    full_md = selected.get("full_markdown") or ""
-
-    # Left: main metadata & markdown sections; Right: provenance + raw metadata
+    # Left: main metadata & structured markdown; Right: provenance + status + raw objects
     col_left, col_right = st.columns((2, 1))
 
     with col_left:
@@ -195,51 +176,21 @@ def run_app(jsonl_path: str) -> None:
             language="bash",
         )
 
-        st.markdown("### Vulnerability text")
+        
 
-        # DESCRIPTION (always try to show this first)
-        if desc_md:
-            st.markdown("**Description**")
-            st.markdown(desc_md)
-        else:
-            st.markdown("**Description**")
-            st.markdown("_No structured description extracted for this finding._")
-
-        # IMPACT
-        if impact_md:
-            st.markdown("---")
-            st.markdown("**Impact**")
-            st.markdown(impact_md)
-
-        # RECOMMENDATION / MITIGATION
-        if recommendation_md:
-            st.markdown("---")
-            st.markdown("**Recommendation / Mitigation**")
-            st.markdown(recommendation_md)
-
-        # PROOF OF CONCEPT
-        if poc_md:
-            st.markdown("---")
-            st.markdown("**Proof of Concept / PoC**")
-            st.markdown(poc_md)
-
-        # OTHER
-        if other_md:
-            st.markdown("---")
-            st.markdown("**Other details**")
-            st.markdown(other_md)
-
-        # BODY (core cleaned body, if you populated it)
-        if body_md:
-            st.markdown("---")
-            st.markdown("**Finding body (cleaned)**")
-            st.markdown(body_md)
-
-        # RAW FULL MARKDOWN (for transparency)
-        if full_md:
-            st.markdown("---")
-            with st.expander("Raw full markdown (as normalized)"):
-                st.markdown(full_md)
+        # Structured sections (including Fix Status)
+        section_fields = [
+            ("Description", "description_md"),
+            ("Impact", "impact_md"),
+            ("Proof of concept / exploit", "poc_md"),
+            ("Recommendations / mitigation", "recommendation_md"),
+            ("Fix status", "fix_status_md"),
+            ("Other", "other_md"),
+        ]
+        for _, key in section_fields:
+            value = selected.get(key)
+            if value:
+                st.markdown(value)
 
     with col_right:
         st.write("**Repository**")
@@ -252,13 +203,19 @@ def run_app(jsonl_path: str) -> None:
             language="bash",
         )
 
+        # Fix status highlighted
+        status = selected.get("status") or {}
+        fix_status_text = selected.get("fix_status_md") or status.get("fix_status")
+        if fix_status_text:
+            st.write("**Fix status (normalized)**")
+            st.markdown(fix_status_text)
+
+        st.write("**Status (raw)**")
+        st.json(status)
+
         st.write("**Taxonomy**")
         taxonomy = selected.get("taxonomy") or {}
         st.json(taxonomy)
-
-        st.write("**Status**")
-        status = selected.get("status") or {}
-        st.json(status)
 
         st.write("**Provenance**")
         provenance = selected.get("provenance") or {}
@@ -284,8 +241,5 @@ def parse_args() -> argparse.Namespace:
 
 
 if __name__ == "__main__":
-    # When Streamlit runs this, sys.argv contains Streamlit args *plus* ours after '--'
-    # Example:
-    #   streamlit run dashboard.py -- --jsonl path/to/findings.jsonl
     args = parse_args()
     run_app(args.jsonl)
