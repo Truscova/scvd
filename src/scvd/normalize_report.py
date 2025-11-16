@@ -73,6 +73,69 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import re
+
+
+USE_NOT_CRITICAL_AS_DISTINCT = False  # False => map NC to "Informational"
+COMMIT_RE = re.compile(r"`?([0-9a-f]{7,40})`?")
+
+CANONICAL_SEVERITIES = {"Critical","High","Medium","Low","Informational"} | \
+    ({"Not Critical"} if USE_NOT_CRITICAL_AS_DISTINCT else set())
+
+ID_PREFIX_TO_SEVERITY = {
+    "C":  "Critical",
+    "H":  "High",
+    "M":  "Medium",
+    "L":  "Low",
+    "NC": "Not Critical" if USE_NOT_CRITICAL_AS_DISTINCT else "Informational",
+}
+
+_SEV_SYNONYMS = {
+    "crit": "Critical",
+    "critical": "Critical",
+    "high": "High",
+    "med": "Medium",
+    "medium": "Medium",
+    "low": "Low",
+    "info": "Informational",
+    "informational": "Informational",
+    "non critical": "Not Critical" if USE_NOT_CRITICAL_AS_DISTINCT else "Informational",
+    "non-critical": "Not Critical" if USE_NOT_CRITICAL_AS_DISTINCT else "Informational",
+    "nc": "Not Critical" if USE_NOT_CRITICAL_AS_DISTINCT else "Informational",
+}
+
+
+def _canonicalize_severity(s: Optional[str]) -> Optional[str]:
+    if not s:
+        return None
+    t = s.strip().lower().replace("_", " ").replace("-", " ").strip()
+    return _SEV_SYNONYMS.get(t) or (s if s in CANONICAL_SEVERITIES else None)
+
+def _severity_from_id_prefix(finding_id: Optional[str]) -> Optional[str]:
+    if not finding_id:
+        return None
+    prefix = finding_id.split("-")[0].upper()
+    return ID_PREFIX_TO_SEVERITY.get(prefix)
+
+def choose_effective_severity(metadata_sev: Optional[str],
+                              extractor_hint: Optional[str],
+                              finding_id: Optional[str]) -> tuple[Optional[str], Optional[str]]:
+    """
+    Returns (severity, source). Order of precedence:
+      1) ID prefix (e.g., NC-01)
+      2) metadata['Severity'] from report
+      3) vuln['severity'] from extractor
+    """
+    cand = [
+        ("id_prefix", _severity_from_id_prefix(finding_id)),
+        ("metadata",  _canonicalize_severity(metadata_sev)),
+        ("extracted", _canonicalize_severity(extractor_hint)),
+    ]
+    for source, sev in cand:
+        if sev:
+            return sev, source
+    return None, None
+
 
 
 def choose_repo_for_vuln(
@@ -164,15 +227,20 @@ def generate_scvd_records(
     normalized_at = datetime.now(timezone.utc).isoformat()
 
     # Prefer the explicit source_pdf arg, then report.source_pdf, then fallback
-    if source_pdf is None:
-        source_pdf_final = report_source_pdf or f"{doc_id}.pdf"
-    else:
-        source_pdf_final = source_pdf
+    source_pdf_final = source_pdf if source_pdf is not None else (report_source_pdf or f"{doc_id}.pdf")
 
     records: List[Dict[str, Any]] = []
 
     for vuln in vulns:
         index = vuln.get("index")
+        # finding_index must never be None (schema requires it)
+        if isinstance(index, int):
+            finding_index = index
+        elif index is None:
+            finding_index = "UNKNOWN"
+        else:
+            finding_index = str(index)
+
         page_start = vuln.get("page_start")
         heading_cleaned = vuln.get("heading_cleaned")
         heading = vuln.get("heading")
@@ -189,26 +257,40 @@ def generate_scvd_records(
         other_md = sections.get("other")
         fix_status_md = sections.get("fix_status")
 
+        # Try to pull a commit hash from fix status (cheap, optional)
+        fixed_commit = None
+        if fix_status_md:
+            m = COMMIT_RE.search(fix_status_md)
+            if m:
+                fixed_commit = m.group(1)
+
         # At SCVD level we keep full_markdown as the block for transparency
         markdown_for_full = full_md
 
         metadata = vuln.get("metadata") or {}
-        severity = metadata.get("Severity")
+
+        # ---- severity (normalized, ID prefix takes precedence) ----
+        severity_raw_meta = metadata.get("Severity")
+        severity_extractor_hint = vuln.get("severity")
+        finding_id = (metadata.get("Finding ID") or vuln.get("finding_id"))  # <-- keep fallback
+        severity, _severity_source = choose_effective_severity(
+            severity_raw_meta, severity_extractor_hint, finding_id
+        )
+
         difficulty = metadata.get("Difficulty")
         vtype = metadata.get("Type")
-        finding_id = metadata.get("Finding ID")
         target_path = metadata.get("Target")
 
-        # Construct SCVD ID
-        if isinstance(index, int):
-            scvd_id = f"SCVD-{doc_id}-{index:03d}"
+        # Construct SCVD ID (stable even if index is missing)
+        if isinstance(finding_index, int):
+            scvd_id = f"SCVD-{doc_id}-{finding_index:03d}"
         else:
-            scvd_id = f"SCVD-{doc_id}-UNKNOWN"
+            scvd_id = f"SCVD-{doc_id}-{finding_index}"
 
         # Choose title
-        title = heading_cleaned or heading or f"Finding {index}"
+        title = (heading_cleaned or heading or f"Finding {finding_index}").strip()
 
-        # Guess repo for this vuln
+        # Pick a repo for this vuln
         repo = choose_repo_for_vuln(repositories, page_start, target_path, markdown_for_full)
 
         record: Dict[str, Any] = {
@@ -218,21 +300,27 @@ def generate_scvd_records(
 
             # --- document & location ---
             "doc_id": doc_id,
-            "finding_index": index,
+            "finding_index": finding_index,
             "page_start": page_start,
 
             # --- content ---
             "title": title,
-            "short_summary": None,                # future LLM summarization
+            "short_summary": None,
             "description_md": description_md,
             "full_markdown": markdown_for_full,
 
-            # NEW: extra structured content fields
-            "impact_md": impact_md,
-            "recommendation_md": recommendation_md,
-            "poc_md": poc_md,
-            "other_md": other_md,
-            "fix_status_md": fix_status_md,
+            # --- structured content sections (as per schema) ---
+            "sections": {
+                "description_md": description_md,
+                "impact_md": impact_md,
+                "recommendation_md": recommendation_md,
+                "poc_md": poc_md,
+                "fix_status_md": fix_status_md,
+                "other_md": other_md,
+
+                "full_markdown_body": vuln.get("markdown_body"),
+                "markdown_raw": vuln.get("markdown_raw"),
+            },
 
             # --- report metadata (from audit) ---
             "severity": severity,
@@ -243,8 +331,8 @@ def generate_scvd_records(
             # --- target (code location) ---
             "target": {
                 "path": target_path,
-                "language": None,          # e.g. "solidity"
-                "chain": None,             # e.g. "eip155:1"
+                "language": None,
+                "chain": None,
                 "contract_name": None,
                 "contract_address": None,
                 "function": None,
@@ -272,9 +360,8 @@ def generate_scvd_records(
 
             # --- impact & status ---
             "status": {
-                # Store the raw Fix Status text here as well
                 "fix_status": fix_status_md,
-                "fixed_in_commit": None,
+                "fixed_in_commit": fixed_commit,
                 "fixed_in_pr": [],
                 "exploited_in_the_wild": None,
                 "cvss": None,
@@ -296,12 +383,13 @@ def generate_scvd_records(
             },
 
             # --- raw metadata block from the report ---
-            "metadata_raw": metadata,
+            "metadata_raw": {**metadata, "Severity_normalized": severity},
         }
 
         records.append(record)
 
     return records
+
 
 
 

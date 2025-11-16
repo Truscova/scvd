@@ -301,6 +301,19 @@ DEFAULT_REPORT_SCHEMA: List[Dict[str, Any]] = [
 
 HEADING_MD_RE = re.compile(r'^(?P<hashes>#{1,6})\s+(?P<title>.+?)\s*$')
 
+
+USE_NOT_CRITICAL_AS_DISTINCT = False  # False => map NC -> "Informational"; True => use "Not Critical"
+
+ID_PREFIX_TO_SEVERITY = {
+    "C":  "Critical",
+    "H":  "High",
+    "M":  "Medium",
+    "L":  "Low",
+    "NC": "Not Critical" if USE_NOT_CRITICAL_AS_DISTINCT else "Informational",
+}
+
+
+# Expand keyword detection for headings like "# Informational/Non-Critical Findings"
 SEVERITY_KEYWORDS = {
     "critical": "Critical",
     "high": "High",
@@ -308,6 +321,8 @@ SEVERITY_KEYWORDS = {
     "low": "Low",
     "informational": "Informational",
     "info": "Informational",
+    "non-critical": "Not Critical" if USE_NOT_CRITICAL_AS_DISTINCT else "Informational",
+    "nc": "Not Critical" if USE_NOT_CRITICAL_AS_DISTINCT else "Informational",
     "gas": "Gas",
     "qa": "QA",
 }
@@ -336,11 +351,6 @@ FINDING_HEADING_RE = re.compile(
     r'^\[(?P<id>[A-Za-z]{1,6}-\d{1,4})\]\s+(?P<title>.+)$'
 )
 
-ID_PREFIX_TO_SEVERITY = {
-    "C": "Critical", "H": "High", "M": "Medium",
-    "L": "Low", "NC": "Informational"
-}
-
 
 def _description_span_with_bold_inline(lines: List[str]) -> Optional[Tuple[int, int]]:
     start = None
@@ -358,11 +368,12 @@ def _description_span_with_bold_inline(lines: List[str]) -> Optional[Tuple[int, 
     return (start, end)
 
 
-def _heading_severity(title: str) -> str | None:
+def _heading_severity(title: str) -> Optional[str]:
     t = re.sub(r'\s+', ' ', title.lower()).replace('—','-').replace('–','-')
     if "criteria" in t or "summary" in t:
         return None
     for key, canonical in SEVERITY_KEYWORDS.items():
+        # allow e.g. "Informational/Non-Critical Findings"
         if re.search(rf'(^|\W){re.escape(key)}(\W|$)', t):
             return canonical
     return None
@@ -1055,8 +1066,16 @@ def extract_vuln_sections_structured_markdown_mdit(markdown: str) -> list[dict]:
 
             start_line = ch["start"]
             md_block = "\n".join(lines[start_line:end_line]).rstrip() + "\n"
+            # ----- severity selection (no UnboundLocalError) -----
             m = FINDING_HEADING_RE.match(ch["title"])
             fid = m.group("id") if m else None
+
+            eff_sev = sev  # default: inherited from the severity block
+            if fid:
+                prefix = fid.split("-")[0].upper()
+                mapped = ID_PREFIX_TO_SEVERITY.get(prefix)
+                if mapped:
+                    eff_sev = mapped  # ID prefix wins
 
             sections.append({
                 "index": global_index,
@@ -1064,7 +1083,7 @@ def extract_vuln_sections_structured_markdown_mdit(markdown: str) -> list[dict]:
                 "heading": f"{global_index}. {ch['title']}",
                 "markdown": md_block,
                 "finding_id": fid,
-                "severity": sev,
+                "severity": eff_sev,
                 "start_line": start_line,
                 "end_line": end_line,
             })
@@ -1088,7 +1107,7 @@ def extract_vuln_sections_structured_markdown_mdit(markdown: str) -> list[dict]:
                 end_line = heads[j]["start"]
                 break
 
-        fid, short_title = m.group("id").strip(), m.group("title").strip()
+        fid, short_title = m.group("id").strip(), m.group("title").strip()        
         start_line = h["start"]
         md_block = "\n".join(lines[start_line:end_line]).rstrip() + "\n"
 
@@ -1102,7 +1121,7 @@ def extract_vuln_sections_structured_markdown_mdit(markdown: str) -> list[dict]:
             "heading": f"{global_index}. {line_text}",
             "markdown": md_block,
             "finding_id": fid,
-            "severity": inherited or inferred,
+            "severity": inferred or inherited,
             "start_line": start_line,
             "end_line": end_line,
         })
