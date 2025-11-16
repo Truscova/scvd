@@ -26,6 +26,11 @@ import pandas as pd
 import streamlit as st
 
 
+
+def get_md(rec: Dict[str, Any], key: str) -> str | None:
+    # prefer flat key, fallback to nested sections.*_md
+    return rec.get(key) or (rec.get("sections") or {}).get(key)
+
 # ---------- Data loading ----------
 
 def load_findings(jsonl_path: str) -> List[Dict[str, Any]]:
@@ -179,18 +184,18 @@ def run_app(jsonl_path: str) -> None:
         
 
         # Structured sections (including Fix Status)
-        section_fields = [
-            ("Description", "description_md"),
-            ("Impact", "impact_md"),
-            ("Proof of concept / exploit", "poc_md"),
-            ("Recommendations / mitigation", "recommendation_md"),
-            ("Fix status", "fix_status_md"),
-            ("Other", "other_md"),
-        ]
-        for _, key in section_fields:
-            value = selected.get(key)
-            if value:
-                st.markdown(value)
+        section_keys_in_order = (
+            "description_md",
+            "poc_md",
+            "impact_md",
+            "recommendation_md",
+            "fix_status_md",
+            "other_md",
+        )
+        for key in section_keys_in_order:
+            md = get_md(selected, key)
+            if md:
+                st.markdown(md)
 
     with col_right:
         st.write("**Repository**")
@@ -205,10 +210,11 @@ def run_app(jsonl_path: str) -> None:
 
         # Fix status highlighted
         status = selected.get("status") or {}
-        fix_status_text = selected.get("fix_status_md") or status.get("fix_status")
-        if fix_status_text:
-            st.write("**Fix status (normalized)**")
-            st.markdown(fix_status_text)
+        fix_status_text = (
+            selected.get("fix_status_md")
+            or (selected.get("status") or {}).get("fix_status")
+            or (selected.get("sections") or {}).get("fix_status_md")
+        )
 
         st.write("**Status (raw)**")
         st.json(status)

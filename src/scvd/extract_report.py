@@ -2234,30 +2234,26 @@ SECTION_NAME_PATTERNS: Dict[str, List[str]] = {
 
 
 def _classify_section_heading(line: str) -> Optional[str]:
-    """
-    Given a single markdown line, return a logical section name
-    ('description', 'impact', 'poc', 'recommendation', 'fix_status')
-    if the line looks like a heading for that section.
-
-    Works for headings like:
-      #### Description
-      ### Exploit Scenario
-      ## Recommendations
-      ### Fix Status
-    """
     m = HEADING_MD_RE.match(line.strip())
     if not m:
         return None
 
     title = m.group("title")
-    # reuse the existing helper to normalize heading text
-    normalized = normalize_heading_for_key(title)
+    lowered = title.lower()
+    # normalize punctuation so "proof-of-concept" == "proof of concept"
+    norm = re.sub(r"[`*_~\[\](){},.;:!?\\-]+", " ", lowered)
+    norm = re.sub(r"\s+", " ", norm).strip()
+
+    def phrase_matches(text: str, phrase: str) -> bool:
+        pat = r"\b" + re.escape(phrase.lower()).replace(r"\ ", r"\s+") + r"\b"
+        return re.search(pat, text) is not None
 
     for name, fragments in SECTION_NAME_PATTERNS.items():
         for frag in fragments:
-            if frag in normalized:
+            if phrase_matches(norm, frag):
                 return name
     return None
+
 
 
 def split_vuln_markdown_into_sections(md: str) -> Tuple[Dict[str, Optional[str]], str]:
@@ -2308,13 +2304,17 @@ def split_vuln_markdown_into_sections(md: str) -> Tuple[Dict[str, Optional[str]]
     starts += bold_unknown
     starts.sort(key=lambda t: t[0])
 
+    # compute the 'body' start and a preamble span 
+
+    body_start = _compute_body_start_index(lines)
+
     # no starts -> everything after first title goes to "other"
     if not starts:
-        body_text = md.strip()
+        body_text = "\n".join(lines[body_start:]).strip()
         if body_text and not body_text.endswith("\n"):
             body_text += "\n"
-        sections["other"] = body_text or None
-        return sections, body_text
+        sections["description"] = body_text or None
+        return sections, body_text or ""
 
     used = [False] * n
     # mark a single top title line (if any) as used
@@ -2351,6 +2351,13 @@ def split_vuln_markdown_into_sections(md: str) -> Tuple[Dict[str, Optional[str]]
             for k in range(start_i, end_i):
                 used[k] = True
 
+     # preamble→description fallback if no explicit description
+    first_boundary = starts[0][0]
+    if sections["description"] is None and body_start < first_boundary:
+        pre = "\n".join(lines[body_start:first_boundary]).strip()
+        if pre:
+            sections["description"] = pre + "\n"
+
     # aggregate 'other'
     if other_labeled:
         parts = []
@@ -2367,8 +2374,8 @@ def split_vuln_markdown_into_sections(md: str) -> Tuple[Dict[str, Optional[str]]
         # sections["other_labeled"] = {lbl: "".join(chunks) for lbl, chunks in other_labeled.items()}
 
     # define body from first boundary onward
-    first_boundary = starts[0][0]
-    body_text = "\n".join(lines[first_boundary:]).strip()
+    
+    body_text = "\n".join(lines[body_start:]).strip()
     if body_text and not body_text.endswith("\n"):
         body_text += "\n"
 
