@@ -34,6 +34,8 @@ from marker.converters.pdf import PdfConverter
 from marker.models import create_model_dict
 from marker.output import text_from_rendered
 
+from markdown_it import MarkdownIt
+
 
 # ---------------- Logging ---------------- #
 
@@ -329,6 +331,15 @@ SUBSECTION_KEYWORDS = [
     "overview",
 ]
 
+# e.g. "## [L-01] Prevent setting …"
+FINDING_HEADING_RE = re.compile(
+    r'^\[(?P<id>[A-Za-z]{1,6}-\d{1,4})\]\s+(?P<title>.+)$'
+)
+
+ID_PREFIX_TO_SEVERITY = {
+    "C": "Critical", "H": "High", "M": "Medium",
+    "L": "Low", "NC": "Informational"
+}
 
 
 def _description_span_with_bold_inline(lines: List[str]) -> Optional[Tuple[int, int]]:
@@ -347,24 +358,43 @@ def _description_span_with_bold_inline(lines: List[str]) -> Optional[Tuple[int, 
     return (start, end)
 
 
-def _heading_severity(title: str) -> Optional[str]:
-    """
-    Interpret a heading as a severity block, e.g.:
-
-      '# Medium Findings'   -> 'Medium'
-      '## Medium Risk'      -> 'Medium'
-      '## Low Risk'         -> 'Low'
-
-    Excludes meta headings like 'Severity Criteria' or 'Summary of Findings'.
-    """
-    t = title.lower()
+def _heading_severity(title: str) -> str | None:
+    t = re.sub(r'\s+', ' ', title.lower()).replace('—','-').replace('–','-')
     if "criteria" in t or "summary" in t:
         return None
-
     for key, canonical in SEVERITY_KEYWORDS.items():
-        if re.search(rf"\b{re.escape(key)}\b", t):
+        if re.search(rf'(^|\W){re.escape(key)}(\W|$)', t):
             return canonical
     return None
+
+
+def _nearest_preceding_severity(heads: list[dict], i: int) -> str | None:
+    for k in range(i, -1, -1):
+        sev = _heading_severity(heads[k]["title"])
+        if sev:
+            return sev
+    return None
+
+def _parse_headings_mdit(md: str):
+    """Return headings with level/title/start_line using markdown-it-py."""
+    tokens = MarkdownIt().parse(md)
+    heads = []
+    for i, tok in enumerate(tokens):
+        if tok.type != "heading_open":
+            continue
+        # 'h2' -> 2
+        level = int(tok.tag[1])
+        # next token is 'inline' with the heading text
+        inline = tokens[i+1] if i+1 < len(tokens) else None
+        title = ""
+        if inline and inline.type == "inline":
+            if inline.children:  # collect text from children (links, code, etc.)
+                title = "".join(ch.content for ch in inline.children if getattr(ch, "content", None))
+            else:
+                title = inline.content or ""
+        start_line = (tok.map[0] if tok.map else None) or 0
+        heads.append({"level": level, "title": title.strip(), "start": start_line})
+    return heads
 
 
 def _is_subsection_heading(title: str) -> bool:
@@ -972,6 +1002,120 @@ def is_vuln_start_block(
         return False, None
 
     return True, idx
+
+
+
+def extract_vuln_sections_structured_markdown_mdit(markdown: str) -> list[dict]:
+    """
+    AST-based splitter:
+    1) Use severity blocks (e.g., '# Low Findings').
+    2) Fallback: capture '[ID]-style' headings anywhere.
+    Returns records compatible with your pipeline.
+    """
+    lines = markdown.splitlines()
+    heads = _parse_headings_mdit(markdown)
+    if not heads:
+        return []
+
+    sections: list[dict] = []
+    used_starts: set[int] = set()
+
+    # Pass 1: severity blocks → child headings are findings
+    global_index = 1
+    for idx, h in enumerate(heads):
+        sev = _heading_severity(h["title"])
+        if not sev:
+            continue
+        parent_level = h["level"]
+
+        # end of this block = next heading with level <= parent_level
+        block_end_line = len(lines)
+        for j in range(idx+1, len(heads)):
+            if heads[j]["level"] <= parent_level:
+                block_end_line = heads[j]["start"]
+                break
+
+        j = idx + 1
+        while j < len(heads) and heads[j]["start"] < block_end_line:
+            ch = heads[j]
+            if ch["level"] <= parent_level:
+                break
+            if _is_subsection_heading(ch["title"]):
+                j += 1
+                continue
+
+            # find end of this finding (next heading with level <= this level, but within block)
+            end_line = block_end_line
+            k = j + 1
+            while k < len(heads) and heads[k]["start"] < block_end_line:
+                if heads[k]["level"] <= ch["level"]:
+                    end_line = heads[k]["start"]
+                    break
+                k += 1
+
+            start_line = ch["start"]
+            md_block = "\n".join(lines[start_line:end_line]).rstrip() + "\n"
+            m = FINDING_HEADING_RE.match(ch["title"])
+            fid = m.group("id") if m else None
+
+            sections.append({
+                "index": global_index,
+                "page_start": None,
+                "heading": f"{global_index}. {ch['title']}",
+                "markdown": md_block,
+                "finding_id": fid,
+                "severity": sev,
+                "start_line": start_line,
+                "end_line": end_line,
+            })
+            used_starts.add(start_line)
+            global_index += 1
+            j += 1
+
+    # Pass 2 (fallback): capture '[ID]-style' headings anywhere not already taken
+    for idx, h in enumerate(heads):
+        line_text = h["title"]
+        m = FINDING_HEADING_RE.match(line_text)
+        if not m:
+            continue
+        if h["start"] in used_starts:
+            continue
+
+        # end = next heading with level <= this level
+        end_line = len(lines)
+        for j in range(idx+1, len(heads)):
+            if heads[j]["level"] <= h["level"]:
+                end_line = heads[j]["start"]
+                break
+
+        fid, short_title = m.group("id").strip(), m.group("title").strip()
+        start_line = h["start"]
+        md_block = "\n".join(lines[start_line:end_line]).rstrip() + "\n"
+
+        # try to inherit severity, else infer from ID prefix
+        inherited = _nearest_preceding_severity(heads, idx)
+        inferred = ID_PREFIX_TO_SEVERITY.get(fid.split("-")[0].upper())
+
+        sections.append({
+            "index": global_index,
+            "page_start": None,
+            "heading": f"{global_index}. {line_text}",
+            "markdown": md_block,
+            "finding_id": fid,
+            "severity": inherited or inferred,
+            "start_line": start_line,
+            "end_line": end_line,
+        })
+        used_starts.add(start_line)
+        global_index += 1
+
+    # stable order
+    sections.sort(key=lambda v: v.get("start_line", 10**9))
+    # re-number consecutive indices
+    for i, s in enumerate(sections, start=1):
+        s["index"] = i
+        s["heading"] = re.sub(r'^\d+\.\s*', f"{i}. ", s["heading"])
+    return sections
 
 
 def extract_vulnerability_sections_span(markdown: str) -> List[Dict[str, Any]]:
@@ -2682,7 +2826,7 @@ def process_single_markdown(
         logger.warning("Failed to write Markdown copy (%s): %s", save_md, e)
 
     # 1) Structured Markdown segmentation (severity-aware)
-    vuln_sections = extract_vuln_sections_structured_markdown(markdown)
+    vuln_sections = extract_vuln_sections_structured_markdown_mdit(markdown)
 
     # 2) Fallback: PDF-style heuristic segmentation (no LLM), just in case
     if not vuln_sections:
