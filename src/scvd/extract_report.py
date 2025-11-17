@@ -34,6 +34,8 @@ from marker.converters.pdf import PdfConverter
 from marker.models import create_model_dict
 from marker.output import text_from_rendered
 
+from markdown_it import MarkdownIt
+
 
 # ---------------- Logging ---------------- #
 
@@ -58,6 +60,23 @@ def setup_logger(verbosity: int = 0) -> logging.Logger:
 
 
 logger = setup_logger(0)
+
+
+
+# Additional subsection heading detectors (Impact, PoC, Recommendations, etc.)
+
+IMPACT_HEADING_RE = re.compile(
+    r'^\s*#{1,6}\s+.*\bImpact\b[:]*',
+    flags=re.IGNORECASE,
+)
+
+POC_HEADING_RE = re.compile(
+    r'^\s*#{1,6}\s+.*\b('
+    r'proof\s*of\s*concept|proof-of-concept|poc|exploit|exploitation'
+    r')\b[:]*',
+    flags=re.IGNORECASE,
+)
+
 
 
 # ---------------- Marker: PDF -> HTML / Markdown ---------------- #
@@ -99,6 +118,53 @@ HEADING_WITH_SPAN_RE = re.compile(
     r'^(?P<hashes>#{1,6})\s+<span id="page-(?P<page>\d+)-\d+"></span>(?P<rest>.*)$'
 )
 
+# Accept **Label:** or **Label**: (and __Label:__ / __Label__)
+BOLD_LABEL_RE = re.compile(
+    r'^\s*(?:\*\*|__)\s*([A-Za-z][A-Za-z0-9 /-]{0,80})\s*(?::\s*)?(?:\*\*|__)\s*:?',
+    flags=re.IGNORECASE,
+)
+
+BOLD_DESC_LABEL_RE = re.compile(
+    r'^\s*(?:\*\*|__)\s*description\s*(?::\s*)?(?:\*\*|__)\s*:?',
+    re.IGNORECASE
+)
+
+BOLD_END_DESC_LABEL_RE = re.compile(
+    r'^\s*(?:\*\*|__)\s*(?:'
+    r'recommended\s+mitigation|recommendation|recommendations|mitigation|mitigations|remediation|remediations|'
+    r'proof\s*of\s*concept|proof-of-concept|poc|exploit|exploitation|'
+    r'impact|'
+    r'fix\s*status|status\s*of\s*the\s*fix|fix-status|fix|'
+    r'resolution|resolutions|'
+    r'acknowledged'
+    r')\s*(?::\s*)?(?:\*\*|__)\s*:?',
+    re.IGNORECASE
+)
+
+
+# 1) Catch any bold label at line start (colon inside or outside, ** or __)
+BOLD_ANY_LABEL_RE = re.compile(
+    r'^\s*(?:\*\*|__)\s*([A-Za-z][A-Za-z0-9 /-]{0,80})\s*(?::\s*)?(?:\*\*|__)\s*:?',
+    re.IGNORECASE
+)
+
+
+BOLD_INLINE_DESC_START_RE = re.compile(
+    r'^\s*(?:\*\*|__)\s*(description|background|overview)\s*(?::\s*)?(?:\*\*|__)\s*:?',
+    re.IGNORECASE
+)
+
+BOLD_INLINE_DESC_BOUNDARY_RE = re.compile(
+    r'^\s*(?:\*\*|__)\s*('
+    r'recommended\s+mitigation|recommendation|recommendations|mitigation|mitigations|remediation|remediations|'
+    r'proof\s*of\s*concept|proof-of-concept|poc|exploit|exploitation|'
+    r'impact|'
+    r'fix\s*status|status\s*of\s*the\s*fix|fix-status|fix|'
+    r'resolution|resolutions|'
+    r'acknowledged'
+    r')\s*(?::\s*)?(?:\*\*|__)\s*:?',
+    re.IGNORECASE
+)
 # Vulnerability heading text: "2. The add function can revert ..."
 VULN_INDEX_RE = re.compile(r'^\s*(?P<index>\d+)\.\s*(?P<title>.*)$')
 
@@ -191,6 +257,10 @@ _DESC_END_KEYWORDS = [
     "poc",
     "exploit",
     "exploitation",
+    "fix status",
+    "status of the fix",
+    "fix-status",
+    "fix"
 ]
 END_DESC_HEADING_RE = re.compile(
     r'^\s*#{1,6}\s+.*\b(' + "|".join(k.replace(" ", r"\s+") for k in _DESC_END_KEYWORDS) + r')\b',
@@ -231,6 +301,19 @@ DEFAULT_REPORT_SCHEMA: List[Dict[str, Any]] = [
 
 HEADING_MD_RE = re.compile(r'^(?P<hashes>#{1,6})\s+(?P<title>.+?)\s*$')
 
+
+USE_NOT_CRITICAL_AS_DISTINCT = False  # False => map NC -> "Informational"; True => use "Not Critical"
+
+ID_PREFIX_TO_SEVERITY = {
+    "C":  "Critical",
+    "H":  "High",
+    "M":  "Medium",
+    "L":  "Low",
+    "NC": "Not Critical" if USE_NOT_CRITICAL_AS_DISTINCT else "Informational",
+}
+
+
+# Expand keyword detection for headings like "# Informational/Non-Critical Findings"
 SEVERITY_KEYWORDS = {
     "critical": "Critical",
     "high": "High",
@@ -238,6 +321,8 @@ SEVERITY_KEYWORDS = {
     "low": "Low",
     "informational": "Informational",
     "info": "Informational",
+    "non-critical": "Not Critical" if USE_NOT_CRITICAL_AS_DISTINCT else "Informational",
+    "nc": "Not Critical" if USE_NOT_CRITICAL_AS_DISTINCT else "Informational",
     "gas": "Gas",
     "qa": "QA",
 }
@@ -261,25 +346,66 @@ SUBSECTION_KEYWORDS = [
     "overview",
 ]
 
+# e.g. "## [L-01] Prevent setting …"
+FINDING_HEADING_RE = re.compile(
+    r'^\[(?P<id>[A-Za-z]{1,6}-\d{1,4})\]\s+(?P<title>.+)$'
+)
+
+
+def _description_span_with_bold_inline(lines: List[str]) -> Optional[Tuple[int, int]]:
+    start = None
+    for i, ln in enumerate(lines):
+        if BOLD_INLINE_DESC_START_RE.match(ln):
+            start = i
+            break
+    if start is None:
+        return None
+    end = len(lines)
+    for j in range(start + 1, len(lines)):
+        if BOLD_INLINE_DESC_BOUNDARY_RE.match(lines[j]) or HEADING_MD_RE.match(lines[j]):
+            end = j
+            break
+    return (start, end)
+
 
 def _heading_severity(title: str) -> Optional[str]:
-    """
-    Interpret a heading as a severity block, e.g.:
-
-      '# Medium Findings'   -> 'Medium'
-      '## Medium Risk'      -> 'Medium'
-      '## Low Risk'         -> 'Low'
-
-    Excludes meta headings like 'Severity Criteria' or 'Summary of Findings'.
-    """
-    t = title.lower()
+    t = re.sub(r'\s+', ' ', title.lower()).replace('—','-').replace('–','-')
     if "criteria" in t or "summary" in t:
         return None
-
     for key, canonical in SEVERITY_KEYWORDS.items():
-        if re.search(rf"\b{re.escape(key)}\b", t):
+        # allow e.g. "Informational/Non-Critical Findings"
+        if re.search(rf'(^|\W){re.escape(key)}(\W|$)', t):
             return canonical
     return None
+
+
+def _nearest_preceding_severity(heads: list[dict], i: int) -> str | None:
+    for k in range(i, -1, -1):
+        sev = _heading_severity(heads[k]["title"])
+        if sev:
+            return sev
+    return None
+
+def _parse_headings_mdit(md: str):
+    """Return headings with level/title/start_line using markdown-it-py."""
+    tokens = MarkdownIt().parse(md)
+    heads = []
+    for i, tok in enumerate(tokens):
+        if tok.type != "heading_open":
+            continue
+        # 'h2' -> 2
+        level = int(tok.tag[1])
+        # next token is 'inline' with the heading text
+        inline = tokens[i+1] if i+1 < len(tokens) else None
+        title = ""
+        if inline and inline.type == "inline":
+            if inline.children:  # collect text from children (links, code, etc.)
+                title = "".join(ch.content for ch in inline.children if getattr(ch, "content", None))
+            else:
+                title = inline.content or ""
+        start_line = (tok.map[0] if tok.map else None) or 0
+        heads.append({"level": level, "title": title.strip(), "start": start_line})
+    return heads
 
 
 def _is_subsection_heading(title: str) -> bool:
@@ -289,6 +415,41 @@ def _is_subsection_heading(title: str) -> bool:
     """
     t = title.lower()
     return any(key in t for key in SUBSECTION_KEYWORDS)
+
+
+def _description_span_with_bold_label(lines: List[str]) -> Optional[Tuple[int, int]]:
+    start = next((i for i, ln in enumerate(lines) if BOLD_DESC_LABEL_RE.match(ln)), None)
+    if start is None:
+        return None
+    end = len(lines)
+    for j in range(start + 1, len(lines)):
+        if BOLD_END_DESC_LABEL_RE.match(lines[j]):
+            end = j
+            break
+    return (start, end)
+
+
+def _classify_bold_label_line(line: str) -> Optional[str]:
+    m = BOLD_LABEL_RE.match(line)
+    if not m:
+        return None
+    label = m.group(1).strip().lower()
+
+    # canonical mapping (don’t map "acknowledged")
+    if label in {"description", "background", "overview"}:
+        return "description"
+    if label == "impact":
+        return "impact"
+    if label in {"proof of concept", "proof-of-concept", "poc", "exploit", "exploitation"}:
+        return "poc"
+    if label in {"recommended mitigation", "recommendation", "recommendations",
+                 "mitigation", "mitigations", "remediation", "remediations"}:
+        return "recommendation"
+    if label in {"fix status", "status of the fix", "fix-status", "resolution", "resolutions", "fix"}:
+        return "fix_status"
+
+    # everything else (e.g., "acknowledged", vendor blocks) -> not a canonical section
+    return None
 
 
 ID_IN_HEADING_RE = re.compile(r"^\[(?P<id>[^\]]+)\]\s*(?P<rest>.*)$")
@@ -854,6 +1015,128 @@ def is_vuln_start_block(
     return True, idx
 
 
+
+def extract_vuln_sections_structured_markdown_mdit(markdown: str) -> list[dict]:
+    """
+    AST-based splitter:
+    1) Use severity blocks (e.g., '# Low Findings').
+    2) Fallback: capture '[ID]-style' headings anywhere.
+    Returns records compatible with your pipeline.
+    """
+    lines = markdown.splitlines()
+    heads = _parse_headings_mdit(markdown)
+    if not heads:
+        return []
+
+    sections: list[dict] = []
+    used_starts: set[int] = set()
+
+    # Pass 1: severity blocks → child headings are findings
+    global_index = 1
+    for idx, h in enumerate(heads):
+        sev = _heading_severity(h["title"])
+        if not sev:
+            continue
+        parent_level = h["level"]
+
+        # end of this block = next heading with level <= parent_level
+        block_end_line = len(lines)
+        for j in range(idx+1, len(heads)):
+            if heads[j]["level"] <= parent_level:
+                block_end_line = heads[j]["start"]
+                break
+
+        j = idx + 1
+        while j < len(heads) and heads[j]["start"] < block_end_line:
+            ch = heads[j]
+            if ch["level"] <= parent_level:
+                break
+            if _is_subsection_heading(ch["title"]):
+                j += 1
+                continue
+
+            # find end of this finding (next heading with level <= this level, but within block)
+            end_line = block_end_line
+            k = j + 1
+            while k < len(heads) and heads[k]["start"] < block_end_line:
+                if heads[k]["level"] <= ch["level"]:
+                    end_line = heads[k]["start"]
+                    break
+                k += 1
+
+            start_line = ch["start"]
+            md_block = "\n".join(lines[start_line:end_line]).rstrip() + "\n"
+            # ----- severity selection (no UnboundLocalError) -----
+            m = FINDING_HEADING_RE.match(ch["title"])
+            fid = m.group("id") if m else None
+
+            eff_sev = sev  # default: inherited from the severity block
+            if fid:
+                prefix = fid.split("-")[0].upper()
+                mapped = ID_PREFIX_TO_SEVERITY.get(prefix)
+                if mapped:
+                    eff_sev = mapped  # ID prefix wins
+
+            sections.append({
+                "index": global_index,
+                "page_start": None,
+                "heading": f"{global_index}. {ch['title']}",
+                "markdown": md_block,
+                "finding_id": fid,
+                "severity": eff_sev,
+                "start_line": start_line,
+                "end_line": end_line,
+            })
+            used_starts.add(start_line)
+            global_index += 1
+            j += 1
+
+    # Pass 2 (fallback): capture '[ID]-style' headings anywhere not already taken
+    for idx, h in enumerate(heads):
+        line_text = h["title"]
+        m = FINDING_HEADING_RE.match(line_text)
+        if not m:
+            continue
+        if h["start"] in used_starts:
+            continue
+
+        # end = next heading with level <= this level
+        end_line = len(lines)
+        for j in range(idx+1, len(heads)):
+            if heads[j]["level"] <= h["level"]:
+                end_line = heads[j]["start"]
+                break
+
+        fid, short_title = m.group("id").strip(), m.group("title").strip()        
+        start_line = h["start"]
+        md_block = "\n".join(lines[start_line:end_line]).rstrip() + "\n"
+
+        # try to inherit severity, else infer from ID prefix
+        inherited = _nearest_preceding_severity(heads, idx)
+        inferred = ID_PREFIX_TO_SEVERITY.get(fid.split("-")[0].upper())
+
+        sections.append({
+            "index": global_index,
+            "page_start": None,
+            "heading": f"{global_index}. {line_text}",
+            "markdown": md_block,
+            "finding_id": fid,
+            "severity": inferred or inherited,
+            "start_line": start_line,
+            "end_line": end_line,
+        })
+        used_starts.add(start_line)
+        global_index += 1
+
+    # stable order
+    sections.sort(key=lambda v: v.get("start_line", 10**9))
+    # re-number consecutive indices
+    for i, s in enumerate(sections, start=1):
+        s["index"] = i
+        s["heading"] = re.sub(r'^\d+\.\s*', f"{i}. ", s["heading"])
+    return sections
+
+
 def extract_vulnerability_sections_span(markdown: str) -> List[Dict[str, Any]]:
     """
     Span-based segmentation: works for numeric headings (e.g. "2. Title").
@@ -1411,8 +1694,247 @@ def clean_vuln_markdown(md: str) -> str:
 
 def clean_vulnerability_sections(vuln_sections: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     for v in vuln_sections:
-        v["markdown"] = clean_vuln_markdown(v["markdown"])
+        raw_md = v.get("markdown") or ""
+        # keep a raw copy for transparency / debugging
+        if "markdown_raw" not in v:
+            v["markdown_raw"] = raw_md
+        v["markdown"] = clean_vuln_markdown(raw_md)
     return vuln_sections
+
+
+def _compute_body_start_index(lines: List[str]) -> int:
+    """
+    Heuristically find where the 'body' of the vulnerability starts, i.e.:
+      - skip leading blanks
+      - skip one top-level heading (finding title) if present
+      - skip ID/summary table if present
+      - skip inline metadata lines (Severity, Difficulty, Status, etc.)
+
+    We deliberately do NOT skip 'Description', 'Impact', etc. headings –
+    they are part of the body.
+    """
+    n = len(lines)
+    if n == 0:
+        return 0
+
+    # 1) If there is an ID-style table near the top, skip it and start after
+    id_row_index = None
+    for i, line in enumerate(lines[:20]):  # only look near the top
+        if ID_TABLE_ROW_RE.match(line):
+            id_row_index = i
+            break
+
+    if id_row_index is not None:
+        j = id_row_index + 1
+        while j < n:
+            s = lines[j].strip()
+            if not s:
+                j += 1
+                continue
+            if s.startswith("|") or is_table_divider_row(lines[j]):
+                j += 1
+                continue
+            break
+        return j
+
+    # 2) Generic fallback: skip blanks, then one non-subsection heading, then metadata lines
+    i = 0
+
+    # Skip leading blank lines
+    while i < n and not lines[i].strip():
+        i += 1
+
+    # Skip ONE heading line if present (but only if it's not "Description", "Impact", etc.)
+    if i < n:
+        m = HEADING_MD_RE.match(lines[i])
+        if m:
+            title = m.group("title").strip()
+            if not _is_subsection_heading(title):
+                i += 1
+
+    # Metadata labels from schema + some common inline fields
+    metadata_labels = build_metadata_labels_from_schema(None)
+    extra_meta_prefixes = ["asset", "status", "rating"]
+
+    def is_metadata_line(s: str) -> bool:
+        s_lower = s.lower()
+        # From explicit labels (Severity, Difficulty, Type, Target, Finding ID, etc.)
+        for label in metadata_labels:
+            prefix = label.split(":")[0].strip()
+            if prefix and s_lower.startswith(prefix.lower()):
+                return True
+        # Extra common inline fields
+        for pref in extra_meta_prefixes:
+            if s_lower.startswith(pref):
+                return True
+        return False
+
+    # Skip inline metadata lines at the top
+    while i < n:
+        s = lines[i].strip()
+        if not s:
+            i += 1
+            continue
+        if is_metadata_line(s):
+            i += 1
+            continue
+        break
+
+    return i
+
+
+def _classify_subsection_heading(line: str) -> Optional[str]:
+    m = HEADING_MD_RE.match(line)
+    if not m: return None
+    title = m.group("title").strip().lower()
+
+    if "description" in title or "background" in title or "overview" in title: return "description"
+    if "impact" in title: return "impact"
+    if ("proof of concept" in title or "proof-of-concept" in title or re.search(r"\bpoc\b", title)
+        or "exploit" in title or "exploitation" in title): return "poc"
+    if any(kw in title for kw in ["fix status","status of the fix","fix-status","resolution","resolutions"]):
+        return "fix_status"
+    if any(kw in title for kw in ["recommendation","recommendations","mitigation","mitigations","remediation","remediations"]):
+        return "recommendation"
+    return None
+
+
+
+
+def extract_vuln_subsections(md: str) -> Dict[str, Optional[str]]:
+    """
+    Deterministically split a vulnerability markdown block into:
+
+      - body            : full body (without top title/table/metadata)
+      - description     : description section
+      - impact          : impact section
+      - recommendation  : recommendations/mitigations/resolution
+      - poc             : proof of concept / exploit
+      - other           : any leftover body text not covered by the above
+
+    Strategy:
+      1. Compute a 'body_start' index (see _compute_body_start_index).
+      2. On lines[body_start:], find subsection headings (Description, Impact, PoC, etc.).
+      3. Build segments between headings.
+      4. Map segments to canonical keys based on heading text.
+      5. If there is no explicit Description heading, treat text BEFORE the first
+         subsection heading as 'description'.
+      6. 'other' is simply body minus (description ∪ impact ∪ recommendation ∪ poc).
+    """
+    lines = md.splitlines()
+    n = len(lines)
+    if n == 0:
+        return {
+            "body": None,
+            "description": None,
+            "impact": None,
+            "recommendation": None,
+            "poc": None,
+            "other": None,
+        }
+
+    body_start = _compute_body_start_index(lines)
+    if body_start < 0 or body_start >= n:
+        body_start = 0
+
+    sub_lines = lines[body_start:]
+    if not sub_lines:
+        return {
+            "body": None,
+            "description": None,
+            "impact": None,
+            "recommendation": None,
+            "poc": None,
+            "other": None,
+        }
+
+    # 1) Find subsection headings inside the body
+    headings: List[Tuple[int, str]] = []  # (relative_line_idx, key)
+    for j, line in enumerate(sub_lines):
+        key = _classify_section_heading(line)  # ## Description
+        if not key:
+            key = _classify_bold_label_line(line)  # **Description:**
+        if key:
+            headings.append((j, key))
+
+    canonical_keys = {"description", "impact", "recommendation", "poc", "fix_status"}
+    segments_by_key: Dict[str, List[Tuple[int, int]]] = {k: [] for k in canonical_keys}
+
+    def _merge_ranges(ranges: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+        if not ranges:
+            return []
+        ranges = sorted(ranges)
+        merged: List[List[int]] = [[ranges[0][0], ranges[0][1]]]
+        for s, e in ranges[1:]:
+            if s <= merged[-1][1]:
+                merged[-1][1] = max(merged[-1][1], e)
+            else:
+                merged.append([s, e])
+        return [(s, e) for s, e in merged]
+
+    # 2) Build segments
+    canonical_ranges: List[Tuple[int, int]] = []
+
+    if headings:
+        has_desc_heading = any(key == "description" for (_, key) in headings)
+        first_idx = headings[0][0]
+
+        # If no explicit Description heading, treat pre-heading text as description
+        if first_idx > 0 and not has_desc_heading:
+            segments_by_key["description"].append((0, first_idx))
+            canonical_ranges.append((0, first_idx))
+
+        for idx, (start_j, key) in enumerate(headings):
+            end_j = headings[idx + 1][0] if idx + 1 < len(headings) else len(sub_lines)
+            if key in canonical_keys:
+                segments_by_key[key].append((start_j, end_j))
+                canonical_ranges.append((start_j, end_j))
+    else:
+        # No subsection headings at all: entire body is description
+        segments_by_key["description"].append((0, len(sub_lines)))
+        canonical_ranges.append((0, len(sub_lines)))
+
+    # 3) "other" is body minus canonical coverage
+    merged_canonical = _merge_ranges(canonical_ranges)
+    other_ranges: List[Tuple[int, int]] = []
+    prev = 0
+    for s, e in merged_canonical:
+        if prev < s:
+            other_ranges.append((prev, s))
+        prev = e
+    if prev < len(sub_lines):
+        other_ranges.append((prev, len(sub_lines)))
+
+    def _extract_from_ranges(ranges: List[Tuple[int, int]]) -> Optional[str]:
+        collected: List[str] = []
+        for s, e in ranges:
+            collected.extend(sub_lines[s:e])
+        text = "\n".join(collected).strip()
+        return text + "\n" if text else None
+
+    description_md = _extract_from_ranges(segments_by_key["description"])
+    impact_md = _extract_from_ranges(segments_by_key["impact"])
+    recommendation_md = _extract_from_ranges(segments_by_key["recommendation"])
+    poc_md = _extract_from_ranges(segments_by_key["poc"])
+    other_md = _extract_from_ranges(other_ranges)
+    fix_status_md = _extract_from_ranges(segments_by_key["fix_status"])
+
+    body_md = "\n".join(sub_lines).strip()
+    if body_md:
+        body_md += "\n"
+    else:
+        body_md = None
+
+    return {
+        "body": body_md,
+        "description": description_md,
+        "impact": impact_md,
+        "recommendation": recommendation_md,
+        "poc": poc_md,
+        "fix_status": fix_status_md, 
+        "other": other_md,
+    }
+
 
 
 def _build_description_from_span(lines: List[str], start: int, end: int) -> Optional[str]:
@@ -1589,6 +2111,17 @@ def extract_description_from_markdown(
     if span is not None:
         start, end = span
         return _build_description_from_span(lines, start, end)
+    
+    span = _description_span_with_bold_inline(lines)
+    if span is not None:
+        start, end = span
+        return _build_description_from_span(lines, start, end)
+    
+
+    span = _description_span_with_bold_label(lines)
+    if span is not None:
+        start, end = span
+        return _build_description_from_span(lines, start, end)
 
     # 2) ID-table pattern
     span = _description_span_after_id_table(lines)
@@ -1639,18 +2172,248 @@ def add_descriptions(
     ollama_model: str = "qwen3:8b",
     ollama_base_url: str = "http://localhost:11434",
 ) -> List[Dict[str, Any]]:
+    for v in vuln_sections:
+        md = v.get("markdown", "") or ""
+        subs = extract_vuln_subsections(md)
+
+        if not subs.get("description"):
+            desc_fb = extract_description_from_markdown(
+                md,
+                use_ollama=use_ollama,
+                ollama_model=ollama_model,
+                ollama_base_url=ollama_base_url,
+            )
+            if desc_fb:
+                subs["description"] = desc_fb
+
+        v["sections"] = {
+            "description": subs.get("description"),
+            "impact": subs.get("impact"),
+            "recommendation": subs.get("recommendation"),
+            "poc": subs.get("poc"),
+            "fix_status": subs.get("fix_status"),
+            "other": subs.get("other"),
+        }
+        v["description"] = subs.get("description")
+        v["markdown_body"] = subs.get("body") or md
+    return vuln_sections
+
+
+
+
+# ---------------- Section splitting (Description / Impact / PoC / Recommendations / Fix Status) ---------------- #
+
+# Which headings map to which logical sections
+SECTION_NAME_PATTERNS: Dict[str, List[str]] = {
+    "description": ["description"],
+    "impact": ["impact"],
+    "poc": [
+        "proof of concept",
+        "proof-of-concept",
+        "poc",
+        "exploit scenario",
+        "attack scenario",
+    ],
+    "recommendation": [
+        "recommendation",
+        "recommendations",
+        "mitigation",
+        "mitigations",
+        "remediation",
+        "remediations"
+    ],
+    "fix_status": [
+        "fix status",
+        "status of the fix",
+        "fix-status",
+        "resolution",
+        "resolutions",
+        "fix"
+    ],
+}
+
+
+def _classify_section_heading(line: str) -> Optional[str]:
+    m = HEADING_MD_RE.match(line.strip())
+    if not m:
+        return None
+
+    title = m.group("title")
+    lowered = title.lower()
+    # normalize punctuation so "proof-of-concept" == "proof of concept"
+    norm = re.sub(r"[`*_~\[\](){},.;:!?\\-]+", " ", lowered)
+    norm = re.sub(r"\s+", " ", norm).strip()
+
+    def phrase_matches(text: str, phrase: str) -> bool:
+        pat = r"\b" + re.escape(phrase.lower()).replace(r"\ ", r"\s+") + r"\b"
+        return re.search(pat, text) is not None
+
+    for name, fragments in SECTION_NAME_PATTERNS.items():
+        for frag in fragments:
+            if phrase_matches(norm, frag):
+                return name
+    return None
+
+
+
+def split_vuln_markdown_into_sections(md: str) -> Tuple[Dict[str, Optional[str]], str]:
+    lines = md.splitlines()
+    n = len(lines)
+    sections = {"description": None, "impact": None, "recommendation": None,
+                "poc": None, "fix_status": None, "other": None}
+    other_labeled: Dict[str, List[str]] = {}  # optional, if you want labels preserved
+
+    if n == 0:
+        return sections, ""
+
+    # find markdown subsection headings
+    heading_starts: List[Tuple[int, str]] = []
+    for i, line in enumerate(lines):
+        sname = _classify_section_heading(line)  # ## Description, etc.
+        if sname:
+            heading_starts.append((i, sname))
+
+    # known bold labels (**Description:**, **Impact:**, etc.)
+    bold_known: List[Tuple[int, str]] = []
+    # unknown bold labels (**Swell:**, **Cyfrin:**, etc.) act as boundaries -> 'other'
+    bold_unknown: List[Tuple[int, str, str]] = []  # (line, "other:<norm>", original label)
+
+    in_code = False
+    for i, line in enumerate(lines):
+        s = line.strip()
+        if s.startswith("```"):
+            in_code = not in_code
+            continue
+        if in_code:
+            continue
+
+        known = _classify_bold_label_line(line)  # returns canonical name or None
+        if known:
+            bold_known.append((i, known))
+        else:
+            m_any = BOLD_ANY_LABEL_RE.match(line)
+            if m_any and not s.startswith('|') and not s.startswith('>'):
+                raw_label = m_any.group(1).strip()
+                norm = normalize_heading_for_key(raw_label)  # e.g., "swell", "cyfrin"
+                bold_unknown.append((i, f"other:{norm}", raw_label))
+
+    # combine starts; note: items are (index, tag) except unknown which is (index, tag, raw)
+    starts: List[Tuple[int, str, Optional[str]]] = []
+    starts += [(i, s, None) for (i, s) in heading_starts]
+    starts += [(i, s, None) for (i, s) in bold_known]
+    starts += bold_unknown
+    starts.sort(key=lambda t: t[0])
+
+    # compute the 'body' start and a preamble span 
+
+    body_start = _compute_body_start_index(lines)
+
+    # no starts -> everything after first title goes to "other"
+    if not starts:
+        body_text = "\n".join(lines[body_start:]).strip()
+        if body_text and not body_text.endswith("\n"):
+            body_text += "\n"
+        sections["description"] = body_text or None
+        return sections, body_text or ""
+
+    used = [False] * n
+    # mark a single top title line (if any) as used
+    first_nonempty = next((i for i, l in enumerate(lines) if l.strip()), None)
+    if first_nonempty is not None:
+        if HEADING_MD_RE.match(lines[first_nonempty]) and _classify_section_heading(lines[first_nonempty]) is None:
+            used[first_nonempty] = True
+
+    # build blocks between all boundaries (including unknown bold labels)
+    for idx, (start_i, tag, raw_label) in enumerate(starts):
+        end_i = n
+        if idx + 1 < len(starts):
+            end_i = starts[idx + 1][0]
+
+        block = "\n".join(lines[start_i:end_i]).strip()
+        if block:
+            if not block.endswith("\n"):
+                block += "\n"
+            if tag in {"description", "impact", "poc", "recommendation", "fix_status"}:
+                # keep first occurrence per canonical section; if you prefer merge, concatenate.
+                if sections[tag] is None:
+                    sections[tag] = block
+                else:
+                    sections[tag] += "\n" + block
+            else:
+                # unknown label -> other
+                label_name = (raw_label or tag.split("other:", 1)[-1]).strip()
+
+                cleaned = _strip_leading_label(label_name, block)
+                if cleaned.strip():
+                    # keep per-label buckets if you want; otherwise just append to 'other'
+                    other_labeled.setdefault(label_name, []).append(cleaned)
+
+            for k in range(start_i, end_i):
+                used[k] = True
+
+     # preamble→description fallback if no explicit description
+    first_boundary = starts[0][0]
+    if sections["description"] is None and body_start < first_boundary:
+        pre = "\n".join(lines[body_start:first_boundary]).strip()
+        if pre:
+            sections["description"] = pre + "\n"
+
+    # aggregate 'other'
+    if other_labeled:
+        parts = []
+        for lbl, chunks in other_labeled.items():
+            merged = "".join(chunks)
+            # if merged already begins with "**Lbl:**", don't add another header
+            if re.match(rf'^\s*(?:\*\*|__)\s*{re.escape(lbl)}\s*(?::\s*)?(?:\*\*|__)\s*:?',
+                        merged, re.IGNORECASE):
+                parts.append(merged)
+            else:
+                parts.append(f"**{lbl}:**\n{merged}")
+        sections["other"] = ("\n\n".join(p.strip() for p in parts if p.strip()) + "\n") or None
+        # (b) optionally also expose structured buckets:
+        # sections["other_labeled"] = {lbl: "".join(chunks) for lbl, chunks in other_labeled.items()}
+
+    # define body from first boundary onward
+    
+    body_text = "\n".join(lines[body_start:]).strip()
+    if body_text and not body_text.endswith("\n"):
+        body_text += "\n"
+
+    return sections, body_text
+
+
+# strip a leading naked "**Label:**" line so we don't duplicate it
+def _strip_leading_label(lbl, text):
+    pat = re.compile(
+        rf'^\s*(?:\*\*|__)\s*{re.escape(lbl)}\s*(?::\s*)?(?:\*\*|__)\s*:?\s*$',
+        re.IGNORECASE
+    )
+    lines = text.splitlines()
+    while lines and pat.match(lines[0]):
+        lines.pop(0)
+    return ("\n".join(lines).strip() + "\n") if lines else ""
+
+
+
+
+def add_structured_sections(
+    vuln_sections: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
     """
-    Add a "description" key to each vulnerability section using
-    heuristics + optional LLM fallback.
+    For each vulnerability, compute:
+
+      - sections: {description, impact, recommendation, poc, fix_status, other}
+      - markdown_body: "main" body from first subsection heading onward
+
+    This is where we deterministically pull out "Fix Status" into its own field.
     """
     for v in vuln_sections:
-        v["description"] = extract_description_from_markdown(
-            v.get("markdown", "") or "",
-            use_ollama=use_ollama,
-            ollama_model=ollama_model,
-            ollama_base_url=ollama_base_url,
-        )
+        md = v.get("markdown") or ""
+        sections, body = split_vuln_markdown_into_sections(md)
+        v["sections"] = sections
+        v["markdown_body"] = body
     return vuln_sections
+
 
 
 # ---------------- Heading cleaning ---------------- #
@@ -1962,6 +2725,9 @@ def process_single_pdf(
         ollama_base_url=ollama_base_url,
     )
 
+    # 7: structured sections (Description / Impact / PoC / Recommendations / Fix Status / Other)
+    vuln_sections = add_structured_sections(vuln_sections)
+
     # 7: repositories (from full markdown)
     repositories = extract_repositories_from_markdown(markdown)
 
@@ -2086,7 +2852,7 @@ def process_single_markdown(
         logger.warning("Failed to write Markdown copy (%s): %s", save_md, e)
 
     # 1) Structured Markdown segmentation (severity-aware)
-    vuln_sections = extract_vuln_sections_structured_markdown(markdown)
+    vuln_sections = extract_vuln_sections_structured_markdown_mdit(markdown)
 
     # 2) Fallback: PDF-style heuristic segmentation (no LLM), just in case
     if not vuln_sections:
@@ -2106,6 +2872,9 @@ def process_single_markdown(
         ollama_model=ollama_model,
         ollama_base_url=ollama_base_url,
     )
+
+    # 5) Structured sections (Description / Impact / PoC / Recommendations / Fix Status / Other)
+    vuln_sections = add_structured_sections(vuln_sections)
 
     # 5) Repositories (from full markdown)
     repositories = extract_repositories_from_markdown(markdown)

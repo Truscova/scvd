@@ -11,6 +11,7 @@
     "page_start": { "type": ["integer", "null"] },
     "title": { "type": "string", "minLength": 1 },
     "short_summary": { "type": ["string", "null"] },
+
     "description_md": { "type": ["string", "null"] },
     "full_markdown": { "type": ["string", "null"] },
 
@@ -77,7 +78,9 @@
         "fixed_in_pr": { "type": "array", "items": { "type": "string" } },
         "exploited_in_the_wild": { "type": ["boolean", "null"] },
         "cvss": { "type": ["string", "number", "object", "null"] },
-        "bounty_reference": { "type": ["string", "null"] }
+        "bounty_reference": { "type": ["string", "null"] },
+
+        "fix_status_text_md": { "type": ["string", "null"] }
       },
       "additionalProperties": false
     },
@@ -99,7 +102,23 @@
       "additionalProperties": false
     },
 
-    "metadata_raw": { "type": ["object", "null"] }
+    "metadata_raw": { "type": ["object", "null"] },
+
+    "sections": {
+      "type": "object",
+      "properties": {
+        "description_md": { "type": ["string", "null"] },
+        "impact_md": { "type": ["string", "null"] },
+        "recommendation_md": { "type": ["string", "null"] },
+        "poc_md": { "type": ["string", "null"] },
+        "fix_status_md": { "type": ["string", "null"] },
+        "other_md": { "type": ["string", "null"] },
+
+        "full_markdown_body": { "type": ["string", "null"] },
+        "markdown_raw": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    }
   },
   "additionalProperties": false
 }
