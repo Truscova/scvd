@@ -2,7 +2,7 @@
   "doc_id": "sigmaprime_urbit_stardust_review",
   "source_pdf": "review.pdf",
   "source_mtime": "2025-11-10T12:08:25+00:00",
-  "extracted_at": "2025-11-14T13:50:29.763075+00:00",
+  "extracted_at": "2025-11-16T22:14:35.048870+00:00",
   "extractor_version": "poc-0.4",
   "repositories": [
     {
@@ -73,24 +73,24 @@
       "expected_values": "Informational / Low / Medium / High"
     },
     {
-      "key": "Status",
-      "meaning": "The current status of the finding, whether it's open or closed.",
-      "expected_values": "Open / Closed"
+      "key": "Difficulty",
+      "meaning": "How hard it is to exploit this issue.",
+      "expected_values": "Low / Medium / High"
     },
     {
-      "key": "Rating",
-      "meaning": "A combination of severity and likelihood of an issue being exploited.",
-      "expected_values": "Severity: Informational / Low / Medium / High; Impact: Informational / Low / Medium / High; Likelihood: Informational / Low / Medium / High"
-    },
-    {
-      "key": "Asset",
-      "meaning": "The file or contract where the vulnerability is found.",
-      "expected_values": "path to affected file / contract"
+      "key": "Type",
+      "meaning": "The type of the vulnerability or finding.",
+      "expected_values": "Informational / Security / Logic / Contract Interaction / etc."
     },
     {
       "key": "Finding ID",
-      "meaning": "A unique identifier for the finding in the audit report.",
-      "expected_values": "UTR-XX (where XX is a number)"
+      "meaning": "A unique identifier for this specific finding in the report.",
+      "expected_values": "UTR-01, UTR-02, UTR-03"
+    },
+    {
+      "key": "Target",
+      "meaning": "The file or contract affected by the finding.",
+      "expected_values": "path to affected file / contract"
     }
   ],
   "vulnerability_sections": [
@@ -106,16 +106,17 @@
         "impact": null,
         "recommendation": "#### **Recommendations**\n\nConsider adding a function to account for transferred stars into the assets array. For this purpose, a mapping can help check whether the star has been included in assets :\n\n```\nmapping ( uint16 => bool ) assetMap ;\n```\n\nThen, the following function can be used.\n\n```\nfunction addToAsset ( uint16 _star ) public {\n require ( assetMap [ _star ] == false , \" Treasury : The star is in the assets \");\n```\n\nNotice that additional instructions are necessary on the functions deposit() and redeem() . In the deposit() function, the following instruction can be added on line [**111**]:\n\n```\nassetMap [ _star ] = true ;\n```\n\nWhile in the redeem() function, the following instruction can be added on line [**130**]:\n\n```\ndelete assetMap [ _star ];\n```\n",
         "poc": null,
+        "fix_status": null,
         "other": null
       },
       "description": "#### **Description**\n\nA user can mistakenly transfer ownership of a star to the Treasury contract. Consider the following case:\n\n- 1. Alice spawns a star;\n- 2. Instead of setting Treasury as a proxy through Ecliptic.setSpawnProxy() , Alice calls a different function, Ecliptic.transferPoint() . The star ownership changes from Alice to Treasury ;\n- 3. Treasury was not notified of such transfer and therefore the star is not recorded in the assets ;\n- 4. Alice cannot take back the mistakenly transferred star.\n",
       "markdown_body": "#### **Description**\n\nA user can mistakenly transfer ownership of a star to the Treasury contract. Consider the following case:\n\n- 1. Alice spawns a star;\n- 2. Instead of setting Treasury as a proxy through Ecliptic.setSpawnProxy() , Alice calls a different function, Ecliptic.transferPoint() . The star ownership changes from Alice to Treasury ;\n- 3. Treasury was not notified of such transfer and therefore the star is not recorded in the assets ;\n- 4. Alice cannot take back the mistakenly transferred star.\n\n#### **Recommendations**\n\nConsider adding a function to account for transferred stars into the assets array. For this purpose, a mapping can help check whether the star has been included in assets :\n\n```\nmapping ( uint16 => bool ) assetMap ;\n```\n\nThen, the following function can be used.\n\n```\nfunction addToAsset ( uint16 _star ) public {\n require ( assetMap [ _star ] == false , \" Treasury : The star is in the assets \");\n```\n\nNotice that additional instructions are necessary on the functions deposit() and redeem() . In the deposit() function, the following instruction can be added on line [**111**]:\n\n```\nassetMap [ _star ] = true ;\n```\n\nWhile in the redeem() function, the following instruction can be added on line [**130**]:\n\n```\ndelete assetMap [ _star ];\n```\n",
       "metadata": {
         "Severity": "Low",
-        "Status": "Open",
-        "Rating": "Severity: Low; Impact: Low; Likelihood: Low",
-        "Asset": "Treasury.sol",
-        "Finding ID": "UTR-01"
+        "Difficulty": null,
+        "Type": "Logic",
+        "Finding ID": "UTR-01",
+        "Target": "Treasury.sol"
       },
       "heading_cleaned": "Treasury Cannot Recover Star Mistakenly Transferred To It"
     },
@@ -131,16 +132,17 @@
         "impact": null,
         "recommendation": "#### **Recommendations**\n\nConsider introducing a function where a privileged account (e.g. a governance contract, say Governor), can recover any excess tokens:\n\n```\nfunction recoverTokens ( address _to ) onlyGovernor public {\n uint256 tokenAmount ;\n tokenAmount = startoken . balanceOf ( address ( this )) % ( assets . length * oneStar );\n tokenAmount = startoken . balanceOf ( address ( this ));\n  startoken . transferFrom ( address ( this ), _to , tokenAmount );\n```\n\n*Note that this would require the governor to have an allowance on behalf of the Treasury contract in the StarToken contrat*\n",
         "poc": null,
+        "fix_status": null,
         "other": null
       },
       "description": "#### **Description**\n\nA Treasury contract is coupled with a StarToken (ERC-777 standard) token. StarToken tokens are minted to a user who deposits a star to the Treasury contract and burned when a user redeems a star. The Treasury contract does not have a function to sweep over Startoken tokens mistakenly sent to it.\n\nConsider the following scenario:\n\n- 1. Alice deposits a star and receives 1*e*18 StarToken ;\n- 2. Alice mistakenly transfers some of her StarToken tokens, say 100 tokens, to Treasury contract;\n- 3. Alice cannot recover the mistakenly transferred tokens, while the Treasury contract also cannot recover the tokens.\n",
       "markdown_body": "#### **Description**\n\nA Treasury contract is coupled with a StarToken (ERC-777 standard) token. StarToken tokens are minted to a user who deposits a star to the Treasury contract and burned when a user redeems a star. The Treasury contract does not have a function to sweep over Startoken tokens mistakenly sent to it.\n\nConsider the following scenario:\n\n- 1. Alice deposits a star and receives 1*e*18 StarToken ;\n- 2. Alice mistakenly transfers some of her StarToken tokens, say 100 tokens, to Treasury contract;\n- 3. Alice cannot recover the mistakenly transferred tokens, while the Treasury contract also cannot recover the tokens.\n\n#### **Recommendations**\n\nConsider introducing a function where a privileged account (e.g. a governance contract, say Governor), can recover any excess tokens:\n\n```\nfunction recoverTokens ( address _to ) onlyGovernor public {\n uint256 tokenAmount ;\n tokenAmount = startoken . balanceOf ( address ( this )) % ( assets . length * oneStar );\n tokenAmount = startoken . balanceOf ( address ( this ));\n  startoken . transferFrom ( address ( this ), _to , tokenAmount );\n```\n\n*Note that this would require the governor to have an allowance on behalf of the Treasury contract in the StarToken contrat*\n",
       "metadata": {
         "Severity": "Low",
-        "Status": "Open",
-        "Rating": "Severity: Low | Impact: Low | Likelihood: Low",
-        "Asset": "Treasury.sol",
-        "Finding ID": "UTR-02"
+        "Difficulty": null,
+        "Type": "Security",
+        "Finding ID": "UTR-02",
+        "Target": "Treasury.sol"
       },
       "heading_cleaned": ""
     },
@@ -156,16 +158,17 @@
         "impact": null,
         "recommendation": "#### **Recommendations**\n\nMake sure this behaviour is intended and consider deploying a dedicated StarToken contract and hardcoding its address in the Treasury contract.\n",
         "poc": null,
+        "fix_status": null,
         "other": null
       },
       "description": "#### **Description**\n\nThe Treasury contract deploys a new StarToken contract during contract creation, as indicated on line [**26**]:\n\n```\nStarToken public startoken = new StarToken (0 , new address [](0));\n```\n\nIt is possible to deploy multiple Treasury contracts. It also means that there can be multiple StarToken contracts, where tokens in one StarToken contract cannot redeem a star in other Treasury contracts. This can potentially be confusing or misleading for users.\n",
       "markdown_body": "#### **Description**\n\nThe Treasury contract deploys a new StarToken contract during contract creation, as indicated on line [**26**]:\n\n```\nStarToken public startoken = new StarToken (0 , new address [](0));\n```\n\nIt is possible to deploy multiple Treasury contracts. It also means that there can be multiple StarToken contracts, where tokens in one StarToken contract cannot redeem a star in other Treasury contracts. This can potentially be confusing or misleading for users.\n\n#### **Recommendations**\n\nMake sure this behaviour is intended and consider deploying a dedicated StarToken contract and hardcoding its address in the Treasury contract.\n",
       "metadata": {
-        "Severity": null,
-        "Status": "Open",
-        "Rating": "Informational",
-        "Asset": "Treasury.sol",
-        "Finding ID": "UTR-03"
+        "Severity": "Informational",
+        "Difficulty": null,
+        "Type": "Informational",
+        "Finding ID": "UTR-03",
+        "Target": "Treasury.sol"
       },
       "heading_cleaned": "Multiple Treasury and StarToken Contracts Allowed"
     },
@@ -181,16 +184,17 @@
         "impact": null,
         "recommendation": "#### **Recommendations**\n\nMake sure this behaviour is intended.\n",
         "poc": null,
+        "fix_status": null,
         "other": null
       },
       "description": "### **Description**\n\nThe Treasury contract requires a fixed amount of 1*e*18 STAR tokens to redeem a star asset. Since STAR tokens are only minted when users deposit stars, the amount of tokens held by the Treasury must be 1*e*18 multiplied by Treasury 's asset count (equal to the number of deposited stars). That way, when all stars are redeemed, the total balance of STAR equals to zero.\n\nThis coupling between Treasury and STAR tokens means that if even one token is lost, i.e. sent to an address without a known related private key, then there should be at least one unclaimable star in the Treasury 's asset.\n",
       "markdown_body": "### **Description**\n\nThe Treasury contract requires a fixed amount of 1*e*18 STAR tokens to redeem a star asset. Since STAR tokens are only minted when users deposit stars, the amount of tokens held by the Treasury must be 1*e*18 multiplied by Treasury 's asset count (equal to the number of deposited stars). That way, when all stars are redeemed, the total balance of STAR equals to zero.\n\nThis coupling between Treasury and STAR tokens means that if even one token is lost, i.e. sent to an address without a known related private key, then there should be at least one unclaimable star in the Treasury 's asset.\n\n#### **Recommendations**\n\nMake sure this behaviour is intended.\n",
       "metadata": {
         "Severity": null,
-        "Status": "Open",
-        "Rating": "Informational",
-        "Asset": "Treasury.sol",
-        "Finding ID": "UTR-04"
+        "Difficulty": null,
+        "Type": "Informational",
+        "Finding ID": "UTR-04",
+        "Target": "Treasury.sol"
       },
       "heading_cleaned": "Potentially Unclaimable Star Upon Losing Tokens"
     },
@@ -206,16 +210,17 @@
         "impact": null,
         "recommendation": "#### **Recommendations**\n\nConsider updating the redeem() function to introduce a return value:\n\n```\nfunction redeem () public returns ( uint16 ) {\n uint16 _star = assets [ assets . length -1];\n require ( azimuth . isOwner (_star , address ( this )));\n```\n\nSuch that a calling contract may catch the return value as follows:\n\n\n\n```\nevent eStarRedeem ( uint16 point );\n require ( treasury . startoken (). balanceOf ( address ( this )) >= ONE_STAR ,\n \" Recipient : STAR balance not enough \");\n uint16 _star = treasury . redeem ();\n```\n\nNote that the snippets above does not account for other suggestions in this report, i.e. changing \\_star data type from uint16 to uint32 for code consistency.\n\nThe recommended change's impact on gas costs is insignificant, that is, from 230*,* 327 gas in the original function to 230*,* 398 gas in the modified function, or 0*.*03% gas increase.\n",
         "poc": null,
-        "other": "arb:market\n"
+        "fix_status": null,
+        "other": null
       },
       "description": "#### **Description**\n\nThe Treasury contract can be interacted with from *\"externally owned accounts\"* (EOAs) and other smart contracts. When calling the redeem() function, an EOA's UI can track which \\_star it receives from Treasury contract through emitted events.\n\nHowever, a contract account cannot read events data, and therefore, cannot necessarily easily work out what \\_star it receives.\n\nWhat a *redeeming* contract can do is predict what \\_star it will receive from Treasury by retrieving the last item in the Treasury.assets array.\n",
       "markdown_body": "arb:market\n\n#### **Description**\n\nThe Treasury contract can be interacted with from *\"externally owned accounts\"* (EOAs) and other smart contracts. When calling the redeem() function, an EOA's UI can track which \\_star it receives from Treasury contract through emitted events.\n\nHowever, a contract account cannot read events data, and therefore, cannot necessarily easily work out what \\_star it receives.\n\nWhat a *redeeming* contract can do is predict what \\_star it will receive from Treasury by retrieving the last item in the Treasury.assets array.\n\n#### **Recommendations**\n\nConsider updating the redeem() function to introduce a return value:\n\n```\nfunction redeem () public returns ( uint16 ) {\n uint16 _star = assets [ assets . length -1];\n require ( azimuth . isOwner (_star , address ( this )));\n```\n\nSuch that a calling contract may catch the return value as follows:\n\n\n\n```\nevent eStarRedeem ( uint16 point );\n require ( treasury . startoken (). balanceOf ( address ( this )) >= ONE_STAR ,\n \" Recipient : STAR balance not enough \");\n uint16 _star = treasury . redeem ();\n```\n\nNote that the snippets above does not account for other suggestions in this report, i.e. changing \\_star data type from uint16 to uint32 for code consistency.\n\nThe recommended change's impact on gas costs is insignificant, that is, from 230*,* 327 gas in the original function to 230*,* 398 gas in the modified function, or 0*.*03% gas increase.\n",
       "metadata": {
         "Severity": null,
-        "Status": "Open",
-        "Rating": "Informational",
-        "Asset": "Treasury.sol",
-        "Finding ID": "UTR-05"
+        "Difficulty": null,
+        "Type": "Informational",
+        "Finding ID": "UTR-05",
+        "Target": "Treasury.sol"
       },
       "heading_cleaned": "Lack of Return Value in redeem() Function"
     },
@@ -231,16 +236,17 @@
         "impact": null,
         "recommendation": "#### **Recommendations**\n\nMake sure this behaviour is understood and intended.\n",
         "poc": null,
+        "fix_status": null,
         "other": null
       },
       "description": "#### **Description**\n\nUrbit's stars are NFTs that do not necessarily have equal value, as can be seen on [Opensea](https://opensea.io/collection/urbit-id) where stars are traded at different prices (at the time of writing, the highest asking price for an Urbit star is [888 ETH](https://opensea.io/assets/0x9ef27de616154ff8b38893c59522b69c7ba8a81c/13975) and the lowest is [1.8 ETH\\)](https://opensea.io/assets/0x9ef27de616154ff8b38893c59522b69c7ba8a81c/15828).\n\nOn the other hand, the Treasury contract treats all stars equally from a valuation perspective which opens up two potentially interesting scenarios:\n\n- A user deposits a star with a market price less than 1*e*18 \\$STAR tokens. In this case, the user profits from the difference between the market value and the received \\$STAR tokens. This activity is similar to an arbitrage and can be applied to the DeFi context (would simply require a market pair with \\$STAR token on a decentralised exchange such as Uniswap).\n- A user finds a star worth more than 1*e*18 \\$STAR tokens in the Treasury contract's assets inventory. The user knows that the inventory release is done in *LIFO* (Last In First Out) fashion. To take out the wanted star from the inventory, say in *n-th* position from the last, the user takes a *n*∗ 1*e*18 \\$STAR tokens loan from the market, calls the redeem() function *n* times, keeps the star they want, then returns *n* − 1 stars to the Treasury contract by calling the deposit() function *n* − 1 times. The user then sells the acquired star on the market and pays the loan interest by using profits.\n",
       "markdown_body": "#### **Description**\n\nUrbit's stars are NFTs that do not necessarily have equal value, as can be seen on [Opensea](https://opensea.io/collection/urbit-id) where stars are traded at different prices (at the time of writing, the highest asking price for an Urbit star is [888 ETH](https://opensea.io/assets/0x9ef27de616154ff8b38893c59522b69c7ba8a81c/13975) and the lowest is [1.8 ETH\\)](https://opensea.io/assets/0x9ef27de616154ff8b38893c59522b69c7ba8a81c/15828).\n\nOn the other hand, the Treasury contract treats all stars equally from a valuation perspective which opens up two potentially interesting scenarios:\n\n- A user deposits a star with a market price less than 1*e*18 \\$STAR tokens. In this case, the user profits from the difference between the market value and the received \\$STAR tokens. This activity is similar to an arbitrage and can be applied to the DeFi context (would simply require a market pair with \\$STAR token on a decentralised exchange such as Uniswap).\n- A user finds a star worth more than 1*e*18 \\$STAR tokens in the Treasury contract's assets inventory. The user knows that the inventory release is done in *LIFO* (Last In First Out) fashion. To take out the wanted star from the inventory, say in *n-th* position from the last, the user takes a *n*∗ 1*e*18 \\$STAR tokens loan from the market, calls the redeem() function *n* times, keeps the star they want, then returns *n* − 1 stars to the Treasury contract by calling the deposit() function *n* − 1 times. The user then sells the acquired star on the market and pays the loan interest by using profits.\n\n#### **Recommendations**\n\nMake sure this behaviour is understood and intended.\n",
       "metadata": {
-        "Severity": null,
-        "Status": "Open",
-        "Rating": "Informational",
-        "Asset": "Treasury.sol",
-        "Finding ID": "UTR-06"
+        "Severity": "Informational",
+        "Difficulty": null,
+        "Type": "Informational",
+        "Finding ID": "UTR-06",
+        "Target": "Treasury.sol"
       },
       "heading_cleaned": "Different Star Valuations Motivates Arbitrage and Flashloan"
     },
@@ -256,16 +262,17 @@
         "impact": null,
         "recommendation": "### **Recommendations**\n\nIf there is no specific reason why only spawned star owners are allowed to call the function deposit() , we recommend adjusting the Treasury contract to enable interactions with appointed operators by changing the condition checking in line [**87**] and line [**89**].\n\nNote that depositing an unspawned star requires direct interaction with the star's prefix owner or its spawn proxy as specified in Azimuth.sol on line [**979-988**] below, and therefore the operator cannot deposit unspawned star.\n\n```\nfunction canSpawnAs ( uint32 _point , address _who )\n returns ( bool result )\n  Deed storage deed = rights [ _point ];\n```\n\nAlso, a set of checks have been conducted in Function Ecliptic.spawn() , and therefore redundant checks can be removed from Treasury.deposit() . A simplified version of the deposit() function could be as follows:\n\n```\nfunction deposit ( uint16 _star )\n public\n   ecliptic . transferPoint (_star , address ( this ), true );\n   ecliptic . spawn (_star , address ( this ));\n  assets . push ( _star );\n```\n",
         "poc": null,
+        "fix_status": null,
         "other": null
       },
       "description": "#### **Description**\n\nThe Ecliptic contracts allows for an operator to perform actions on behalf of a point (or in this context, star) owner, for example, to call the function transferPoint() . This is reflected on line [**457**] of Ecliptic.sol as follows.\n\nWhile Azimuth.canTransfer() is implemented on line [**1098-1108**] of Azimuth.sol as follows:\n\n```\nfunction canTransfer ( uint32 _point , address _who )\n returns ( bool result )\n  Deed storage deed = rights [ _point ];\n  return ( (0 x0 != _who ) &&\n```\n\nThe snippets above indicate that, other than the owner and the transfer proxy, an appointed operator should be allowed to transfer point ownership through the function Ecliptic.transferPoint() .\n\nThis capability is useful if the real owner (EOA) wants to manage their point s in a management contract and wishes to interact with the Treasury contract through that management contract instead of directly from the EOA.\n\nHowever, the following code path on line [**86-90**] in the Treasury contract prevents an operator from depositing a spawned star.\n\n```\nazimuth . getSpawnCount ( _star ) cd == 0 &&\nazimuth . isTransferProxy (_star , address ( this ))\n```\n",
       "markdown_body": "#### **Description**\n\nThe Ecliptic contracts allows for an operator to perform actions on behalf of a point (or in this context, star) owner, for example, to call the function transferPoint() . This is reflected on line [**457**] of Ecliptic.sol as follows.\n\nWhile Azimuth.canTransfer() is implemented on line [**1098-1108**] of Azimuth.sol as follows:\n\n```\nfunction canTransfer ( uint32 _point , address _who )\n returns ( bool result )\n  Deed storage deed = rights [ _point ];\n  return ( (0 x0 != _who ) &&\n```\n\nThe snippets above indicate that, other than the owner and the transfer proxy, an appointed operator should be allowed to transfer point ownership through the function Ecliptic.transferPoint() .\n\nThis capability is useful if the real owner (EOA) wants to manage their point s in a management contract and wishes to interact with the Treasury contract through that management contract instead of directly from the EOA.\n\nHowever, the following code path on line [**86-90**] in the Treasury contract prevents an operator from depositing a spawned star.\n\n```\nazimuth . getSpawnCount ( _star ) cd == 0 &&\nazimuth . isTransferProxy (_star , address ( this ))\n```\n\n\n\n### **Recommendations**\n\nIf there is no specific reason why only spawned star owners are allowed to call the function deposit() , we recommend adjusting the Treasury contract to enable interactions with appointed operators by changing the condition checking in line [**87**] and line [**89**].\n\nNote that depositing an unspawned star requires direct interaction with the star's prefix owner or its spawn proxy as specified in Azimuth.sol on line [**979-988**] below, and therefore the operator cannot deposit unspawned star.\n\n```\nfunction canSpawnAs ( uint32 _point , address _who )\n returns ( bool result )\n  Deed storage deed = rights [ _point ];\n```\n\nAlso, a set of checks have been conducted in Function Ecliptic.spawn() , and therefore redundant checks can be removed from Treasury.deposit() . A simplified version of the deposit() function could be as follows:\n\n```\nfunction deposit ( uint16 _star )\n public\n   ecliptic . transferPoint (_star , address ( this ), true );\n   ecliptic . spawn (_star , address ( this ));\n  assets . push ( _star );\n```\n",
       "metadata": {
         "Severity": null,
-        "Status": "Open",
-        "Rating": "Informational",
-        "Asset": "Treasury.sol",
-        "Finding ID": "UTR-07"
+        "Difficulty": null,
+        "Type": "Informational",
+        "Finding ID": "UTR-07",
+        "Target": "Treasury.sol"
       },
       "heading_cleaned": "Operator Not Supported and Redundant Checks on Function deposit()"
     },
@@ -281,16 +288,17 @@
         "impact": null,
         "recommendation": "#### **Recommendations**\n\nERC777 token contracts do significantly increase the attack surface available to malicious users, compared to simpler ERC20 token contracts. Consider whether the added complexity is worth the extra features provided.\n",
         "poc": null,
+        "fix_status": null,
         "other": null
       },
       "description": "#### **Description**\n\nThe StarToken contract implements the ERC777 token standard using the related [OpenZeppelin library.](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC777/ERC777.sol) One of the most distinguishable features of the ERC777 standard compared to ERC20 is that if the token receiver is a contract, then the contract can implement the ERC777Recipient interface which defines the function tokensReceived() . This function is a hook that will be triggered every time the contract receives a token. To enable the hook trigger, the receiving contract must register itself to the ERC1820 contract registry.\n\nThis unique ERC777 feature can be weaponised to trigger a **reentrancy** [\\[3\\]](#page-19-3) condition. To be successful, this attack would require the victim contract to be affected by a security flaw as the result of not abiding by the recommended [Checks-Effects-Interactions](https://docs.soliditylang.org/en/v0.8.7/security-considerations.html#use-the-checks-effects-interactions-pattern) pattern.\n\nThis reentrancy condition can allow attackers to use two stars to switch for any other star in the list (see [this](#page-12-1) [relevant issue\\)](#page-12-1).\n\nSay we have assets = [a, b, c] and we have a balance of 2*e*18 StarTokens . The standard redeem() workflow would normally only allow us to redeem the Star c . However, consider the following:\n\n- 1. redeem() **(1)**:\n  - pop(c) -> assets = [a, b]\n  - ownerBurn(1e18) reenter on tokensToSend() before we've burnt our balance of 2*e*18\n- 2. redeem() **(2)**:\n  - pop(b) -> assets = [a]\n  - ownerBurn(1e18) reenter on tokensToSend() before we've burnt our balance of 2*e*18\n- 3. redeem() **(3)**:\n  - pop(a) -> assets = []\n  - ownerBurn(1e18) -> balance = 1*e*18\n  - transferPoint(a, attacker)\n- 4. continue redeem(**2**) :\n  - ownerBurn(1e18) -> balance = 0\n  - transferPoint(b, attacker)\n- 5. deposit(b) :\n  - transferPoint(b, treasury)\n\n\n```\n• push(b) -> assets =[b]\n    • mint(1e18, attacker) -> balance = 1e18\n6. continue redeem(3) :\n    • ownerBurn(1e18) -> balance = 0\n    • transferPoint(c, attacker)\n7. deposit(c) :\n    • transferPoint(c, treasury)\n    • push(c) -> assets = [b, c]\n    • mint(1e18, attacker) -> balance = 1e18\n```\n\nThe attacker managed to own star a and only spend 1*e*18 for it, bypassing the LIFO (*\"Last In First Out\"*) queue.\n\nThe testing team could not identify an exploitable attack vector for reentrancy on the Treasury contract. However, the testing team notes that the ERC777 and ERC1820 contracts were not included in the scope of this review. As a result, the testing team cannot express any opinions related to the security posture of these contracts.\n",
       "markdown_body": "#### **Description**\n\nThe StarToken contract implements the ERC777 token standard using the related [OpenZeppelin library.](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC777/ERC777.sol) One of the most distinguishable features of the ERC777 standard compared to ERC20 is that if the token receiver is a contract, then the contract can implement the ERC777Recipient interface which defines the function tokensReceived() . This function is a hook that will be triggered every time the contract receives a token. To enable the hook trigger, the receiving contract must register itself to the ERC1820 contract registry.\n\nThis unique ERC777 feature can be weaponised to trigger a **reentrancy** [\\[3\\]](#page-19-3) condition. To be successful, this attack would require the victim contract to be affected by a security flaw as the result of not abiding by the recommended [Checks-Effects-Interactions](https://docs.soliditylang.org/en/v0.8.7/security-considerations.html#use-the-checks-effects-interactions-pattern) pattern.\n\nThis reentrancy condition can allow attackers to use two stars to switch for any other star in the list (see [this](#page-12-1) [relevant issue\\)](#page-12-1).\n\nSay we have assets = [a, b, c] and we have a balance of 2*e*18 StarTokens . The standard redeem() workflow would normally only allow us to redeem the Star c . However, consider the following:\n\n- 1. redeem() **(1)**:\n  - pop(c) -> assets = [a, b]\n  - ownerBurn(1e18) reenter on tokensToSend() before we've burnt our balance of 2*e*18\n- 2. redeem() **(2)**:\n  - pop(b) -> assets = [a]\n  - ownerBurn(1e18) reenter on tokensToSend() before we've burnt our balance of 2*e*18\n- 3. redeem() **(3)**:\n  - pop(a) -> assets = []\n  - ownerBurn(1e18) -> balance = 1*e*18\n  - transferPoint(a, attacker)\n- 4. continue redeem(**2**) :\n  - ownerBurn(1e18) -> balance = 0\n  - transferPoint(b, attacker)\n- 5. deposit(b) :\n  - transferPoint(b, treasury)\n\n\n```\n• push(b) -> assets =[b]\n    • mint(1e18, attacker) -> balance = 1e18\n6. continue redeem(3) :\n    • ownerBurn(1e18) -> balance = 0\n    • transferPoint(c, attacker)\n7. deposit(c) :\n    • transferPoint(c, treasury)\n    • push(c) -> assets = [b, c]\n    • mint(1e18, attacker) -> balance = 1e18\n```\n\nThe attacker managed to own star a and only spend 1*e*18 for it, bypassing the LIFO (*\"Last In First Out\"*) queue.\n\nThe testing team could not identify an exploitable attack vector for reentrancy on the Treasury contract. However, the testing team notes that the ERC777 and ERC1820 contracts were not included in the scope of this review. As a result, the testing team cannot express any opinions related to the security posture of these contracts.\n\n#### **Recommendations**\n\nERC777 token contracts do significantly increase the attack surface available to malicious users, compared to simpler ERC20 token contracts. Consider whether the added complexity is worth the extra features provided.\n",
       "metadata": {
         "Severity": null,
-        "Status": "Open",
-        "Rating": "Informational",
-        "Asset": "StarToken.sol",
-        "Finding ID": "UTR-08"
+        "Difficulty": null,
+        "Type": "Informational",
+        "Finding ID": "UTR-08",
+        "Target": "StarToken.sol"
       },
       "heading_cleaned": "ERC-777 Related Reentrancy Considerations"
     },
@@ -306,16 +314,17 @@
         "impact": null,
         "recommendation": "#### **Recommendations**\n\nEnsure that the comments are understood and acknowledged, and consider implementing the suggestions above.\n\n\nStardust Test Suite\n",
         "poc": null,
+        "fix_status": null,
         "other": null
       },
       "description": "#### **Description**\n\nThis section details miscellaneous findings discovered by the testing team that do not have direct security implications:\n\n#### 1. **No Clear Revert Message**\n\nThe Treasury contract does not provide clear revert messages upon reverting. Therefore, users or developers may find it hard to track why a transaction fails.\n\nWe suggest introducing the following revert messages:\n\n- line [**81**]: *\"Treasury: Must be a star\"*.\n- line [**122**]: *\"Treasury: Not enough balance\"*.\n- line [**125**]: *\"Treasury: No star available to redeem\"*.\n- line [**132**]: *\"Treasury: Treasury does not own the star asset to redeem\"*.\n\n#### 2. **Redundant Star Ownership Check**\n\nTreasury contract acquires stars from users who called function deposit() . In this function, the deposited stars' ownership is transferred from the users to Treasury contract and stored in assets list.\n\nFunction redeem() redeems a star by burning 1e18 STAR tokens and transfers the ownership of a star from assets list to the redeeming user. However, there is an extra star ownership check in line [**132**] which is not necessary.\n\nAs a recommendation, the code on line [**132**] can safely be removed.\n\n#### 3. **Data Type Unmatched: uint16 for \\_star and uint32 for point**\n\nVariable \\_star used in Treasury contract is a uint16. This variable matches the point variable in the Azimuth and Ecliptic contracts. \\_star and point are of type uint16 and uint32 respectively. Although a \\_star address is represented in [16 bits data,](https://urbit.org/docs/glossary/star) we recommend keeping the \\_star data type to uint32 for code consistency.\n",
       "markdown_body": "#### **Description**\n\nThis section details miscellaneous findings discovered by the testing team that do not have direct security implications:\n\n#### 1. **No Clear Revert Message**\n\nThe Treasury contract does not provide clear revert messages upon reverting. Therefore, users or developers may find it hard to track why a transaction fails.\n\nWe suggest introducing the following revert messages:\n\n- line [**81**]: *\"Treasury: Must be a star\"*.\n- line [**122**]: *\"Treasury: Not enough balance\"*.\n- line [**125**]: *\"Treasury: No star available to redeem\"*.\n- line [**132**]: *\"Treasury: Treasury does not own the star asset to redeem\"*.\n\n#### 2. **Redundant Star Ownership Check**\n\nTreasury contract acquires stars from users who called function deposit() . In this function, the deposited stars' ownership is transferred from the users to Treasury contract and stored in assets list.\n\nFunction redeem() redeems a star by burning 1e18 STAR tokens and transfers the ownership of a star from assets list to the redeeming user. However, there is an extra star ownership check in line [**132**] which is not necessary.\n\nAs a recommendation, the code on line [**132**] can safely be removed.\n\n#### 3. **Data Type Unmatched: uint16 for \\_star and uint32 for point**\n\nVariable \\_star used in Treasury contract is a uint16. This variable matches the point variable in the Azimuth and Ecliptic contracts. \\_star and point are of type uint16 and uint32 respectively. Although a \\_star address is represented in [16 bits data,](https://urbit.org/docs/glossary/star) we recommend keeping the \\_star data type to uint32 for code consistency.\n\n#### **Recommendations**\n\nEnsure that the comments are understood and acknowledged, and consider implementing the suggestions above.\n\n\nStardust Test Suite\n",
       "metadata": {
         "Severity": null,
-        "Status": "Open",
-        "Rating": "Informational",
-        "Asset": "Treasury.sol",
-        "Finding ID": "UTR-09"
+        "Difficulty": null,
+        "Type": "Informational",
+        "Finding ID": "UTR-09",
+        "Target": "Treasury.sol"
       },
       "heading_cleaned": "Miscellaneous Treasury General Comments"
     }
