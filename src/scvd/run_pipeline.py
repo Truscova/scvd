@@ -36,12 +36,12 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import sys
+import sys, os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 # Use relative imports inside the package
-from .extract_report import process_single_pdf, process_single_markdown
+from .extract_report import process_single_pdf, process_single_markdown, build_c4_report, load_repo_list, make_github_session
 from .normalize_report import generate_scvd_records
 
 
@@ -308,6 +308,70 @@ def run_for_report(
     return scvd_path
 
 
+
+def run_for_c4_repos(
+    repos_file: Path,
+    extracted_root: Path,
+    normalized_root: Path,
+    token_env: str,
+    normalizer_version: str,
+    schema_path: Optional[Path],
+    skip_validate: bool,
+    issue_state: str = "all",
+) -> List[Path]:
+    """
+    Build synthetic report.json for each C4 repo, then normalize to SCVD JSONL.
+    Returns list of paths to the normalized JSONL files.
+    """
+    token = os.getenv(token_env)
+    if not token:
+        logger.warning("No GitHub token found in %s; you may hit rate limits.", token_env)
+    session = make_github_session(token)
+
+    pairs = load_repo_list(repos_file)
+    if not pairs:
+        logger.warning("No repos parsed from %s", repos_file)
+        return []
+    
+
+    scvd_paths: List[Path] = []
+
+    for owner, repo in pairs:
+        try:
+            report = build_c4_report(owner, repo, session,  issue_state=issue_state)
+            # extracted: data/extracted/code4rena/<owner>/<repo>/report.json
+            out_dir = extracted_root / "code4rena" / owner / repo
+            out_dir.mkdir(parents=True, exist_ok=True)
+            report_json = out_dir / "report.json"
+            report_json.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+            logger.info("Wrote C4 report: %s", report_json)
+
+            # normalize -> data/normalized/code4rena/<owner>/<repo>/report.scvd.jsonl
+            scvd_out = normalized_root / "code4rena" / owner / repo / "report.scvd.jsonl"
+            scvd_out.parent.mkdir(parents=True, exist_ok=True)
+
+            records = generate_scvd_records(
+                report=report,
+                source_pdf=report.get("source_pdf"),
+                extraction_version=normalizer_version,
+            )
+            with scvd_out.open("w", encoding="utf-8") as f:
+                for rec in records:
+                    f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+
+            logger.info("Wrote C4 SCVD findings: %s", scvd_out)
+
+            if not skip_validate and schema_path is not None:
+                validate_jsonl(scvd_out, schema_path)
+
+            scvd_paths.append(scvd_out)
+
+        except Exception as e:
+            logger.error("Failed processing Code4rena repo %s/%s: %s", owner, repo, e)
+
+    return scvd_paths
+
+
 # ---------------- CLI / orchestration ---------------- #
 
 def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
@@ -396,6 +460,30 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         help="Increase logging verbosity (-v, -vv).",
     )
 
+    ap.add_argument(
+        "--code4rena-repos",
+        help="Path to a text file listing Code4rena findings repos (owner/repo or full URLs).",
+    )
+    ap.add_argument(
+        "--github-token-env",
+        default="GITHUB_TOKEN",
+        help="Env var name that holds a GitHub token (for higher rate limits).",
+    )
+
+    ap.add_argument(
+        "--c4-state",
+        dest="c4_state",
+        choices=["all", "open", "closed"],
+        default="all",
+        help="Which GitHub issue states to fetch for Code4rena repos (default: all).",
+    )
+    ap.add_argument(
+        "--c4-open-only",
+        action="store_true",
+        help="Shortcut for --c4-state open.",
+    )
+
+
     return ap.parse_args(argv)
 
 
@@ -409,6 +497,9 @@ def main(argv: Optional[List[str]] = None) -> None:
     logger = setup_logger(args.verbose)
 
     schema_path = Path(args.schema) if not args.skip_validate else None
+
+    if args.c4_open_only:
+        args.c4_state = "open"
 
     # Directory mode (preferred for POC, strict separation)
     if args.raw_dir:
@@ -429,7 +520,7 @@ def main(argv: Optional[List[str]] = None) -> None:
         md_files = list(raw_root.rglob("*.md"))
 
         all_inputs = sorted(pdf_files + md_files)
-        if not all_inputs:
+        if not all_inputs and not args.code4rena_repos:
             logger.warning("No PDF or Markdown files found under raw directory: %s", raw_root)
             return
 
@@ -452,6 +543,22 @@ def main(argv: Optional[List[str]] = None) -> None:
                 scvd_paths.append(scvd_path)
             except Exception as e:
                 logger.error("Failed to process %s: %s", input_path, e)
+
+
+        if args.code4rena_repos:
+            logger.info("Processing Code4rena repos listed in %s", args.code4rena_repos)
+            c4_paths = run_for_c4_repos(
+                repos_file=Path(args.code4rena_repos),
+                extracted_root=extracted_root,
+                normalized_root=normalized_root,
+                token_env=args.github_token_env,
+                normalizer_version=args.normalizer_version,
+                schema_path=None,           # validate at the end via combined, same as PDFs
+                skip_validate=True,
+                issue_state=args.c4_state
+            )
+            scvd_paths.extend(c4_paths)
+
 
         if not scvd_paths:
             logger.warning("No SCVD findings produced.")
@@ -479,6 +586,45 @@ def main(argv: Optional[List[str]] = None) -> None:
         if not args.skip_validate and schema_path is not None:
             validate_jsonl(combined_path, schema_path)
 
+        return
+    
+
+    # --- C4-only mode (no --raw-dir and no single input path) ---
+    if args.code4rena_repos and not args.input:
+        extracted_root = Path(args.extracted_dir)
+        normalized_root = Path(args.normalized_dir)
+
+        c4_paths = run_for_c4_repos(
+            repos_file=Path(args.code4rena_repos),
+            extracted_root=extracted_root,
+            normalized_root=normalized_root,
+            token_env=args.github_token_env,
+            normalizer_version=args.normalizer_version,
+            schema_path=None,                     # validate combined at the end
+            skip_validate=True,
+            issue_state=args.c4_state
+        )
+
+        if not c4_paths:
+            logger.warning("No SCVD findings produced from Code4rena repos.")
+            return
+
+        # Combine all C4 *.scvd.jsonl into one file
+        combined_dir = normalized_root / "combined"
+        combined_dir.mkdir(parents=True, exist_ok=True)
+        combined_path = (
+            Path(args.combined_jsonl)
+            if args.combined_jsonl
+            else combined_dir / "all_findings.jsonl"
+        )
+        with combined_path.open("w", encoding="utf-8") as out_f:
+            for sp in c4_paths:
+                with sp.open(encoding="utf-8") as in_f:
+                    for line in in_f:
+                        out_f.write(line)
+
+        if not args.skip_validate and schema_path is not None:
+            validate_jsonl(combined_path, schema_path)
         return
 
     # Single-file mode (fallback / debugging)

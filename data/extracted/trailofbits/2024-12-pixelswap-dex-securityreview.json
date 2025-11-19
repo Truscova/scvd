@@ -2,7 +2,7 @@
   "doc_id": "trailofbits_2024-12-pixelswap-dex-securityreview",
   "source_pdf": "2024-12-pixelswap-dex-securityreview.pdf",
   "source_mtime": "2025-11-01T12:04:44+00:00",
-  "extracted_at": "2025-11-16T22:17:02.603737+00:00",
+  "extracted_at": "2025-11-19T09:06:27.083186+00:00",
   "extractor_version": "poc-0.4",
   "repositories": [
     {
@@ -59,17 +59,17 @@
     },
     {
       "key": "Type",
-      "meaning": "The category or type of the vulnerability.",
+      "meaning": "The type of vulnerability or flaw in the smart contract.",
       "expected_values": "Authentication / Data Validation / Other"
     },
     {
       "key": "Finding ID",
-      "meaning": "A unique identifier for this finding.",
-      "expected_values": "String"
+      "meaning": "A unique identifier for this specific finding.",
+      "expected_values": "String describing a unique identifier"
     },
     {
       "key": "Target",
-      "meaning": "The specific contract or component where the vulnerability is located.",
+      "meaning": "The affected contract or file in the smart contract codebase.",
       "expected_values": "Path to affected file / contract"
     }
   ],
@@ -380,9 +380,9 @@
       "metadata": {
         "Severity": "High",
         "Difficulty": "Low",
-        "Type": "Other",
+        "Type": "Finding",
         "Finding ID": "TOB-PXL-12",
-        "Target": "contracts/jetton/jetton_factory.tact"
+        "Target": "contracts/jetton/jeton_factory.tact"
       },
       "heading_cleaned": "The LP tokens are never burned by the Stream Pool contract"
     },
@@ -561,7 +561,7 @@
       "markdown_body": "| Severity: Informational  | Diffi culty: Undetermined |  |\n|-----------------------------|---------------------------------|--|\n| Type: Data Validation | Finding ID: TOB-PXL-19    |  |\n|                             |                                 |  |\n\nTarget: contracts/jetton/jetton\\_factory.tact\n\n#### Description\n\nThe mint function of the JettonFactory trait does not validate that the amount of coins to mint is greater than zero, therefore allowing a mint of zero tokens.\n\n#### **[Redacted]**\n\nIn the current state of the codebase, it is not possible to trigger this zero-amount mint for the LP tokens since the add\\_liquidity function checks for a minimum liquidity of 1000 to be added. However, if this same trait is used in other contracts, it can become an issue.\n\n#### Recommendations\n\nShort term, add a validation check to ensure the amount is greater than zero.\n\nLong term, consider the possible edge cases in all functions, define the behavior, and implement test cases to ensure compliance.\n\n#### **Fix Review Status**\n",
       "metadata": {
         "Severity": "Informational",
-        "Difficulty": null,
+        "Difficulty": "Undetermined",
         "Type": "Data Validation",
         "Finding ID": "TOB-PXL-19",
         "Target": "contracts/jetton/jetton_factory.tact"
@@ -590,7 +590,7 @@
         "Difficulty": null,
         "Type": "Data Validation",
         "Finding ID": "TOB-PXL-20",
-        "Target": "contracts/pixelswap_streampool.tact, Target: contracts/pixelswap_settlement.tact"
+        "Target": "contracts/pixelswap_streampool.tact, contracts/pixelswap_settlement.tact"
       },
       "heading_cleaned": "Incorrect gas calculations in several contracts"
     },

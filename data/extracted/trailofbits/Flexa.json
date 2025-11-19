@@ -2,7 +2,7 @@
   "doc_id": "trailofbits_Flexa",
   "source_pdf": "Flexa.pdf",
   "source_mtime": "2025-11-01T12:04:45+00:00",
-  "extracted_at": "2025-11-16T22:21:03.371527+00:00",
+  "extracted_at": "2025-11-19T09:10:37.120525+00:00",
   "extractor_version": "poc-0.4",
   "repositories": [
     {
@@ -89,17 +89,17 @@
     },
     {
       "key": "Type",
-      "meaning": "Category or type of the vulnerability, e.g., data validation, timing, auditing and logging, etc.",
-      "expected_values": "string describing vulnerability type"
+      "meaning": "Category of the security finding (e.g., Data Validation, Timing, Auditing and Logging).",
+      "expected_values": "string describing type category"
     },
     {
       "key": "Finding ID",
-      "meaning": "Unique identifier for this specific finding in the audit report.",
-      "expected_values": "string"
+      "meaning": "Unique identifier for this specific finding within the audit report.",
+      "expected_values": "string with alphanumeric characters"
     },
     {
       "key": "Target",
-      "meaning": "The specific contract or function where the vulnerability is located.",
+      "meaning": "Specific contract or file targeted by this security issue.",
       "expected_values": "path to affected file / contract"
     }
   ],

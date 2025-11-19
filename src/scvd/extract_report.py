@@ -36,6 +36,12 @@ from marker.output import text_from_rendered
 
 from markdown_it import MarkdownIt
 
+import os
+from urllib.parse import urlparse
+
+import time
+import random
+
 
 # ---------------- Logging ---------------- #
 
@@ -61,6 +67,41 @@ def setup_logger(verbosity: int = 0) -> logging.Logger:
 
 logger = setup_logger(0)
 
+# --- Code4rena / GitHub label mapping ---
+C4_SKIP_LABELS = {"invalid", "unsatisfactory"}  # if present -> skip
+C4_SEV_KEYWORDS = [
+    ("critical", "Critical"),
+    ("4 (critical risk)", "Critical"),
+    ("high", "High"),
+    ("3 (high risk)", "High"),
+    ("medium", "Medium"),
+    ("med", "Medium"),
+    ("2 (med risk)", "Medium"),
+    ("low", "Low"),
+    ("1 (low risk)", "Low"),
+]
+C4_CATEGORY_KEYWORDS = [
+    ("gas optimization", "gas"),
+    ("qa", "qa"),
+    ("quality assurance", "qa"),
+    ("bug", "bug"),  # if no risk label given
+]
+
+
+# Treat these as structural / non-content or dedicated sections
+VULN_WRAPPER_HEADING_RE = re.compile(
+    r'^\s*#{1,6}\s+.*\bvulnerability\s+details?\b[:]*', re.IGNORECASE)
+
+LINES_OF_CODE_HEADING_RE = re.compile(
+    r'^\s*#{1,6}\s+.*\b(lines?\s+of\s+code|relevant\s+lines?)\b[:]*', re.IGNORECASE)
+
+TOOLS_USED_HEADING_RE = re.compile(
+    r'^\s*#{1,6}\s+.*\b(tools?\s+used|tooling|environment)\b[:]*', re.IGNORECASE)
+
+
+
+QA_TITLE_RE  = re.compile(r'\bqa(\s*report)?\b', re.IGNORECASE)
+GAS_TITLE_RE = re.compile(r'\bgas\s+optimization(s)?\b', re.IGNORECASE)
 
 
 # Additional subsection heading detectors (Impact, PoC, Recommendations, etc.)
@@ -76,6 +117,58 @@ POC_HEADING_RE = re.compile(
     r')\b[:]*',
     flags=re.IGNORECASE,
 )
+
+
+QA_TITLE_RE  = re.compile(r'\bqa(\s*report)?\b', re.IGNORECASE)
+GAS_TITLE_RE = re.compile(r'\bgas\s+optimization(s)?\b', re.IGNORECASE)
+
+# Normalize label names: lowercased, spaces collapsed, strip punctuation.
+def _norm_label(s: str) -> str:
+    s = s.strip().lower()
+    s = re.sub(r'[_\-:/]+', ' ', s)
+    s = re.sub(r'\s+', ' ', s)
+    return s
+
+# Label families to exclude
+_EXCLUDE_LABELS = {
+    # QA
+    "qa", "quality assurance", "qa report",
+    # Gas
+    "gas", "gas optimization", "gas optimizations", "gas optimisation",
+    "gas-optimization", "gas-optimizations",
+    # Explicit skips you mentioned
+    "invalid", "unsatisfactory",
+}
+
+def _is_excluded_label(lbl: str) -> bool:
+    n = _norm_label(lbl)
+    if n in _EXCLUDE_LABELS:
+        return True
+    # catch loose variants like "gas opt", "gas-opt", etc.
+    if n.startswith("gas") and "opt" in n:
+        return True
+    if n == "qa" or n.startswith("quality assurance"):
+        return True
+    return False
+
+def should_include_issue(issue: dict) -> bool:
+    # 1) must have at least one label
+    labels = issue.get("labels") or []
+    if not labels:
+        return False
+
+    # 2) skip explicit exclude labels (QA/Gas/invalid/unsatisfactory)
+    norm_labels = [_norm_label(l.get("name","")) for l in labels if l.get("name")]
+    if any(_is_excluded_label(n) for n in norm_labels):
+        return False
+
+    # 3) title safety net (sometimes titles say "QA Report" or "Gas Optimizations")
+    title = issue.get("title") or ""
+    if QA_TITLE_RE.search(title) or GAS_TITLE_RE.search(title):
+        return False
+
+    # else keep
+    return True
 
 
 
@@ -2230,6 +2323,8 @@ SECTION_NAME_PATTERNS: Dict[str, List[str]] = {
         "resolutions",
         "fix"
     ],
+    "lines_of_code": ["lines of code", "relevant lines", "relevant lines of code", "loc"],
+    "tools_used": ["tools used", "tooling", "environment"],
 }
 
 
@@ -2237,12 +2332,14 @@ def _classify_section_heading(line: str) -> Optional[str]:
     m = HEADING_MD_RE.match(line.strip())
     if not m:
         return None
-
     title = m.group("title")
     lowered = title.lower()
-    # normalize punctuation so "proof-of-concept" == "proof of concept"
     norm = re.sub(r"[`*_~\[\](){},.;:!?\\-]+", " ", lowered)
     norm = re.sub(r"\s+", " ", norm).strip()
+
+    # container heading: acts as a boundary but does not populate a section
+    if re.search(r"\bvulnerability\s+details?\b", norm):
+        return "container"
 
     def phrase_matches(text: str, phrase: str) -> bool:
         pat = r"\b" + re.escape(phrase.lower()).replace(r"\ ", r"\s+") + r"\b"
@@ -2255,12 +2352,12 @@ def _classify_section_heading(line: str) -> Optional[str]:
     return None
 
 
-
 def split_vuln_markdown_into_sections(md: str) -> Tuple[Dict[str, Optional[str]], str]:
     lines = md.splitlines()
     n = len(lines)
     sections = {"description": None, "impact": None, "recommendation": None,
-                "poc": None, "fix_status": None, "other": None}
+                "poc": None, "fix_status": None, "other": None,
+                "lines_of_code": None, "tools_used": None}
     other_labeled: Dict[str, List[str]] = {}  # optional, if you want labels preserved
 
     if n == 0:
@@ -2374,6 +2471,19 @@ def split_vuln_markdown_into_sections(md: str) -> Tuple[Dict[str, Optional[str]]
         # sections["other_labeled"] = {lbl: "".join(chunks) for lbl, chunks in other_labeled.items()}
 
     # define body from first boundary onward
+
+
+
+    extras = []
+    if sections.get("lines_of_code"):
+        extras.append("**Lines of code:**\n" + sections["lines_of_code"].strip())
+    if sections.get("tools_used"):
+        extras.append("**Tools used:**\n" + sections["tools_used"].strip())
+    if extras:
+        sections["other"] = ((sections["other"] or "") + "\n\n".join(extras) + "\n").lstrip()
+    sections.pop("lines_of_code", None)
+    sections.pop("tools_used", None)
+
     
     body_text = "\n".join(lines[body_start:]).strip()
     if body_text and not body_text.endswith("\n"):
@@ -2938,6 +3048,300 @@ def process_single_markdown(
 
 
 
+def github_request(session: requests.Session, method: str, url: str, *,
+                   max_retries: int = 8, base_backoff: float = 1.0, **kwargs) -> requests.Response:
+    """
+    Tiny backoff for GitHub:
+      - Primary rate limit: 403 + X-RateLimit-Remaining: 0 → sleep until X-RateLimit-Reset
+      - Secondary limit / abuse detection: Retry-After header if present
+      - Transient errors: 429/502/503/504 → exponential backoff with jitter
+
+    Returns a successful Response or raises for other 4xx/5xx.
+    """
+    backoff = base_backoff
+    last = None
+
+    for attempt in range(max_retries):
+        resp = session.request(method, url, **kwargs)
+        last = resp
+
+        # Success
+        if 200 <= resp.status_code < 300:
+            return resp
+
+        # Primary rate limit
+        if resp.status_code == 403 and resp.headers.get("X-RateLimit-Remaining") == "0":
+            reset_ts = resp.headers.get("X-RateLimit-Reset")
+            now = int(time.time())
+            sleep_s = 0
+            if reset_ts and reset_ts.isdigit():
+                sleep_s = max(0, int(reset_ts) - now + 1)
+            else:
+                sleep_s = int(backoff)
+                backoff = min(backoff * 2, 60)
+            time.sleep(sleep_s)
+            continue
+
+        # Secondary / abuse detection or explicit retry hint
+        retry_after = resp.headers.get("Retry-After")
+        if retry_after and retry_after.isdigit():
+            time.sleep(int(retry_after))
+            continue
+
+        # Transient errors → backoff with jitter
+        if resp.status_code in (429, 502, 503, 504):
+            time.sleep(backoff + random.random())
+            backoff = min(backoff * 2, 60)
+            continue
+
+        # One-time fallback: bad credentials → drop auth and retry once unauthenticated
+        if resp.status_code == 401 and "Authorization" in (kwargs.get("headers") or {}) or "Authorization" in resp.request.headers:
+            # remove Authorization and retry once
+            if "headers" in kwargs and "Authorization" in kwargs["headers"]:
+                kwargs["headers"].pop("Authorization", None)
+                # also strip from session for this call
+                auth = session.headers.pop("Authorization", None)
+                try:
+                    time.sleep(0.5)
+                    continue
+                finally:
+                    if auth:  # restore for future calls
+                        session.headers["Authorization"] = auth
+
+        # Other errors → raise
+        resp.raise_for_status()
+
+    # Exhausted retries
+    if last is not None:
+        last.raise_for_status()
+    raise RuntimeError(f"GitHub request failed after {max_retries} retries: {method} {url}")
+
+
+
+GITHUB_BLOB_RE = re.compile(
+    r'https?://github\.com/(?P<org>[^/]+)/(?P<repo>[^/]+)/blob/(?P<ref>[^/]+)/(?P<path>[^#]+)(?:#L(?P<l1>\d+)(?:-L(?P<l2>\d+))?)?'
+)
+
+def make_github_session(token: Optional[str]) -> requests.Session:
+    s = requests.Session()
+    s.headers["Accept"] = "application/vnd.github+json"
+    s.headers["X-GitHub-Api-Version"] = "2022-11-28"
+    if token:
+        s.headers["Authorization"] = f"token {token}"
+    return s
+
+
+
+def fetch_repo_issues(owner: str, repo: str, session: requests.Session, state: str = "all") -> List[dict]:
+    issues: List[dict] = []
+    page = 1
+    while True:
+        resp = github_request(
+            session,
+            "GET",
+            f"https://api.github.com/repos/{owner}/{repo}/issues",
+            params={"state": state, "per_page": 100, "page": page},
+            timeout=60,
+        )
+        batch = resp.json()
+        if not batch:
+            break
+        for it in batch:
+            if "pull_request" in it:
+                continue
+            if not should_include_issue(it):
+                continue
+            issues.append(it)
+        if not resp.links or "next" not in resp.links:
+            break
+        page += 1
+    return issues
+
+
+
+
+def load_repo_list(path: Path) -> List[Tuple[str, str]]:
+    """Reads lines like 'code-423n4/2024-11-nibiru-findings'."""
+    pairs: List[Tuple[str, str]] = []
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        s = raw.strip()
+        if not s or s.startswith("#"):
+            continue
+        if s.startswith("https://github.com/"):
+            s = "/".join(s.rstrip("/").split("/")[-2:])
+        if "/" not in s:
+            continue
+        owner, name = s.split("/", 1)
+        pairs.append((owner.strip(), name.strip()))
+    return pairs
+
+
+
+def classify_issue_labels(label_objs: List[dict]) -> Tuple[bool, Optional[str], Optional[str], List[str]]:
+    """
+    Returns: (skip, severity, category, tags)
+    """
+    names = [str(l.get("name","")).strip() for l in label_objs]
+    lower = [n.lower() for n in names]
+    # skip?
+    if any(x in lower for x in C4_SKIP_LABELS):
+        return True, None, None, names
+
+    # severity
+    sev = None
+    for key, canon in C4_SEV_KEYWORDS:
+        if any(key in s for s in lower):
+            sev = canon
+            break
+
+    # category
+    cat = None
+    for key, canon in C4_CATEGORY_KEYWORDS:
+        if any(key in s for s in lower):
+            cat = canon
+            break
+    if not cat and "bug" in lower and sev is None:
+        cat = "bug"
+
+    return False, sev, cat, names
+
+
+def extract_urls_from_md(md: str) -> List[str]:
+    urls: List[str] = []
+    for m in MARKDOWN_LINK_RE.finditer(md or ""):
+        urls.append(m.group(2))
+    for m in AUTOLINK_RE.finditer(md or ""):
+        urls.append(m.group(1))
+    for m in BARE_GITHUB_URL_RE.finditer(md or ""):
+        urls.append(m.group(0))
+    # de-dup, keep order
+    seen = set()
+    out: List[str] = []
+    for u in urls:
+        u2 = u.rstrip(").,>")
+        if u2 not in seen:
+            seen.add(u2)
+            out.append(u2)
+    return out
+
+def first_github_blob_ref(md: str) -> Tuple[Optional[str], Optional[List[int]]]:
+    """
+    Return (relative_file, [start,end]) if we find a github blob link with #Lx(-Ly), else (None, None).
+    """
+    for u in extract_urls_from_md(md):
+        m = GITHUB_BLOB_RE.match(u)
+        if not m:
+            continue
+        rel = m.group("path")
+        l1 = m.group("l1")
+        l2 = m.group("l2")
+        if l1:
+            if l2:
+                lines = [int(l1), int(l2)]
+            else:
+                lines = [int(l1), int(l1)]
+        else:
+            lines = None
+        return rel, lines
+    return None, None
+
+
+
+def issue_to_section(issue: dict) -> Optional[dict]:
+    skip, sev, cat, tag_names = classify_issue_labels(issue.get("labels", []))
+    if skip:
+        return None
+
+    idx = int(issue.get("number"))
+    title = issue.get("title") or "(untitled)"
+    heading = f"{idx}. {title}"
+
+    body_raw = issue.get("body") or ""
+    body_clean = clean_vuln_markdown(body_raw)
+    sects, main_body = split_vuln_markdown_into_sections(body_clean)  # returns (sections, body)
+
+    section = {
+        "index": idx,
+        "page_start": None,
+        "heading": heading,
+        "heading_cleaned": title,
+        "markdown": body_clean,
+        "markdown_raw": body_raw or None,
+        # old-style top-level fallbacks (your normalizer checks both):
+        "description": sects.get("description"),
+        "impact": sects.get("impact"),
+        "mitigation": sects.get("recommendation"),
+        "poc": sects.get("poc"),
+        "other": sects.get("other"),
+        # new structured container your normalizer also reads:
+        "sections": {
+            "description": sects.get("description"),
+            "impact": sects.get("impact"),
+            "recommendation": sects.get("recommendation"),
+            "poc": sects.get("poc"),
+            "fix_status": sects.get("fix_status"),
+            "other": sects.get("other"),
+        },
+        "markdown_body": main_body,
+        "metadata": {
+            "Severity": sev,
+            "Difficulty": None,
+            "Type": cat,
+            "Finding ID": None,
+            "Target": None,   # optionally fill from GitHub blob links if you want
+        },
+    }
+    return section
+
+
+def build_c4_report(owner: str, repo: str, session: requests.Session, issue_state: str = "all") -> dict:
+    issues = fetch_repo_issues(owner, repo, session, state=issue_state)
+    sections = []
+    all_bodies = []
+
+    for it in issues:
+        sec = issue_to_section(it)
+        if sec:
+            sections.append(sec)
+            if sec.get("markdown"): all_bodies.append(sec["markdown"])
+
+    # aggregate repositories by scanning all issue bodies for GitHub links
+    combined_md = "\n\n".join(all_bodies)
+    repositories = extract_repositories_from_markdown(combined_md)
+
+    return {
+        "doc_id": f"github:{owner}/{repo}",
+        "source_pdf": f"github:{owner}/{repo}",
+        "source_mtime": None,
+        "extracted_at": datetime.now(timezone.utc).isoformat(),
+        "extractor_version": "github-issues-0.1",
+        "repositories": repositories,
+        "report_schema": list(DEFAULT_REPORT_SCHEMA),  # harmless; your normalizer copes fine
+        "vulnerability_sections": sorted(sections, key=lambda s: s["index"]),
+    }
+
+
+
+def run_c4_mode(repos_file: Path, out_dir: Path, token_env: str = "GITHUB_TOKEN") -> None:
+    token = os.getenv(token_env)
+    if not token:
+        logger.warning("No GitHub token in %s; you may hit rate limits.", token_env)
+    session = make_github_session(token)
+
+    pairs = load_repo_list(repos_file)
+    if not pairs:
+        logger.error("No repos parsed from %s", repos_file); raise SystemExit(2)
+
+    for owner, repo in pairs:
+        rep = build_c4_report(owner, repo, session)
+        base = out_dir / "c4" / owner / repo
+        base.mkdir(parents=True, exist_ok=True)
+        (base / "report.json").write_text(json.dumps(rep, ensure_ascii=False, indent=2), encoding="utf-8")
+        logger.info("Wrote %s", base / "report.json")
+
+
+
+
 # ---------------- CLI ---------------- #
 
 def main(argv: List[str]) -> None:
@@ -2989,8 +3393,23 @@ def main(argv: List[str]) -> None:
         help="Increase logging verbosity (-v, -vv).",
     )
 
+
+    ap.add_argument("--code4rena-repos", help="Text file listing C4 findings repos (URLs or owner/repo).")
+    ap.add_argument("--out-dir", default="data", help="Base dir for synthetic report.json outputs.")
+    ap.add_argument("--github-token-env", default="GITHUB_TOKEN", help="Env var holding a GitHub token.")
+
+    
+
     args = ap.parse_args(argv[1:])
     logger = setup_logger(args.verbose)
+
+
+
+    # --- Code4rena GitHub mode: produce synthetic report.json per repo ---
+    if args.code4rena_repos:
+        run_c4_mode(Path(args.code4rena_repos), Path(args.out_dir), args.github_token_env)
+        return
+
 
     if args.pdf_dir:
         pdf_dir = Path(args.pdf_dir)

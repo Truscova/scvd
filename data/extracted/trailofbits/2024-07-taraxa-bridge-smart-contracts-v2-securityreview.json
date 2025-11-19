@@ -2,7 +2,7 @@
   "doc_id": "trailofbits_2024-07-taraxa-bridge-smart-contracts-v2-securityreview",
   "source_pdf": "2024-07-taraxa-bridge-smart-contracts-v2-securityreview.pdf",
   "source_mtime": "2025-11-01T20:47:29.319395+00:00",
-  "extracted_at": "2025-11-16T22:15:07.922814+00:00",
+  "extracted_at": "2025-11-19T09:04:32.938539+00:00",
   "extractor_version": "poc-0.4",
   "repositories": [
     {
@@ -159,18 +159,18 @@
     },
     {
       "key": "Type",
-      "meaning": "The category or type of the finding (e.g., Data Validation, Denial of Service).",
-      "expected_values": "string describing the finding's category"
+      "meaning": "The category of the vulnerability or finding.",
+      "expected_values": "Data Validation / Denial of Service / Security Feature Interaction"
     },
     {
       "key": "Finding ID",
-      "meaning": "A unique identifier for this specific finding.",
-      "expected_values": "string representing a unique identifier"
+      "meaning": "A unique identifier for this specific finding within the report.",
+      "expected_values": "String with alphanumeric characters and hyphens, e.g., TOB-TARA-1"
     },
     {
       "key": "Target",
-      "meaning": "The file or contract where the finding is located.",
-      "expected_values": "path to affected file / contract"
+      "meaning": "The file or code path where the vulnerability is located.",
+      "expected_values": "Path to affected file / contract, e.g., bridge/src/connectors/ERC20LockingConnectorLogic.sol"
     }
   ],
   "vulnerability_sections": [
@@ -298,7 +298,7 @@
       "metadata": {
         "Severity": "Informational",
         "Difficulty": "Low",
-        "Type": "Incorrect Mapping Usage",
+        "Type": "Undefined Behavior",
         "Finding ID": "TOB-TARA-5",
         "Target": "bridge/src/lib/BridgeBase.sol"
       },

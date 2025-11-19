@@ -2,7 +2,7 @@
   "doc_id": "sigmaprime_urbit_stardust_review",
   "source_pdf": "review.pdf",
   "source_mtime": "2025-11-10T12:08:25+00:00",
-  "extracted_at": "2025-11-16T22:14:35.048870+00:00",
+  "extracted_at": "2025-11-19T09:03:58.385444+00:00",
   "extractor_version": "poc-0.4",
   "repositories": [
     {
@@ -79,17 +79,17 @@
     },
     {
       "key": "Type",
-      "meaning": "The type of the vulnerability or finding.",
-      "expected_values": "Informational / Security / Logic / Contract Interaction / etc."
+      "meaning": "The type of the security finding, such as reentrancy, overflow, etc.",
+      "expected_values": "string describing type of vulnerability"
     },
     {
       "key": "Finding ID",
-      "meaning": "A unique identifier for this specific finding in the report.",
-      "expected_values": "UTR-01, UTR-02, UTR-03"
+      "meaning": "A unique identifier for this specific finding within the report.",
+      "expected_values": "UTR-01 / UTR-02 / UTR-03"
     },
     {
       "key": "Target",
-      "meaning": "The file or contract affected by the finding.",
+      "meaning": "The file or contract that is affected by the vulnerability.",
       "expected_values": "path to affected file / contract"
     }
   ],
@@ -114,7 +114,7 @@
       "metadata": {
         "Severity": "Low",
         "Difficulty": null,
-        "Type": "Logic",
+        "Type": "Incorrect Ownership Transfer",
         "Finding ID": "UTR-01",
         "Target": "Treasury.sol"
       },
@@ -139,8 +139,8 @@
       "markdown_body": "#### **Description**\n\nA Treasury contract is coupled with a StarToken (ERC-777 standard) token. StarToken tokens are minted to a user who deposits a star to the Treasury contract and burned when a user redeems a star. The Treasury contract does not have a function to sweep over Startoken tokens mistakenly sent to it.\n\nConsider the following scenario:\n\n- 1. Alice deposits a star and receives 1*e*18 StarToken ;\n- 2. Alice mistakenly transfers some of her StarToken tokens, say 100 tokens, to Treasury contract;\n- 3. Alice cannot recover the mistakenly transferred tokens, while the Treasury contract also cannot recover the tokens.\n\n#### **Recommendations**\n\nConsider introducing a function where a privileged account (e.g. a governance contract, say Governor), can recover any excess tokens:\n\n```\nfunction recoverTokens ( address _to ) onlyGovernor public {\n uint256 tokenAmount ;\n tokenAmount = startoken . balanceOf ( address ( this )) % ( assets . length * oneStar );\n tokenAmount = startoken . balanceOf ( address ( this ));\n  startoken . transferFrom ( address ( this ), _to , tokenAmount );\n```\n\n*Note that this would require the governor to have an allowance on behalf of the Treasury contract in the StarToken contrat*\n",
       "metadata": {
         "Severity": "Low",
-        "Difficulty": null,
-        "Type": "Security",
+        "Difficulty": "Medium",
+        "Type": "Recovery Mechanism Absent",
         "Finding ID": "UTR-02",
         "Target": "Treasury.sol"
       },
@@ -164,9 +164,9 @@
       "description": "#### **Description**\n\nThe Treasury contract deploys a new StarToken contract during contract creation, as indicated on line [**26**]:\n\n```\nStarToken public startoken = new StarToken (0 , new address [](0));\n```\n\nIt is possible to deploy multiple Treasury contracts. It also means that there can be multiple StarToken contracts, where tokens in one StarToken contract cannot redeem a star in other Treasury contracts. This can potentially be confusing or misleading for users.\n",
       "markdown_body": "#### **Description**\n\nThe Treasury contract deploys a new StarToken contract during contract creation, as indicated on line [**26**]:\n\n```\nStarToken public startoken = new StarToken (0 , new address [](0));\n```\n\nIt is possible to deploy multiple Treasury contracts. It also means that there can be multiple StarToken contracts, where tokens in one StarToken contract cannot redeem a star in other Treasury contracts. This can potentially be confusing or misleading for users.\n\n#### **Recommendations**\n\nMake sure this behaviour is intended and consider deploying a dedicated StarToken contract and hardcoding its address in the Treasury contract.\n",
       "metadata": {
-        "Severity": "Informational",
+        "Severity": null,
         "Difficulty": null,
-        "Type": "Informational",
+        "Type": "Misconfiguration",
         "Finding ID": "UTR-03",
         "Target": "Treasury.sol"
       },
@@ -192,7 +192,7 @@
       "metadata": {
         "Severity": null,
         "Difficulty": null,
-        "Type": "Informational",
+        "Type": "Unrecoverable Token Loss",
         "Finding ID": "UTR-04",
         "Target": "Treasury.sol"
       },
@@ -242,9 +242,9 @@
       "description": "#### **Description**\n\nUrbit's stars are NFTs that do not necessarily have equal value, as can be seen on [Opensea](https://opensea.io/collection/urbit-id) where stars are traded at different prices (at the time of writing, the highest asking price for an Urbit star is [888 ETH](https://opensea.io/assets/0x9ef27de616154ff8b38893c59522b69c7ba8a81c/13975) and the lowest is [1.8 ETH\\)](https://opensea.io/assets/0x9ef27de616154ff8b38893c59522b69c7ba8a81c/15828).\n\nOn the other hand, the Treasury contract treats all stars equally from a valuation perspective which opens up two potentially interesting scenarios:\n\n- A user deposits a star with a market price less than 1*e*18 \\$STAR tokens. In this case, the user profits from the difference between the market value and the received \\$STAR tokens. This activity is similar to an arbitrage and can be applied to the DeFi context (would simply require a market pair with \\$STAR token on a decentralised exchange such as Uniswap).\n- A user finds a star worth more than 1*e*18 \\$STAR tokens in the Treasury contract's assets inventory. The user knows that the inventory release is done in *LIFO* (Last In First Out) fashion. To take out the wanted star from the inventory, say in *n-th* position from the last, the user takes a *n*∗ 1*e*18 \\$STAR tokens loan from the market, calls the redeem() function *n* times, keeps the star they want, then returns *n* − 1 stars to the Treasury contract by calling the deposit() function *n* − 1 times. The user then sells the acquired star on the market and pays the loan interest by using profits.\n",
       "markdown_body": "#### **Description**\n\nUrbit's stars are NFTs that do not necessarily have equal value, as can be seen on [Opensea](https://opensea.io/collection/urbit-id) where stars are traded at different prices (at the time of writing, the highest asking price for an Urbit star is [888 ETH](https://opensea.io/assets/0x9ef27de616154ff8b38893c59522b69c7ba8a81c/13975) and the lowest is [1.8 ETH\\)](https://opensea.io/assets/0x9ef27de616154ff8b38893c59522b69c7ba8a81c/15828).\n\nOn the other hand, the Treasury contract treats all stars equally from a valuation perspective which opens up two potentially interesting scenarios:\n\n- A user deposits a star with a market price less than 1*e*18 \\$STAR tokens. In this case, the user profits from the difference between the market value and the received \\$STAR tokens. This activity is similar to an arbitrage and can be applied to the DeFi context (would simply require a market pair with \\$STAR token on a decentralised exchange such as Uniswap).\n- A user finds a star worth more than 1*e*18 \\$STAR tokens in the Treasury contract's assets inventory. The user knows that the inventory release is done in *LIFO* (Last In First Out) fashion. To take out the wanted star from the inventory, say in *n-th* position from the last, the user takes a *n*∗ 1*e*18 \\$STAR tokens loan from the market, calls the redeem() function *n* times, keeps the star they want, then returns *n* − 1 stars to the Treasury contract by calling the deposit() function *n* − 1 times. The user then sells the acquired star on the market and pays the loan interest by using profits.\n\n#### **Recommendations**\n\nMake sure this behaviour is understood and intended.\n",
       "metadata": {
-        "Severity": "Informational",
+        "Severity": null,
         "Difficulty": null,
-        "Type": "Informational",
+        "Type": "Arbitrage, Flashloan",
         "Finding ID": "UTR-06",
         "Target": "Treasury.sol"
       },
@@ -270,7 +270,7 @@
       "metadata": {
         "Severity": null,
         "Difficulty": null,
-        "Type": "Informational",
+        "Type": "Redundant Checks",
         "Finding ID": "UTR-07",
         "Target": "Treasury.sol"
       },
@@ -294,9 +294,9 @@
       "description": "#### **Description**\n\nThe StarToken contract implements the ERC777 token standard using the related [OpenZeppelin library.](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC777/ERC777.sol) One of the most distinguishable features of the ERC777 standard compared to ERC20 is that if the token receiver is a contract, then the contract can implement the ERC777Recipient interface which defines the function tokensReceived() . This function is a hook that will be triggered every time the contract receives a token. To enable the hook trigger, the receiving contract must register itself to the ERC1820 contract registry.\n\nThis unique ERC777 feature can be weaponised to trigger a **reentrancy** [\\[3\\]](#page-19-3) condition. To be successful, this attack would require the victim contract to be affected by a security flaw as the result of not abiding by the recommended [Checks-Effects-Interactions](https://docs.soliditylang.org/en/v0.8.7/security-considerations.html#use-the-checks-effects-interactions-pattern) pattern.\n\nThis reentrancy condition can allow attackers to use two stars to switch for any other star in the list (see [this](#page-12-1) [relevant issue\\)](#page-12-1).\n\nSay we have assets = [a, b, c] and we have a balance of 2*e*18 StarTokens . The standard redeem() workflow would normally only allow us to redeem the Star c . However, consider the following:\n\n- 1. redeem() **(1)**:\n  - pop(c) -> assets = [a, b]\n  - ownerBurn(1e18) reenter on tokensToSend() before we've burnt our balance of 2*e*18\n- 2. redeem() **(2)**:\n  - pop(b) -> assets = [a]\n  - ownerBurn(1e18) reenter on tokensToSend() before we've burnt our balance of 2*e*18\n- 3. redeem() **(3)**:\n  - pop(a) -> assets = []\n  - ownerBurn(1e18) -> balance = 1*e*18\n  - transferPoint(a, attacker)\n- 4. continue redeem(**2**) :\n  - ownerBurn(1e18) -> balance = 0\n  - transferPoint(b, attacker)\n- 5. deposit(b) :\n  - transferPoint(b, treasury)\n\n\n```\n• push(b) -> assets =[b]\n    • mint(1e18, attacker) -> balance = 1e18\n6. continue redeem(3) :\n    • ownerBurn(1e18) -> balance = 0\n    • transferPoint(c, attacker)\n7. deposit(c) :\n    • transferPoint(c, treasury)\n    • push(c) -> assets = [b, c]\n    • mint(1e18, attacker) -> balance = 1e18\n```\n\nThe attacker managed to own star a and only spend 1*e*18 for it, bypassing the LIFO (*\"Last In First Out\"*) queue.\n\nThe testing team could not identify an exploitable attack vector for reentrancy on the Treasury contract. However, the testing team notes that the ERC777 and ERC1820 contracts were not included in the scope of this review. As a result, the testing team cannot express any opinions related to the security posture of these contracts.\n",
       "markdown_body": "#### **Description**\n\nThe StarToken contract implements the ERC777 token standard using the related [OpenZeppelin library.](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC777/ERC777.sol) One of the most distinguishable features of the ERC777 standard compared to ERC20 is that if the token receiver is a contract, then the contract can implement the ERC777Recipient interface which defines the function tokensReceived() . This function is a hook that will be triggered every time the contract receives a token. To enable the hook trigger, the receiving contract must register itself to the ERC1820 contract registry.\n\nThis unique ERC777 feature can be weaponised to trigger a **reentrancy** [\\[3\\]](#page-19-3) condition. To be successful, this attack would require the victim contract to be affected by a security flaw as the result of not abiding by the recommended [Checks-Effects-Interactions](https://docs.soliditylang.org/en/v0.8.7/security-considerations.html#use-the-checks-effects-interactions-pattern) pattern.\n\nThis reentrancy condition can allow attackers to use two stars to switch for any other star in the list (see [this](#page-12-1) [relevant issue\\)](#page-12-1).\n\nSay we have assets = [a, b, c] and we have a balance of 2*e*18 StarTokens . The standard redeem() workflow would normally only allow us to redeem the Star c . However, consider the following:\n\n- 1. redeem() **(1)**:\n  - pop(c) -> assets = [a, b]\n  - ownerBurn(1e18) reenter on tokensToSend() before we've burnt our balance of 2*e*18\n- 2. redeem() **(2)**:\n  - pop(b) -> assets = [a]\n  - ownerBurn(1e18) reenter on tokensToSend() before we've burnt our balance of 2*e*18\n- 3. redeem() **(3)**:\n  - pop(a) -> assets = []\n  - ownerBurn(1e18) -> balance = 1*e*18\n  - transferPoint(a, attacker)\n- 4. continue redeem(**2**) :\n  - ownerBurn(1e18) -> balance = 0\n  - transferPoint(b, attacker)\n- 5. deposit(b) :\n  - transferPoint(b, treasury)\n\n\n```\n• push(b) -> assets =[b]\n    • mint(1e18, attacker) -> balance = 1e18\n6. continue redeem(3) :\n    • ownerBurn(1e18) -> balance = 0\n    • transferPoint(c, attacker)\n7. deposit(c) :\n    • transferPoint(c, treasury)\n    • push(c) -> assets = [b, c]\n    • mint(1e18, attacker) -> balance = 1e18\n```\n\nThe attacker managed to own star a and only spend 1*e*18 for it, bypassing the LIFO (*\"Last In First Out\"*) queue.\n\nThe testing team could not identify an exploitable attack vector for reentrancy on the Treasury contract. However, the testing team notes that the ERC777 and ERC1820 contracts were not included in the scope of this review. As a result, the testing team cannot express any opinions related to the security posture of these contracts.\n\n#### **Recommendations**\n\nERC777 token contracts do significantly increase the attack surface available to malicious users, compared to simpler ERC20 token contracts. Consider whether the added complexity is worth the extra features provided.\n",
       "metadata": {
-        "Severity": null,
+        "Severity": "Informational",
         "Difficulty": null,
-        "Type": "Informational",
+        "Type": "Reentrancy",
         "Finding ID": "UTR-08",
         "Target": "StarToken.sol"
       },
@@ -322,7 +322,7 @@
       "metadata": {
         "Severity": null,
         "Difficulty": null,
-        "Type": "Informational",
+        "Type": null,
         "Finding ID": "UTR-09",
         "Target": "Treasury.sol"
       },
