@@ -1,0 +1,5 @@
+https://github.com/code-423n4/2024-11-nibiru-findings
+https://github.com/code-423n4/2024-08-chakra-findings
+https://github.com/code-423n4/2023-04-rubicon-findings
+https://github.com/code-423n4/2024-10-loopfi-findings
+https://github.com/code-423n4/2024-04-noya-findings

@@ -2,7 +2,7 @@
   "doc_id": "trailofbits_2024-12-rubycentral-rubygemsorg-securityreview",
   "source_pdf": "2024-12-rubycentral-rubygemsorg-securityreview.pdf",
   "source_mtime": "2025-11-01T12:04:44+00:00",
-  "extracted_at": "2025-11-16T22:18:50.161297+00:00",
+  "extracted_at": "2025-11-19T09:08:18.591310+00:00",
   "extractor_version": "poc-0.4",
   "repositories": [
     {
@@ -319,18 +319,18 @@
     },
     {
       "key": "Type",
-      "meaning": "The type of the finding, usually a category like 'Configuration', 'Data Validation', etc.",
-      "expected_values": "string describing the type of security concern"
+      "meaning": "The type or category of the finding (e.g., Configuration, Data Validation).",
+      "expected_values": "Configuration / Data Validation / Other"
     },
     {
       "key": "Finding ID",
-      "meaning": "A unique identifier for this finding within the report.",
-      "expected_values": "string or number uniquely identifying the finding"
+      "meaning": "A unique identifier for this specific finding.",
+      "expected_values": "String describing a unique finding identifier"
     },
     {
       "key": "Target",
-      "meaning": "The file(s) or component(s) where the issue is present.",
-      "expected_values": "path to affected file / contract, etc."
+      "meaning": "The part of the code or system where the issue is located.",
+      "expected_values": "Path to affected file / contract, function name, etc."
     }
   ],
   "vulnerability_sections": [
@@ -425,7 +425,7 @@
         "recommendation": "#### Recommendations\n\nShort term, enable the includeSubDomains directive for HSTS response headers.\n\nLong term, incorporate the action-dispatch-insecure-ssl Semgrep rule from [appendix](#page-89-0) E.2 into your CI systems.\n",
         "poc": "#### Exploit Scenario\n\nAn attacker can perform a downgrade attack against a target connecting to a subdomain of RubyGems.org. They may also passively intercept subsequent HTTP connections after an initial HTTPS connection to subdomains of RubyGems.org.\n",
         "fix_status": null,
-        "other": null
+        "other": "**tools_used:**\n## 4. HSTS includeSubDomains disabled in production environment\n\n| Severity: Low                                          | Diffi culty: High     |\n|-----------------------------------------------------------|-----------------------------|\n| Type: Cryptography                                     | Finding ID: TOB-RGM-4 |\n| Target: rubygems.org/config/environments/production.rb |                             |\n"
       },
       "description": "#### Description\n\nThe HTTP [Strict-Transport-Security](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security) (HSTS) response header ensures that subsequent connections to a site are encrypted. Additionally, the [includeSubDomains](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security#includesubdomains) directive applies the same configuration to all of a domain's subdomains. The production environment disables this functionality in the following location:\n\n```\n# Force all access to the app over SSL, use Strict-Transport-Security, and use\nsecure cookies.\nconfig.force_ssl = true\nconfig.ssl_options = {\n  hsts: { expires: 365.days, subdomains: false },\n  redirect: {\n    exclude: ->(request) { request.path.start_with?('/internal') }\n  }\n}\n```\n\n*Figure 4.1: HSTS includeSubDomains disabled ([rubygems.org/config/environments/production.rb#53–60](https://github.com/rubygems/rubygems.org/blob/21895a522076d15a3cb8d072229e2cfdbdb873e8/config/environments/production.rb#L53-L60))*\n\nNote that the staging environment repeats this configuration.\n",
       "markdown_body": "| Severity: Low                                          | Diffi culty: High     |\n|-----------------------------------------------------------|-----------------------------|\n| Type: Cryptography                                     | Finding ID: TOB-RGM-4 |\n| Target: rubygems.org/config/environments/production.rb |                             |\n\n#### Description\n\nThe HTTP [Strict-Transport-Security](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security) (HSTS) response header ensures that subsequent connections to a site are encrypted. Additionally, the [includeSubDomains](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security#includesubdomains) directive applies the same configuration to all of a domain's subdomains. The production environment disables this functionality in the following location:\n\n```\n# Force all access to the app over SSL, use Strict-Transport-Security, and use\nsecure cookies.\nconfig.force_ssl = true\nconfig.ssl_options = {\n  hsts: { expires: 365.days, subdomains: false },\n  redirect: {\n    exclude: ->(request) { request.path.start_with?('/internal') }\n  }\n}\n```\n\n*Figure 4.1: HSTS includeSubDomains disabled ([rubygems.org/config/environments/production.rb#53–60](https://github.com/rubygems/rubygems.org/blob/21895a522076d15a3cb8d072229e2cfdbdb873e8/config/environments/production.rb#L53-L60))*\n\nNote that the staging environment repeats this configuration.\n\n#### Exploit Scenario\n\nAn attacker can perform a downgrade attack against a target connecting to a subdomain of RubyGems.org. They may also passively intercept subsequent HTTP connections after an initial HTTPS connection to subdomains of RubyGems.org.\n\n#### Recommendations\n\nShort term, enable the includeSubDomains directive for HSTS response headers.\n\nLong term, incorporate the action-dispatch-insecure-ssl Semgrep rule from [appendix](#page-89-0) E.2 into your CI systems.\n",
@@ -1032,7 +1032,7 @@
         "Difficulty": "High",
         "Type": "Authentication",
         "Finding ID": "TOB-RGM-27",
-        "Target": "rubygems-terraform/fastly"
+        "Target": "rubygems-terraform/fastly/modules/main.tf#279–285"
       },
       "heading_cleaned": "Fastly uses long-lived credentials instead of OIDC"
     },

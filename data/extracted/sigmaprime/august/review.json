@@ -2,7 +2,7 @@
   "doc_id": "sigmaprime_august_review",
   "source_pdf": "review.pdf",
   "source_mtime": "2025-11-10T12:08:24+00:00",
-  "extracted_at": "2025-11-16T22:13:12.933409+00:00",
+  "extracted_at": "2025-11-19T09:02:44.608534+00:00",
   "extractor_version": "poc-0.4",
   "repositories": [
     {
@@ -109,18 +109,18 @@
     },
     {
       "key": "Type",
-      "meaning": "The type of security finding or vulnerability.",
-      "expected_values": "Reentrancy / Logic Error / Inflation Attack / Solidity Version Compatibility / DoS (Denial of Service) / Others"
+      "meaning": "The category or type of the finding (e.g., Reentrancy, Logic Error).",
+      "expected_values": "string describing finding's category"
     },
     {
       "key": "Finding ID",
-      "meaning": "A unique identifier for this specific finding.",
-      "expected_values": "String (e.g., AUG-01)"
+      "meaning": "A unique identifier for this specific finding within the audit report.",
+      "expected_values": "string like 'AUG-01'"
     },
     {
       "key": "Target",
-      "meaning": "The part of the contract where the vulnerability exists or is referenced.",
-      "expected_values": "Path to affected file / contract"
+      "meaning": "The part of the contract that is affected by the issue.",
+      "expected_values": "path to affected file / contract"
     }
   ],
   "vulnerability_sections": [
@@ -143,7 +143,7 @@
       "markdown_body": "#### **Description**\n\nTwo nonReentrant modifiers are executed in a single call, causing ReentrancyGuard to revert during liquidate() .\n\nWhen the function AbstractLender.liquidate() is called, the following call sequence occurs.\n\n- 1. AbstractLender.liquidate() is called on the lender contract. The function has a nonReentrant modifier. At this point, \\_reentrancyStatus is set to \\_REENTRANCY\\_ENTERED .\n- 2. IPeerToPeerOpenTermLoan(loanAddr).liquidate() is called on the respective loan contract. This code may execute InitializableOpenTermLoan.liquidate() .\n- 3. IHookableLender(lender).notifyLoanMatured() is called on the lender contract. The function has a nonReentrant modifier as described in HookableLender.sol .\n\nSince the \\_reentrancyStatus of the lender contract was already set to \\_REENTRANCY\\_ENTERED in step (1), the call in step (3) would cause a revert on BaseReentrancyGuard.\\_nonReentrantBefore() . The result is, AbstractLender.liquidate() will revert.\n\nThe impact is rated as medium severity as being unable to call liquidate() prevents losses being accounted for at the pool level.\n\n#### **Recommendations**\n\nConsider removing one of the nonReentrant modifiers either on AbstractLender or HookableLender contract.\n\n#### **Resolution**\n\nThe issue was resolved on commit [2196d53.](https://github.com/fractal-protocol/august-contracts-upgradeable/commit/2196d5357aad71eaf2dcfc6bbff8a4f6d69c59cc) The nonReentrant modifier on AbstractLender.liquidate() was removed.\n\n\n\n\n| AUG-02 Restricted Token Redeem Period When lagDuration == 0 |                                 |                |                    |\n|-------------------------------------------------------------------|---------------------------------|----------------|--------------------|\n| Asset                                                             | pool/base/TimelockedERC4626.sol |                |                    |\n| Status                                                            | Resolved: See Resolution        |                |                    |\n| Rating                                                            | Severity: Medium                | Impact: Medium | Likelihood: Medium |\n\n### **Description**\n\nIf lagDuration == 0 , users may have only a limited period, potentially just 1 hour in a day, to claim their token.\n\nWhen lagDuration == 0 , the pool is not time-locked. Therefore, users are supposed to redeem their tokens instantly. However, this is not the case, as the redeem phase still depends on the liquidationHour . Indeed, when lagDuration == 0 , the function requestRedeem() calls the internal function \\_claim() in the following code from lines [**130-133**]:\n\n```\nif (lagDuration == 0) {\n     claimableEpoch = block.timestamp;\n     _claim(year, month, day, 0, receiverAddr);\n}\n```\n\nIf the call happens before the liquidationHour , the call will revert because of the require statement on line [**428**]:\n\n```\nrequire(block.timestamp + _TIMESTAMP_MANIPULATION_WINDOW >= DateUtils.timestampFromDateTime(year, month, day, liquidationHour, 0,\n      ,→ 0), \"Too early\");\n```\n\nHence, the current timestamp is checked with year , month , day and the liquidationHour . For example, when liquidationHour = 23 , users would have only 1 hour a day, just between *11:00 PM UTC and 11:59 PM UTC*, to redeem their tokens.\n\n#### **Recommendations**\n\nUpdate the liquidationHour to 0 , when updating the lagDuration to 0 in the function updateTimelockDuration() . Also, consider reverting if there is a call to update the liquidationHour to a value other than 0 when lagDuration == 0 in the function updateProcessingHour() .\n\n# **Resolution**\n\nThe development team has fixed this issue in commit [d510a02,](https://github.com/fractal-protocol/august-contracts-upgradeable/commit/d510a02b3b9932638f782bc3543564a1d8dfdf61) by adding the following the require statement when the lagDuration > 0 .\n\n```\nrequire(block.timestamp + _TIMESTAMP_MANIPULATION_WINDOW >= DateUtils.timestampFromDateTime(year, month, day, liquidationHour, 0,\n      ,→ 0), \"Too early\");\n```\n",
       "metadata": {
         "Severity": "High",
-        "Difficulty": "Medium",
+        "Difficulty": null,
         "Type": "Reentrancy",
         "Finding ID": "AUG-01",
         "Target": "Asset pools/base/AbstractLender.sol"
@@ -222,7 +222,7 @@
       "metadata": {
         "Severity": "Low",
         "Difficulty": null,
-        "Type": "DoS (Denial of Service)",
+        "Type": "Reentrancy",
         "Finding ID": "AUG-06",
         "Target": "Asset pools/base/TimelockedERC4626.sol"
       },
@@ -248,7 +248,7 @@
       "metadata": {
         "Severity": null,
         "Difficulty": null,
-        "Type": "Others",
+        "Type": "Efficiency",
         "Finding ID": "AUG-07",
         "Target": "pools/base/TimelockedERC4626.sol"
       },
@@ -274,7 +274,7 @@
       "metadata": {
         "Severity": "Informational",
         "Difficulty": null,
-        "Type": "Others",
+        "Type": "Logic Error",
         "Finding ID": "AUG-08",
         "Target": "pools/base/BaseLendingPool.sol"
       },
@@ -300,7 +300,7 @@
       "metadata": {
         "Severity": null,
         "Difficulty": null,
-        "Type": "Others",
+        "Type": "Ownership",
         "Finding ID": "AUG-09",
         "Target": "core/BaseOwnable.sol & pools/LendingPool.sol"
       },
@@ -324,9 +324,9 @@
       "description": "### **Description**\n\nThe interface ILenderHook deviates from common naming conventions. Typically, interfaces are named using the format I + contract name.\n\nThe contract implementing ILenderHook is named HookableLender .\n",
       "markdown_body": "### **Description**\n\nThe interface ILenderHook deviates from common naming conventions. Typically, interfaces are named using the format I + contract name.\n\nThe contract implementing ILenderHook is named HookableLender .\n\n#### **Recommendations**\n\nConsider renaming the interface to IHookableLender for improved clarity and adherence to standard naming practices.\n\n#### **Resolution**\n\nThe interface was renamed to IHookableLender as per the recommendation in commit [d510a02.](https://github.com/fractal-protocol/august-contracts-upgradeable/commit/d510a02b3b9932638f782bc3543564a1d8dfdf61)\n",
       "metadata": {
-        "Severity": null,
+        "Severity": "Informational",
         "Difficulty": null,
-        "Type": "Others",
+        "Type": "Deviation From Common Interface Naming Convention",
         "Finding ID": "AUG-10",
         "Target": "loans/interfaces/ILenderHook.sol"
       },
@@ -352,7 +352,7 @@
       "metadata": {
         "Severity": null,
         "Difficulty": null,
-        "Type": "Others",
+        "Type": "Logic Error",
         "Finding ID": "AUG-11",
         "Target": "pools/base/BaseUpgradeableERC4626.sol and pools/base/BaseUpgradeableERC20.sol"
       },
@@ -378,7 +378,7 @@
       "metadata": {
         "Severity": "Informational",
         "Difficulty": null,
-        "Type": "Others",
+        "Type": "Access Control",
         "Finding ID": "AUG-12",
         "Target": "pools/base/OwnableLiquidityPool.sol"
       },
@@ -404,7 +404,7 @@
       "metadata": {
         "Severity": null,
         "Difficulty": null,
-        "Type": "Others",
+        "Type": "Miscellaneous",
         "Finding ID": "AUG-13",
         "Target": "pools/LendingPool.sol, pools/base/TimelockedERC4626.sol, pools/base/HookableLender.sol, pools/base/BaseLendingPool.sol"
       },

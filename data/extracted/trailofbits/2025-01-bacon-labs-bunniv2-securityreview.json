@@ -2,7 +2,7 @@
   "doc_id": "trailofbits_2025-01-bacon-labs-bunniv2-securityreview",
   "source_pdf": "2025-01-bacon-labs-bunniv2-securityreview.pdf",
   "source_mtime": "2025-11-01T12:04:44+00:00",
-  "extracted_at": "2025-11-16T22:20:29.964223+00:00",
+  "extracted_at": "2025-11-19T09:10:03.614383+00:00",
   "extractor_version": "poc-0.4",
   "repositories": [
     {
@@ -149,17 +149,17 @@
     },
     {
       "key": "Type",
-      "meaning": "The category or type of the vulnerability found.",
-      "expected_values": "Access Controls / Data Validation / Other"
+      "meaning": "The category or type of security finding.",
+      "expected_values": "Access Controls / Data Validation / Logic Error"
     },
     {
       "key": "Finding ID",
-      "meaning": "A unique identifier for this finding in the audit report.",
-      "expected_values": "String representing a unique identifier, e.g. TOB-BUNNI-1"
+      "meaning": "A unique identifier for the specific finding within the report.",
+      "expected_values": "String describing a unique identifier"
     },
     {
       "key": "Target",
-      "meaning": "The specific contract or code section where the vulnerability is located.",
+      "meaning": "The part of the contract or codebase where the issue is located.",
       "expected_values": "Path to affected file / contract"
     }
   ],
@@ -260,7 +260,7 @@
       "description": "#### Description\n\nDuring the am-AMM auction bidding process, a user vying to be a future manager can bid extremely low rent, even zero, in the absence of a current am-AMM manager or next bids, distorting the bidding process.\n\nAs depicted in figure 4.1, in function bid in the AmAmm contract, when a user places a new bid, the rent is compared with the existing next bid rent and is set as the next bid if the rent is 10% more than the existing next bid rent. In the absence of an existing next bid, the user's rent can be zero and still pass the sanity checks. As a result, future bidders may also opt for bidding low rent, aiming to be just above 10% of the previous rent.\n\n```\n// update state machine\n_updateAmAmmWrite(id);\n// ensure bid is valid\n// - manager can't be zero address\n// - bid needs to be greater than the next bid by >10%\n// - deposit needs to cover the rent for K hours\n// - deposit needs to be a multiple of rent\n// - payload needs to be valid\nif (\n manager == address(0) || rent <=\n_nextBids[id].rent.mulWad(MIN_BID_MULTIPLIER(id)) || deposit < rent * K(id)\n || deposit % rent != 0 || !_payloadIsValid(id, payload)\n) {\n revert AmAmm__InvalidBid();\n}\n```\n\n*Figure 4.1: A snippet of the bid function in the AmAmm contract ([src/AmAmm.sol#L75–L86](https://github.com/Bunniapp/biddog/blob/95f4270ad4447e96044973580afda9176730e7c8/src/AmAmm.sol#L75-L86))*\n\nMoreover, as illustrated in figure 4.2, in the function \\_stateTransitionWrite in the contract AmAmm where the new manager is set, a remarkably low next bid rent could still become the manager if there is no existing top bid, given that the rent must be greater than 10% of the existing top bid rent. This scenario allows the winning bidder to attain the manager's role at a substantially low rent and earn significantly more in swap fees.\n\n\n```\n// State D\n// we charge rent from the top bid only until K epochs after the next bid was\nsubmitted\n// assuming the next bid's rent is greater than the top bid's rent + 10%, otherwise\nwe don't care about\n// the next bid\nbool nextBidIsBetter = nextBid.rent > topBid.rent.mulWad(MIN_BID_MULTIPLIER(id));\nuint40 epochsPassed;\n```\n\n*Figure 4.2: A snippet of the \\_stateTransitionWrite function in the AmAmm contract ([src/AmAmm.sol#L676–L680](https://github.com/Bunniapp/biddog/blob/95f4270ad4447e96044973580afda9176730e7c8/src/AmAmm.sol#L676-L680))*\n",
       "markdown_body": "| 4. Users can bid arbitrarily low rent during the bidding process |                               |\n|------------------------------------------------------------------------------------------------|-------------------------------|\n| Severity: Undetermined                                                                      | Diffi culty: Low        |\n| Type: Data Validation                                                                    | Finding ID: TOB-BUNNI-4 |\n| Target: lib/biddog/AmAMM.sol                                                                |                               |\n\n#### Description\n\nDuring the am-AMM auction bidding process, a user vying to be a future manager can bid extremely low rent, even zero, in the absence of a current am-AMM manager or next bids, distorting the bidding process.\n\nAs depicted in figure 4.1, in function bid in the AmAmm contract, when a user places a new bid, the rent is compared with the existing next bid rent and is set as the next bid if the rent is 10% more than the existing next bid rent. In the absence of an existing next bid, the user's rent can be zero and still pass the sanity checks. As a result, future bidders may also opt for bidding low rent, aiming to be just above 10% of the previous rent.\n\n```\n// update state machine\n_updateAmAmmWrite(id);\n// ensure bid is valid\n// - manager can't be zero address\n// - bid needs to be greater than the next bid by >10%\n// - deposit needs to cover the rent for K hours\n// - deposit needs to be a multiple of rent\n// - payload needs to be valid\nif (\n manager == address(0) || rent <=\n_nextBids[id].rent.mulWad(MIN_BID_MULTIPLIER(id)) || deposit < rent * K(id)\n || deposit % rent != 0 || !_payloadIsValid(id, payload)\n) {\n revert AmAmm__InvalidBid();\n}\n```\n\n*Figure 4.1: A snippet of the bid function in the AmAmm contract ([src/AmAmm.sol#L75–L86](https://github.com/Bunniapp/biddog/blob/95f4270ad4447e96044973580afda9176730e7c8/src/AmAmm.sol#L75-L86))*\n\nMoreover, as illustrated in figure 4.2, in the function \\_stateTransitionWrite in the contract AmAmm where the new manager is set, a remarkably low next bid rent could still become the manager if there is no existing top bid, given that the rent must be greater than 10% of the existing top bid rent. This scenario allows the winning bidder to attain the manager's role at a substantially low rent and earn significantly more in swap fees.\n\n\n```\n// State D\n// we charge rent from the top bid only until K epochs after the next bid was\nsubmitted\n// assuming the next bid's rent is greater than the top bid's rent + 10%, otherwise\nwe don't care about\n// the next bid\nbool nextBidIsBetter = nextBid.rent > topBid.rent.mulWad(MIN_BID_MULTIPLIER(id));\nuint40 epochsPassed;\n```\n\n*Figure 4.2: A snippet of the \\_stateTransitionWrite function in the AmAmm contract ([src/AmAmm.sol#L676–L680](https://github.com/Bunniapp/biddog/blob/95f4270ad4447e96044973580afda9176730e7c8/src/AmAmm.sol#L676-L680))*\n\n#### Recommendations\n\nShort term, implement a minimum rent requirement to ensure that there is a lowest acceptable bid that a bidder must provide to qualify for consideration as the next bid.\n",
       "metadata": {
-        "Severity": "Undetermined",
+        "Severity": null,
         "Difficulty": "Low",
         "Type": "Data Validation",
         "Finding ID": "TOB-BUNNI-4",
@@ -550,7 +550,7 @@
         "Difficulty": "High",
         "Type": "Data Validation",
         "Finding ID": "TOB-BUNNI-15",
-        "Target": "src/lib/BunniSwapMath.sol#L101–L104, src/lib/BunniSwapMath.sol#L49–78"
+        "Target": "src/lib/BunniSwapMath.sol"
       },
       "heading_cleaned": "Users can gain free tokens through the BunniSwap swap functionality"
     },
@@ -650,7 +650,7 @@
       "description": "#### Description\n\nThe cumulative amount of token0, when computed through different methods, can vary for certain types of LDFs, leading to incorrect calculations of liquidity densities for token0.\n\nGiven a cumulativeAmount0, the function inverseCumulativeAmount0, in the contracts UniformDistribution and CarpetedGeometricDistribution, computes the rounded tick whose cumulativeAmount0 is expected to be less than or equal to the given cumulativeAmount0.\n\n```\nif (exactIn) {\n (inputAmount, outputAmount) = zeroForOne\n ? ...\n : (\n naiveSwapAmountIn + cumulativeAmount - currentActiveBalance1,\n currentActiveBalance0 + naiveSwapAmountOut\n - input.liquidityDensityFunction.cumulativeAmount0(...)\n );\n } else {\n (inputAmount, outputAmount) = zeroForOne\n ? (\n input.liquidityDensityFunction.cumulativeAmount0(...)\n : ...\n }\n return (updatedSqrtPriceX96, updatedTick, inputAmount, outputAmount);\n}\n```\n\n*Figure 19.1: Snippet of the \\_computeSwap function in the BunniSwapMath library ([src/lib/BunniSwapMath.sol#L246–L303](https://github.com/timeless-fi/bunni-v2/blob/7faae4718eecda1b33dc3abd894431ed2d16c929/src/lib/BunniSwapMath.sol#L246-L303))*\n\nHowever, both distributions deviate from the expected behavior, as in some cases, the computed cumulativeAmount0 exceeds the given cumulativeAmount0. These cumulativeAmount0 values are used throughout the swap process to calculate the input and output amounts, as illustrated in figure 19.1, leading to inaccurate swap computations.\n\nWe discovered this issue with Medusa during the invariant testing process.\n",
       "markdown_body": "| Severity: Undetermined     | Diffi culty: Low         |\n|-------------------------------|--------------------------------|\n| Type: Data Validation   | Finding ID: TOB-BUNNI-19 |\n| Target: Various targets |                                |\n\n#### Description\n\nThe cumulative amount of token0, when computed through different methods, can vary for certain types of LDFs, leading to incorrect calculations of liquidity densities for token0.\n\nGiven a cumulativeAmount0, the function inverseCumulativeAmount0, in the contracts UniformDistribution and CarpetedGeometricDistribution, computes the rounded tick whose cumulativeAmount0 is expected to be less than or equal to the given cumulativeAmount0.\n\n```\nif (exactIn) {\n (inputAmount, outputAmount) = zeroForOne\n ? ...\n : (\n naiveSwapAmountIn + cumulativeAmount - currentActiveBalance1,\n currentActiveBalance0 + naiveSwapAmountOut\n - input.liquidityDensityFunction.cumulativeAmount0(...)\n );\n } else {\n (inputAmount, outputAmount) = zeroForOne\n ? (\n input.liquidityDensityFunction.cumulativeAmount0(...)\n : ...\n }\n return (updatedSqrtPriceX96, updatedTick, inputAmount, outputAmount);\n}\n```\n\n*Figure 19.1: Snippet of the \\_computeSwap function in the BunniSwapMath library ([src/lib/BunniSwapMath.sol#L246–L303](https://github.com/timeless-fi/bunni-v2/blob/7faae4718eecda1b33dc3abd894431ed2d16c929/src/lib/BunniSwapMath.sol#L246-L303))*\n\nHowever, both distributions deviate from the expected behavior, as in some cases, the computed cumulativeAmount0 exceeds the given cumulativeAmount0. These cumulativeAmount0 values are used throughout the swap process to calculate the input and output amounts, as illustrated in figure 19.1, leading to inaccurate swap computations.\n\nWe discovered this issue with Medusa during the invariant testing process.\n\n\n#### Recommendations\n\nShort term, triage the underlying root cause of the above finding and deploy a fix such that the LDF functionalities behave as expected.\n\nLong term, consider integrating Medusa to generate invariants at both the function and system levels, enabling the testing of operations that involve complex mathematics and liquidity pricing curves.\n",
       "metadata": {
-        "Severity": "Undetermined",
+        "Severity": null,
         "Difficulty": "Low",
         "Type": "Data Validation",
         "Finding ID": "TOB-BUNNI-19",

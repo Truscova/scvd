@@ -2,7 +2,7 @@
   "doc_id": "cyfrin_2025-10-22-cyfrin-remora-dynamic-tokens-v2.1",
   "source_pdf": "2025-10-22-cyfrin-remora-dynamic-tokens-v2.1.md",
   "source_mtime": "2025-11-01T12:05:00+00:00",
-  "extracted_at": "2025-11-16T22:12:10.229642+00:00",
+  "extracted_at": "2025-11-19T09:22:55.656614+00:00",
   "extractor_version": "poc-0.4-md-no-llm",
   "repositories": [
     {
@@ -666,7 +666,9 @@
         "recommendation": null,
         "poc": null,
         "fix_status": null,
-        "other": null
+        "other": null,
+        "lines_of_code": null,
+        "tools_used": null
       },
       "description": "### Minting in between disabling and re-enabling burning leads to stuck funds and dilution of later burners\n",
       "markdown_body": "",
