@@ -1,0 +1,440 @@
+openapi: 3.1.0
+info:
+  title: SCVD API
+  version: 0.1.0
+  description: Read-only API for the Smart Contract Vulnerability Database (POC)
+  license:
+    name: CC0-1.0
+    url: https://creativecommons.org/publicdomain/zero/1.0/
+
+servers:
+  - url: http://127.0.0.1:8000
+    description: Local dev
+  - url: https://api.scvd.local/v1
+    description: POC environment
+
+tags:
+  - name: Findings
+    description: Endpoints to browse and fetch SCVD findings.
+  - name: Stats
+    description: Aggregate statistics over the corpus.
+  - name: Snapshots
+    description: Monthly export snapshots.
+  - name: Meta
+    description: Health and metadata endpoints.
+
+paths:
+  /health:
+    get:
+      tags: [Meta]
+      summary: Health check
+      operationId: getHealth
+      security: []   # public
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: "ok" }
+                  loaded: { type: integer, example: 1234 }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /findings:
+    get:
+      tags: [Findings]
+      summary: List findings
+      operationId: listFindings
+      parameters:
+        - in: query
+          name: q
+          description: Free-text match on title/description/markdown (case-insensitive)
+          schema: { type: string }
+          examples:
+            title:
+              summary: Search by title fragment
+              value: malleability
+        - in: query
+          name: swc
+          schema: { type: string, pattern: "^SWC-\\d{3}$" }
+          examples:
+            reentrancy:
+              summary: SWC example
+              value: SWC-107
+        - in: query
+          name: cwe
+          schema: { type: string, pattern: "^CWE-\\d+$" }
+          examples:
+            broken-auth:
+              summary: CWE example
+              value: CWE-287
+        - in: query
+          name: severity
+          description: One of Informational, Low, Medium, High, Critical, Not Critical, Gas, QA
+          schema: { type: string, enum: [Informational, Low, Medium, High, Critical, Not Critical, Gas, QA] }
+          example: Informational
+        - in: query
+          name: doc_id
+          schema: { type: string }
+          example: cyfrin_2023-04-11-cyfrin-hyperliquid-dex-report
+        - in: query
+          name: chain
+          description: CAIP-2 chain id (e.g., eip155:1)
+          schema: { type: string }
+          example: eip155:1
+        - in: query
+          name: contract_address
+          schema: { type: string }
+          example: 0x0000000000000000000000000000000000000000
+        - in: query
+          name: repo
+          description: Substring match on repo.url
+          schema: { type: string }
+          example: hyperliquid-dex/contracts
+        - in: query
+          name: since
+          description: ISO 8601 date-time; filter by provenance.scvd_normalized_at >= since
+          schema: { type: string, format: date-time }
+          example: 2025-01-01T00:00:00Z
+        - in: query
+          name: until
+          description: ISO 8601 date-time; filter by provenance.scvd_normalized_at < until
+          schema: { type: string, format: date-time }
+          example: 2025-12-31T23:59:59Z
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+          example: 5
+        - in: query
+          name: cursor
+          schema: { type: string }
+          example: MA==  # base64 cursor (example only)
+        - in: query
+          name: sort
+          description: Sort field
+          schema: { type: string, enum: [scvd_id, severity, doc_id, chain, normalized_at] }
+          example: severity
+        - in: query
+          name: order
+          schema: { type: string, enum: [asc, desc], default: desc }
+          example: desc
+      responses:
+        "200":
+          description: A page of findings
+          headers:
+            X-Next-Cursor:
+              description: Cursor for the next page (if any)
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Finding" }
+                  next_cursor:
+                    oneOf:
+                      - type: string
+                      - type: 'null'
+              examples:
+                samplePage:
+                  summary: One result from the Cyfrin Hyperliquid report
+                  value:
+                    items:
+                      - schema_version: "0.1"
+                        scvd_id: "SCVD-cyfrin_2023-04-11-cyfrin-hyperliquid-dex-report-001"
+                        doc_id: "cyfrin_2023-04-11-cyfrin-hyperliquid-dex-report"
+                        finding_index: 1
+                        title: "[M-01] Bad signature validation, malleability & lack of zero address protection in updateValidatorSet"
+                        severity: "Medium"
+                        repo:
+                          url: "https://github.com/hyperliquid-dex/contracts"
+                          org: "hyperliquid-dex"
+                          name: "contracts"
+                          commit: "e0aff464865aa98c09450702d7fb36b1fcd4508c"
+                        taxonomy:
+                          swc: []
+                          cwe: []
+                          tags: []
+                        provenance:
+                          source_pdf: "2023-04-11-cyfrin-hyperliquid-dex-report.md"
+                          scvd_normalized_at: "2025-11-19T09:22:55.535778+00:00"
+                          scvd_normalizer_version: "poc-0.1"
+                        sections:
+                          description_md: "### Description\n\nThe `ecrecover` built-in will return `address(0)` ..."
+                          impact_md: "### Impact\n\nGiven the vulnerability described has a low likelihood..."
+                          recommendation_md: "### Recommended Mitigation\n\nAs mentioned above..."
+                    next_cursor: null
+        "400":
+          $ref: "#/components/responses/BadRequest"      
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  /findings/{scvd_id}:
+    get:
+      tags: [Findings]
+      summary: Get a single finding
+      operationId: getFinding
+      parameters:
+        - in: path
+          name: scvd_id
+          required: true
+          schema: { type: string }
+          example: SCVD-cyfrin_2023-04-11-cyfrin-hyperliquid-dex-report-001
+      responses:
+        "200":
+          description: Found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Finding" }
+              examples:
+                sampleFinding:
+                  summary: Cyfrin Hyperliquid M-01
+                  value:
+                    schema_version: "0.1"
+                    scvd_id: "SCVD-cyfrin_2023-04-11-cyfrin-hyperliquid-dex-report-001"
+                    doc_id: "cyfrin_2023-04-11-cyfrin-hyperliquid-dex-report"
+                    finding_index: 1
+                    title: "[M-01] Bad signature validation..."
+                    severity: "Medium"
+                    repo:
+                      url: "https://github.com/hyperliquid-dex/contracts"
+                    taxonomy: { swc: [], cwe: [], tags: [] }
+                    provenance:
+                      source_pdf: "2023-04-11-cyfrin-hyperliquid-dex-report.md"
+                      scvd_normalized_at: "2025-11-19T09:22:55.535778+00:00"
+                      scvd_normalizer_version: "poc-0.1"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /stats:
+    get:
+      tags: [Stats]
+      summary: Summary statistics for the corpus
+      operationId: getStats
+      parameters:
+        - in: query
+          name: since
+          schema: { type: string, format: date-time }
+        - in: query
+          name: until
+          schema: { type: string, format: date-time }
+      responses:
+        "200":
+          description: Counts & breakdowns
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totals:
+                    type: object
+                    properties:
+                      findings: { type: integer, example: 1242 }
+                      reports:  { type: integer, example: 78 }
+                  by_severity:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        level: { type: string, example: "High" }
+                        count: { type: integer, example: 233 }
+                  top_swc:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        swc: { type: string, example: "SWC-107" }
+                        count: { type: integer, example: 91 }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /snapshots:
+    get:
+      tags: [Snapshots]
+      summary: List available monthly snapshots
+      operationId: listSnapshots
+      responses:
+        "200":
+          description: Snapshot list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    period: { type: string, example: "2025-11" }
+                    url:    { type: string, format: uri, example: "https://api.scvd.local/v1/snapshots/2025-11" }
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /snapshots/{period}:
+    get:
+      tags: [Snapshots]
+      summary: Download a monthly snapshot
+      operationId: getSnapshot
+      parameters:
+        - in: path
+          name: period
+          required: true
+          schema: { type: string, pattern: "^[0-9]{4}-[0-9]{2}$" }
+          example: "2025-11"
+      responses:
+        "200":
+          description: Snapshot stream (JSON Lines)
+          content:
+            application/json:
+              schema:
+                type: string
+                description: JSON Lines stream of findings
+        "404":
+          $ref: "#/components/responses/NotFound"
+    
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    ServerError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code: { type: string, example: "bad_request" }
+        message: { type: string, example: "Invalid 'swc' parameter" }
+
+    # Compressed version of your SCVD v0.1 JSON Schema for OAS
+    Finding:
+      type: object
+      required: [schema_version, scvd_id, doc_id, finding_index, title, provenance]
+      properties:
+        schema_version: { type: string, const: "0.1" }
+        scvd_id: { type: string }
+        doc_id: { type: string }
+        finding_index: { type: [integer, string] }
+        page_start: { type: [integer, "null"] }
+        title: { type: string }
+        short_summary: { type: ["string","null"] }
+        description_md: { type: ["string","null"] }
+        full_markdown: { type: ["string","null"] }
+        severity:
+          type: ["string","null"]
+          enum: [Informational, Low, Medium, High, Critical, Not Critical, Gas, QA]
+        difficulty: { type: ["string","null"] }
+        type: { type: ["string","null"] }
+        finding_id: { type: ["string","null"] }
+        target:
+          type: object
+          required: [path]
+          properties:
+            path: { type: ["string","null"] }
+            language: { type: ["string","null"] }
+            chain: { type: ["string","null"] }
+            contract_name: { type: ["string","null"] }
+            contract_address: { type: ["string","null"] }
+            function: { type: ["string","null"] }
+            bytecode_hash: { type: ["string","null"] }
+            caip_id: { type: ["string","null"] }
+          additionalProperties: false
+        repo:
+          type: object
+          properties:
+            url: { type: ["string","null"] }
+            org: { type: ["string","null"] }
+            name: { type: ["string","null"] }
+            commit: { type: ["string","null"] }
+            branch: { type: ["string","null"] }
+            relative_file: { type: ["string","null"] }
+            lines:
+              anyOf:
+                - { type: "null" }
+                - type: array
+                  items: { type: integer }
+                  minItems: 2
+                  maxItems: 2
+          additionalProperties: false
+        taxonomy:
+          type: object
+          properties:
+            swc: { type: array, items: { type: string } }
+            cwe: { type: array, items: { type: string } }
+            tags: { type: array, items: { type: string } }
+          additionalProperties: false
+        status:
+          type: object
+          properties:
+            fix_status: { type: ["string","null"] }
+            fixed_in_commit: { type: ["string","null"] }
+            fixed_in_pr: { type: array, items: { type: string } }
+            exploited_in_the_wild: { type: ["boolean","null"] }
+            cvss: { type: ["string","number","object","null"] }
+            bounty_reference: { type: ["string","null"] }
+            fix_status_text_md: { type: ["string","null"] }
+          additionalProperties: false
+        references: { type: array, items: { type: string } }
+        provenance:
+          type: object
+          required: [scvd_normalized_at, scvd_normalizer_version]
+          properties:
+            source_pdf: { type: ["string","null"] }
+            source_mtime: { type: ["string","null"] }
+            report_extracted_at: { type: ["string","null"] }
+            report_extractor_version: { type: ["string","null"] }
+            report_extraction_tool: { type: ["string","null"] }
+            scvd_normalized_at: { type: string }
+            scvd_normalizer_version: { type: string }
+          additionalProperties: false
+        metadata_raw: { type: ["object","null"] }
+        sections:
+          type: object
+          properties:
+            description_md: { type: ["string","null"] }
+            impact_md: { type: ["string","null"] }
+            recommendation_md: { type: ["string","null"] }
+            poc_md: { type: ["string","null"] }
+            fix_status_md: { type: ["string","null"] }
+            other_md: { type: ["string","null"] }
+            full_markdown_body: { type: ["string","null"] }
+            markdown_raw: { type: ["string","null"] }
+          additionalProperties: false
+      additionalProperties: false
+      example:
+        schema_version: "0.1"
+        scvd_id: "SCVD-cyfrin_2023-04-11-cyfrin-hyperliquid-dex-report-001"
+        title: "[M-01] Bad signature validation..."
+        severity: "Medium"
+        doc_id: "cyfrin_2023-04-11-cyfrin-hyperliquid-dex-report"
+        repo: { url: "https://github.com/hyperliquid-dex/contracts" }
+        taxonomy: { swc: [], cwe: [], tags: [] }
+        provenance:
+          scvd_normalized_at: "2025-11-19T09:22:55.535778+00:00"
+          scvd_normalizer_version: "poc-0.1"
+
