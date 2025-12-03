@@ -1,0 +1,1132 @@
+{
+    "item": [
+        {
+            "id": "7bebb22a-5c1a-43c1-b8ef-fe35f5a5a030",
+            "name": "Health",
+            "request": {
+                "name": "Health",
+                "description": {},
+                "url": {
+                    "path": [
+                        "health"
+                    ],
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "query": [],
+                    "variable": []
+                },
+                "header": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ],
+                "method": "GET",
+                "body": {},
+                "auth": null
+            },
+            "response": [
+                {
+                    "id": "6f430cc8-5225-4797-b324-16ebfd19dea8",
+                    "name": "Successful Response",
+                    "originalRequest": {
+                        "url": {
+                            "path": [
+                                "health"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "",
+                    "cookie": [],
+                    "_postman_previewlanguage": "json"
+                }
+            ],
+            "event": [],
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            }
+        },
+        {
+            "id": "ed65048e-c6be-4012-9d05-df7ad7e03691",
+            "name": "List Findings",
+            "request": {
+                "name": "List Findings",
+                "description": {},
+                "url": {
+                    "path": [
+                        "findings"
+                    ],
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "query": [
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "",
+                                "type": "text/plain"
+                            },
+                            "key": "q",
+                            "value": "<string>"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "",
+                                "type": "text/plain"
+                            },
+                            "key": "swc",
+                            "value": "SWC-732"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "",
+                                "type": "text/plain"
+                            },
+                            "key": "cwe",
+                            "value": "CWE-21776692"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "One of: Informational, Low, Medium, High, Critical, Not Critical, Gas, QA",
+                                "type": "text/plain"
+                            },
+                            "key": "severity",
+                            "value": "<string>"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "",
+                                "type": "text/plain"
+                            },
+                            "key": "doc_id",
+                            "value": "<string>"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "CAIP-2 id, e.g. eip155:1",
+                                "type": "text/plain"
+                            },
+                            "key": "chain",
+                            "value": "<string>"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "",
+                                "type": "text/plain"
+                            },
+                            "key": "contract_address",
+                            "value": "<string>"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "substring match on repo.url",
+                                "type": "text/plain"
+                            },
+                            "key": "repo",
+                            "value": "<string>"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "ISO 8601 datetime",
+                                "type": "text/plain"
+                            },
+                            "key": "since",
+                            "value": "<string>"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "ISO 8601 datetime",
+                                "type": "text/plain"
+                            },
+                            "key": "until",
+                            "value": "<string>"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "",
+                                "type": "text/plain"
+                            },
+                            "key": "limit",
+                            "value": "100"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "",
+                                "type": "text/plain"
+                            },
+                            "key": "cursor",
+                            "value": "<string>"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "scvd_id|severity|doc_id|chain|normalized_at",
+                                "type": "text/plain"
+                            },
+                            "key": "sort",
+                            "value": "<string>"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "",
+                                "type": "text/plain"
+                            },
+                            "key": "order",
+                            "value": "desc"
+                        }
+                    ],
+                    "variable": []
+                },
+                "header": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ],
+                "method": "GET",
+                "body": {},
+                "auth": null
+            },
+            "response": [
+                {
+                    "id": "05032e0f-f77b-43db-92fb-d364ecc05f1e",
+                    "name": "Successful Response",
+                    "originalRequest": {
+                        "url": {
+                            "path": [
+                                "findings"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "q",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "swc",
+                                    "value": "SWC-732"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "cwe",
+                                    "value": "CWE-21776692"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "One of: Informational, Low, Medium, High, Critical, Not Critical, Gas, QA",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "severity",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "doc_id",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "CAIP-2 id, e.g. eip155:1",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "chain",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "contract_address",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "substring match on repo.url",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "repo",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "ISO 8601 datetime",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "since",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "ISO 8601 datetime",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "until",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "limit",
+                                    "value": "100"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "cursor",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "scvd_id|severity|doc_id|chain|normalized_at",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "sort",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "order",
+                                    "value": "desc"
+                                }
+                            ],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "",
+                    "cookie": [],
+                    "_postman_previewlanguage": "json"
+                },
+                {
+                    "id": "789d2dfb-08b1-4e6c-968b-ca09525ef4cd",
+                    "name": "Validation Error",
+                    "originalRequest": {
+                        "url": {
+                            "path": [
+                                "findings"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "q",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "swc",
+                                    "value": "SWC-732"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "cwe",
+                                    "value": "CWE-21776692"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "One of: Informational, Low, Medium, High, Critical, Not Critical, Gas, QA",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "severity",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "doc_id",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "CAIP-2 id, e.g. eip155:1",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "chain",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "contract_address",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "substring match on repo.url",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "repo",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "ISO 8601 datetime",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "since",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "ISO 8601 datetime",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "until",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "limit",
+                                    "value": "100"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "cursor",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "scvd_id|severity|doc_id|chain|normalized_at",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "sort",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "order",
+                                    "value": "desc"
+                                }
+                            ],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                    },
+                    "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+                    "code": 422,
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\"\n    },\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\"\n    }\n  ]\n}",
+                    "cookie": [],
+                    "_postman_previewlanguage": "json"
+                }
+            ],
+            "event": [],
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            }
+        },
+        {
+            "id": "249df320-2428-4598-a829-0b6500ad1b17",
+            "name": "Get Finding",
+            "request": {
+                "name": "Get Finding",
+                "description": {},
+                "url": {
+                    "path": [
+                        "findings",
+                        ":scvd_id"
+                    ],
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "query": [],
+                    "variable": [
+                        {
+                            "type": "any",
+                            "value": "<string>",
+                            "key": "scvd_id",
+                            "disabled": false,
+                            "description": {
+                                "content": "(Required) ",
+                                "type": "text/plain"
+                            }
+                        }
+                    ]
+                },
+                "header": [
+                    {
+                        "disabled": false,
+                        "description": {
+                            "content": "",
+                            "type": "text/plain"
+                        },
+                        "key": "x_api_key",
+                        "value": "<string>"
+                    },
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ],
+                "method": "GET",
+                "body": {},
+                "auth": null
+            },
+            "response": [
+                {
+                    "id": "66d2dfc0-a88c-4470-8c22-82f719feb5cf",
+                    "name": "Successful Response",
+                    "originalRequest": {
+                        "url": {
+                            "path": [
+                                "findings",
+                                ":scvd_id"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    },
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "scvd_id"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "disabled": false,
+                                "description": {
+                                    "content": "",
+                                    "type": "text/plain"
+                                },
+                                "key": "x_api_key",
+                                "value": "<string>"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "",
+                    "cookie": [],
+                    "_postman_previewlanguage": "json"
+                },
+                {
+                    "id": "cdbb4d37-a898-44f9-8f72-442e42afe7a5",
+                    "name": "Validation Error",
+                    "originalRequest": {
+                        "url": {
+                            "path": [
+                                "findings",
+                                ":scvd_id"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    },
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "scvd_id"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "disabled": false,
+                                "description": {
+                                    "content": "",
+                                    "type": "text/plain"
+                                },
+                                "key": "x_api_key",
+                                "value": "<string>"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                    },
+                    "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+                    "code": 422,
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\"\n    },\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\"\n    }\n  ]\n}",
+                    "cookie": [],
+                    "_postman_previewlanguage": "json"
+                }
+            ],
+            "event": [],
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            }
+        },
+        {
+            "id": "a0e28ad2-3526-472c-a3e1-c9d62120402d",
+            "name": "Get Stats",
+            "request": {
+                "name": "Get Stats",
+                "description": {},
+                "url": {
+                    "path": [
+                        "stats"
+                    ],
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "query": [
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "",
+                                "type": "text/plain"
+                            },
+                            "key": "since",
+                            "value": "<string>"
+                        },
+                        {
+                            "disabled": false,
+                            "description": {
+                                "content": "",
+                                "type": "text/plain"
+                            },
+                            "key": "until",
+                            "value": "<string>"
+                        }
+                    ],
+                    "variable": []
+                },
+                "header": [
+                    {
+                        "disabled": false,
+                        "description": {
+                            "content": "",
+                            "type": "text/plain"
+                        },
+                        "key": "x_api_key",
+                        "value": "<string>"
+                    },
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ],
+                "method": "GET",
+                "body": {},
+                "auth": null
+            },
+            "response": [
+                {
+                    "id": "01b9947d-0b56-4a2d-b252-a7779383bb69",
+                    "name": "Successful Response",
+                    "originalRequest": {
+                        "url": {
+                            "path": [
+                                "stats"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "since",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "until",
+                                    "value": "<string>"
+                                }
+                            ],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "disabled": false,
+                                "description": {
+                                    "content": "",
+                                    "type": "text/plain"
+                                },
+                                "key": "x_api_key",
+                                "value": "<string>"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "",
+                    "cookie": [],
+                    "_postman_previewlanguage": "json"
+                },
+                {
+                    "id": "4c53c377-ccbc-41ba-97de-6dce5bf32551",
+                    "name": "Validation Error",
+                    "originalRequest": {
+                        "url": {
+                            "path": [
+                                "stats"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "since",
+                                    "value": "<string>"
+                                },
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "",
+                                        "type": "text/plain"
+                                    },
+                                    "key": "until",
+                                    "value": "<string>"
+                                }
+                            ],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "disabled": false,
+                                "description": {
+                                    "content": "",
+                                    "type": "text/plain"
+                                },
+                                "key": "x_api_key",
+                                "value": "<string>"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                    },
+                    "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+                    "code": 422,
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\"\n    },\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\"\n    }\n  ]\n}",
+                    "cookie": [],
+                    "_postman_previewlanguage": "json"
+                }
+            ],
+            "event": [],
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            }
+        },
+        {
+            "id": "2818a161-e692-43f5-b7c9-253374eec1a3",
+            "name": "List Snapshots",
+            "request": {
+                "name": "List Snapshots",
+                "description": {},
+                "url": {
+                    "path": [
+                        "snapshots"
+                    ],
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "query": [],
+                    "variable": []
+                },
+                "header": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ],
+                "method": "GET",
+                "body": {},
+                "auth": null
+            },
+            "response": [
+                {
+                    "id": "6fc5c707-3d1d-47ff-8e20-676c76be197d",
+                    "name": "Successful Response",
+                    "originalRequest": {
+                        "url": {
+                            "path": [
+                                "snapshots"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "",
+                    "cookie": [],
+                    "_postman_previewlanguage": "json"
+                }
+            ],
+            "event": [],
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            }
+        },
+        {
+            "id": "dc454d19-7e43-4641-986e-ee9be67846d4",
+            "name": "Get Snapshot",
+            "request": {
+                "name": "Get Snapshot",
+                "description": {},
+                "url": {
+                    "path": [
+                        "snapshots",
+                        ":period"
+                    ],
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "query": [],
+                    "variable": [
+                        {
+                            "type": "any",
+                            "value": "<string>",
+                            "key": "period",
+                            "disabled": false,
+                            "description": {
+                                "content": "(Required) ",
+                                "type": "text/plain"
+                            }
+                        }
+                    ]
+                },
+                "header": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ],
+                "method": "GET",
+                "body": {},
+                "auth": null
+            },
+            "response": [
+                {
+                    "id": "28653166-27f9-47d4-886c-07d2d3eb4f1f",
+                    "name": "Successful Response",
+                    "originalRequest": {
+                        "url": {
+                            "path": [
+                                "snapshots",
+                                ":period"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    },
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "period"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                    },
+                    "status": "OK",
+                    "code": 200,
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "",
+                    "cookie": [],
+                    "_postman_previewlanguage": "json"
+                },
+                {
+                    "id": "a9a0a64e-b6b2-430f-b45e-dc5eb258ed91",
+                    "name": "Validation Error",
+                    "originalRequest": {
+                        "url": {
+                            "path": [
+                                "snapshots",
+                                ":period"
+                            ],
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "disabled": false,
+                                    "description": {
+                                        "content": "(Required) ",
+                                        "type": "text/plain"
+                                    },
+                                    "type": "any",
+                                    "value": "<string>",
+                                    "key": "period"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "method": "GET",
+                        "body": {}
+                    },
+                    "status": "Unprocessable Entity (WebDAV) (RFC 4918)",
+                    "code": 422,
+                    "header": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "body": "{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\"\n    },\n    {\n      \"loc\": [\n        \"<string>\",\n        \"<string>\"\n      ],\n      \"msg\": \"<string>\",\n      \"type\": \"<string>\"\n    }\n  ]\n}",
+                    "cookie": [],
+                    "_postman_previewlanguage": "json"
+                }
+            ],
+            "event": [],
+            "protocolProfileBehavior": {
+                "disableBodyPruning": true
+            }
+        }
+    ],
+    "event": [],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "/"
+        }
+    ],
+    "info": {
+        "_postman_id": "db8b1eac-f1f3-404a-ada7-61d8658ebf83",
+        "name": "SCVD API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": {
+            "content": "",
+            "type": "text/plain"
+        }
+    }
+}
