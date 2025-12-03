@@ -2,34 +2,34 @@
 
 This repo contains a proof-of-concept pipeline for turning **smart contract audit PDFs** (and some native Markdown reports) into a normalized schema (`SCVD v0.1`), plus:
 
-- a per-report extractor,
-- a normalizer to SCVD records,
-- a JSON Schema validator, and
-- a local Streamlit dashboard.
+* a per-report extractor,
+* a normalizer to SCVD records,
+* a JSON Schema validator, and
+* a local Streamlit dashboard.
 
 The main flow:
 
-1. `extract_report.py`  
+1. `extract_report.py`
    PDF/Markdown → report JSON (per report)
 
-2. `normalize_report.py`  
+2. `normalize_report.py`
    report JSON → normalized findings (one SCVD record per line, JSONL)
 
-3. `validate_scvd.py`  
+3. `validate_scvd.py`
    Validate normalized findings against the SCVD v0.1 JSON Schema
 
-4. `dashboard.py`  
+4. `dashboard.py`
    Local visual explorer (Streamlit) over normalized findings
 
-5. `run_pipeline.py`  
+5. `run_pipeline.py`
    Orchestrate extract → normalize → validate for a whole tree of reports
 
 ---
 
 ## Requirements
 
-- Python 3.10+ (3.11 recommended)
-- Dependencies (minimal set):
+* Python 3.10+ (3.11 recommended)
+* Dependencies (minimal set):
 
 ```bash
 pip install \
@@ -37,7 +37,7 @@ pip install \
   pandas \
   streamlit \
   jsonschema
-````
+```
 
 * For PDF extraction:
 
@@ -194,7 +194,6 @@ Then pass the env var name to the CLI (defaults to `GITHUB_TOKEN`):
 > Tip: verify the token works
 > `curl -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/rate_limit`
 
-
 ---
 
 ## 2. `normalize_report.py`
@@ -338,8 +337,6 @@ Streamlit will print a URL, usually:
 
 * `http://localhost:8501`
 
-Open that in your browser.
-
 ### 4.3 What you’ll see
 
 * **Overview:**
@@ -347,11 +344,9 @@ Open that in your browser.
   * Total number of findings.
   * Number of unique reports (`doc_id`).
   * Number of unique repositories.
-
 * **Chart:**
 
   * Bar chart of findings by severity.
-
 * **Table:**
 
   * All findings, with columns:
@@ -365,7 +360,6 @@ Open that in your browser.
     * `type`
     * target path (`target.path`)
     * repo URL (`repo.url`)
-
 * **Detail view:**
 
   * Select one `scvd_id` and see:
@@ -481,7 +475,6 @@ This will write:
   next to the input file, and
 * optionally validate that single `*.scvd.jsonl` (unless `--skip-validate` is set).
 
-
 ### 6.3 Directory mode **+** Code4rena repos (most convenient)
 
 Runs PDFs/MDs **and** Code4rena ingestion in one go, then combines outputs.
@@ -531,127 +524,6 @@ Outputs and combined corpus are written under the same `data/extracted` / `data/
 
 ---
 
-## 1. `extract_report.py` (standalone Code4rena mode)
-
-You can also generate **just** the synthetic `report.json` files without running normalization:
-
-```bash
-python -m scvd.extract_report \
-  --code4rena-repos data/raw/code4rena/repos.txt \
-  --out-dir data \
-  --github-token-env GITHUB_TOKEN \
-  -v
-```
-
-**Output layout (standalone mode):**
-
-* `data/c4/<owner>/<repo>/report.json`
-
-> Note: When you run through `run_pipeline.py`, the extractor writes under
-> `data/extracted/code4rena/...` for consistency with the rest of the pipeline.
-> The standalone path uses `data/c4/...` by default.
-
-You can then normalize manually:
-
-```bash
-python normalize_report.py data/c4/<owner>/<repo>/report.json \
-  --out data/normalized/code4rena/<owner>/<repo>/report.scvd.jsonl
-```
-
----
-
-## Code4rena ingestion details (filters, mapping, rate limits)
-
-**Filters we apply (to skip non-findings):**
-
-* **Must have ≥ 1 label.** Issues with no labels are ignored.
-* **Skip by labels:** if any label matches *QA / Quality Assurance* or *Gas Optimization(s)*, or is explicitly *invalid / unsatisfactory*, the issue is skipped.
-* **Title safety-net:** if the title contains “QA Report” or “Gas Optimizations”, we skip it even if labels are odd.
-
-**Severity & categorization (best effort from labels):**
-
-* Severity keywords in labels are mapped to `Critical / High / Medium / Low`.
-* A coarse `Type`/category is inferred (e.g., `"bug"`, `"qa"`, `"gas"`) when present.
-
-**State selection:**
-
-* By default the pipeline fetches **all** issues.
-* Use `--c4-state open` or `--c4-open-only` to pull only open issues.
-
-**Backoff & rate limits:**
-
-* Requests use a small backoff strategy:
-
-  * If GitHub’s primary rate limit is hit, we wait until `X-RateLimit-Reset`.
-  * If `Retry-After` is present (secondary limit/abuse), we honor it.
-  * Transient 429/502/503/504 → exponential backoff with jitter.
-* A **token is strongly recommended** to avoid 401s and low unauthenticated limits.
-
-**Synthetic report shape**
-
-Each repo becomes a single `report.json` with:
-
-```json
-{
-  "doc_id": "github:<owner>/<repo>",
-  "source_pdf": "github:<owner>/<repo>",
-  "extractor_version": "github-issues-0.1",
-  "repositories": [ ... ],                 // GH links found across issue bodies
-  "report_schema": [ ... ],                // default schema (Severity/Difficulty/Type/ID/Target)
-  "vulnerability_sections": [
-    {
-      "index": <issue_number>,
-      "heading": "<issue_number>. <issue title>",
-      "heading_cleaned": "<issue title>",
-      "markdown": "<issue body (cleaned)>",
-      "markdown_raw": "<issue body raw>",
-      "sections": {                        // description/impact/poc/recommendation/fix_status/other
-        "description": "...",
-        "impact": "...",
-        "poc": "...",
-        "recommendation": "...",
-        "fix_status": "...",
-        "other": "..."
-      },
-      "metadata": {
-        "Severity": "<mapped-from-labels-or-null>",
-        "Difficulty": null,
-        "Type": "<category-or-null>",
-        "Finding ID": null,
-        "Target": null
-      }
-    }
-  ]
-}
-```
-
-The **normalizer** (`normalize_report.py`) then turns each item into an SCVD v0.1 record exactly like it does for PDFs/MD.
-
----
-
-## Troubleshooting
-
-* **401 Unauthorized**
-  Your token is missing/invalid (or the repo is private). Export a valid token:
-
-  ```bash
-  export GITHUB_TOKEN=ghp_yourtokenhere
-  ```
-
-  And pass `--github-token-env GITHUB_TOKEN`.
-
-* **403 rate-limit / “secondary rate limit”**
-  You’re hitting GitHub API limits. The tool backs off automatically, but using a token helps a lot.
-
-* **“No issues processed”**
-  Check your filters: issues with *no labels*, or with *QA/Gas/invalid/unsatisfactory* labels (or titles like “QA Report” / “Gas Optimizations”) are intentionally skipped.
-
-* **Where to put `repos.txt`?**
-  Anywhere. We commonly use `data/raw/code4rena/repos.txt` and pass that path to `--code4rena-repos`.
-
-
----
-
 ## 7. Notes / Future work
 
 * `taxonomy.swc`, `taxonomy.cwe`, and many `target` / `status` fields are defined in the schema
@@ -660,3 +532,95 @@ The **normalizer** (`normalize_report.py`) then turns each item into an SCVD v0.
 * The pipeline is **read-only**: it never writes back into PDFs or source repos.
 * JSONL (`*.scvd.jsonl`) and the SCVD JSON Schema are the main artifacts meant for
   discussion, experimentation, and future standardization of smart contract vulnerability data.
+
+---
+
+## 8. Local API (FastAPI)
+
+This repo also includes a lightweight read-only API to serve normalized findings.
+
+### 8.1 Install API deps
+
+```bash
+pip install "fastapi>=0.103" "uvicorn[standard]>=0.23" "python-dateutil>=2.8" "PyYAML>=6.0"
+```
+
+### 8.2 Run the server
+
+From the repository root (`scvd/`):
+
+```bash
+uvicorn api.app:app --reload --host 127.0.0.1 --port 8000
+```
+
+> If you move things around, point to the module path of your app file, e.g. `uvicorn scvd.api.app:app --reload`.
+
+### 8.3 Environment variables (optional)
+
+* `SCVD_DATA_JSONL` — path to combined findings file (default: `data/normalized/combined/all_findings.jsonl`)
+* `SCVD_SNAPSHOTS_DIR` — directory for monthly JSONL snapshots (default: `data/snapshots`)
+* `SCVD_API_KEY` — **optional**. If set, the API will require `X-API-Key` for access.
+  If unset, the API is public (recommended for PoC).
+
+### 8.4 API docs & endpoints
+
+* Swagger UI: `http://127.0.0.1:8000/docs`
+* ReDoc: `http://127.0.0.1:8000/redoc`
+* Raw spec: `http://127.0.0.1:8000/openapi.json`
+
+Main endpoints:
+
+* `GET /health` — health check (`{"status":"ok","loaded": N}`)
+* `GET /findings` — list with filters, pagination via `X-Next-Cursor`
+* `GET /findings/{scvd_id}` — single record
+* `GET /stats` — corpus summary
+* `GET /snapshots` — list available monthly snapshots
+* `GET /snapshots/{period}` — download a snapshot (JSON Lines stream)
+
+### 8.5 Examples (curl)
+
+```bash
+# Health
+curl http://127.0.0.1:8000/health
+
+# One Medium finding (limit 1)
+curl "http://127.0.0.1:8000/findings?severity=Medium&limit=1" | jq .
+
+# Free-text search
+curl "http://127.0.0.1:8000/findings?q=malleability&limit=5" | jq .
+
+# Pagination
+FIRST=$(curl -i -s "http://127.0.0.1:8000/findings?limit=1" | tee /dev/tty | awk -F': ' '/X-Next-Cursor/{print $2}' | tr -d '\r')
+curl "http://127.0.0.1:8000/findings?limit=1&cursor=$FIRST" | jq .
+
+# Snapshots
+curl http://127.0.0.1:8000/snapshots | jq .
+curl http://127.0.0.1:8000/snapshots/2025-11 -o 2025-11.jsonl
+```
+
+### 8.6 Postman (import from OpenAPI)
+
+**Option A: Postman UI**
+
+1. Run the API locally.
+2. In Postman, **Import → Link** and paste `http://127.0.0.1:8000/openapi.json` (or import the YAML file).
+3. Choose **Generate collection**. Folder strategy **Tags** works well.
+
+**Option B: CLI → collection file**
+
+```bash
+npm i -g openapi-to-postmanv2
+curl http://127.0.0.1:8000/openapi.json -o openapi.json
+openapi2postmanv2 -s openapi.json -o scvd.postman_collection.json -p -O folderStrategy=Tags
+```
+
+Import `scvd.postman_collection.json` into Postman.
+
+> Swagger UI examples troubleshooting: if examples don’t render, either (1) use OpenAPI `3.0.3` + `nullable`, or (2) keep `3.1.0` and replace `type: [string, "null"]` with `oneOf` and add a top-level `example:` under the media type.
+
+---
+
+## License
+
+* Schema and code in this repo are provided under the license(s) noted in the repository (see `LICENSE` if present).
+* Example data and monthly snapshots are intended for experimentation and may include third‑party content—verify redistribution rights before publishing outside your lab/test setup.
