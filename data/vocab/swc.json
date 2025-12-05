@@ -1,0 +1,697 @@
+{
+  "schema_version": "1.0",
+  "namespace": "SWC",
+  "generated_at": "2025-12-04T00:00:00Z",
+  "about": {
+    "purpose": "Canonical, pinned list of Smart Contract Weakness Classification (SWC) entries for local use in SCVD normalization and tagging. Each SWC is enriched with aliases/keywords/solidity_signals/regex/anti_keywords/regex_negative to enable deterministic pre-LLM tagging, plus CWE mappings for interop.",
+    "how_to_use": [
+      "Load once at startup; treat IDs/titles as canonical.",
+      "During normalization, score each finding’s title/body against items’ keywords/solidity_signals/regex (apply weights from matching_defaults); subtract for anti_keywords and regex_negative.",
+      "Attach the best SWC(s) above a threshold; when an SWC is applied, auto-attach its mapped CWE(s) (relationships.cwe).",
+      "Use an LLM (e.g., Qwen) only to break ties among top-N or when no rule clears the threshold; never as the sole classifier."
+    ],
+    "notes": [
+      "The public SWC registry has not been actively maintained since ~2020. Keep this file versioned and add local overrides as needed (e.g., EthTrust/SCSVS guidance)."
+    ]
+  },
+  "source": {
+    "upstream": "https://swcregistry.io/",
+    "captured_at": "2025-12-04T00:00:00Z"
+  },
+  "matching_defaults": {
+    "regex_flags": "im",
+    "weights": {
+      "keyword": 1.0,
+      "signal": 1.5,
+      "regex": 2.0,
+      "anti_keyword": -1.0,
+      "regex_negative": -2.0
+    },
+    "field_boosts": {
+      "title": 1.5,
+      "description": 1.0,
+      "poc": 1.0,
+      "impact": 0.8,
+      "other": 0.5
+    }
+  },
+  "fields": {
+    "id": "SWC identifier (e.g., SWC-107)",
+    "title": "Official SWC title",
+    "url": "SWC definition page",
+    "relationships": {
+      "cwe": [
+        { "id": "Mapped CWE ID", "title": "CWE title", "url": "CWE page", "source": "index|detail|editor_note", "confidence": 0.0 }
+      ]
+    },
+    "aliases": "Common alternate names used in reports",
+    "keywords": "Plain-language phrases to search in titles/prose",
+    "solidity_signals": "Solidity APIs/opcodes/tokens indicative of this weakness",
+    "regex": "Regular expressions for precise patterns; JSON-escaped",
+    "regex_negative": "Negative (mitigation/safe pattern) regexes; JSON-escaped",
+    "anti_keywords": "Phrases that often indicate mitigations/safe patterns (negative weight)",
+    "refs": "Canonical references (SWC page and optionally best-practice docs)"
+  },
+  "items": [
+    {
+      "id": "SWC-136",
+      "title": "Unencrypted Private Data On-Chain",
+      "url": "https://swcregistry.io/docs/SWC-136/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-767", "title": "Access to Critical Private Variable via Public Method", "url": "https://cwe.mitre.org/data/definitions/767.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["on-chain secret leakage", "private is not secret", "unencrypted storage"],
+      "keywords": ["private variables visible", "sensitive data in events", "no encryption at rest"],
+      "solidity_signals": ["private", "event", "storage"],
+      "regex": [],
+      "regex_negative": [],
+      "anti_keywords": ["commit-reveal", "encrypt off-chain", "zero-knowledge", "zk proof"],
+      "refs": ["https://swcregistry.io/docs/SWC-136/"]
+    },
+    {
+      "id": "SWC-135",
+      "title": "Code With No Effects",
+      "url": "https://swcregistry.io/docs/SWC-135/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-1164", "title": "Irrelevant Code", "url": "https://cwe.mitre.org/data/definitions/1164.html", "source": "index", "confidence": 0.9 },
+          { "id": "CWE-710", "title": "Improper Adherence to Coding Standards", "url": "https://cwe.mitre.org/data/definitions/710.html", "source": "detail", "confidence": 0.6 }
+        ]
+      },
+      "aliases": ["dead code", "no-op code", "code without side-effects"],
+      "keywords": ["no effect", "unused return value ignored", "statement has no effect"],
+      "solidity_signals": [],
+      "regex": ["\\b[a-zA-Z_]\\w*\\s*\\([^;]*\\);\\s*(?://\\s*ignore|//\\s*no[- ]?op)?"],
+      "regex_negative": [],
+      "anti_keywords": ["emit", "state change", "return used"],
+      "refs": ["https://swcregistry.io/docs/SWC-135/"]
+    },
+    {
+      "id": "SWC-134",
+      "title": "Message call with hardcoded gas amount",
+      "url": "https://swcregistry.io/docs/SWC-134/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-655", "title": "Improper Initialization", "url": "https://cwe.mitre.org/data/definitions/655.html", "source": "index", "confidence": 0.8 }
+        ]
+      },
+      "aliases": ["fixed gas stipend", "hardcoded gas for call"],
+      "keywords": ["hardcoded gas", "insufficient gas", "gas brittle"],
+      "solidity_signals": [".call{gas:", "gasleft(", ".transfer(", ".send("],
+      "regex": [
+        "\\.call\\s*\\{[^}]*\\bgas\\s*:\\s*\\d+[^}]*\\}",
+        "\\.transfer\\s*\\(",
+        "\\.send\\s*\\("
+      ],
+      "regex_negative": [],
+      "anti_keywords": ["gasleft() checked", "configurable gas"],
+      "refs": ["https://swcregistry.io/docs/SWC-134/"]
+    },
+    {
+      "id": "SWC-133",
+      "title": "Hash Collisions With Multiple Variable Length Arguments",
+      "url": "https://swcregistry.io/docs/SWC-133/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-294", "title": "Authentication Bypass by Capture-replay", "url": "https://cwe.mitre.org/data/definitions/294.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["abi.encodePacked collision", "packed encoding collision"],
+      "keywords": ["hash collision", "signature bypass", "variable length arguments"],
+      "solidity_signals": ["abi.encodePacked(", "keccak256("],
+      "regex": ["keccak256\\s*\\(\\s*abi\\.encodePacked\\s*\\(", "abi\\.encodePacked\\s*\\([^)]*(string|bytes)[^)]*,[^)]*(string|bytes)"],
+      "regex_negative": ["abi\\.encode\\s*\\("],
+      "anti_keywords": ["abi.encode", "fixed length types", "nonce used"],
+      "refs": ["https://swcregistry.io/docs/SWC-133/"]
+    },
+    {
+      "id": "SWC-132",
+      "title": "Unexpected Ether balance",
+      "url": "https://swcregistry.io/docs/SWC-132/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-667", "title": "Improper Locking", "url": "https://cwe.mitre.org/data/definitions/667.html", "source": "index", "confidence": 0.8 }
+        ]
+      },
+      "aliases": ["unexpected ether", "forced ether", "balance mismatch"],
+      "keywords": ["unexpected balance", "selfdestruct to contract", "griefing via forced ETH"],
+      "solidity_signals": ["address(this).balance", "receive()", "fallback()", "selfdestruct("],
+      "regex": ["address\\(this\\)\\.balance", "\\bselfdestruct\\s*\\("],
+      "regex_negative": [],
+      "anti_keywords": ["withdraw pattern with check", "sweep function handles extra balance"],
+      "refs": ["https://swcregistry.io/docs/SWC-132/"]
+    },
+    {
+      "id": "SWC-131",
+      "title": "Presence of unused variables",
+      "url": "https://swcregistry.io/docs/SWC-131/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-1164", "title": "Irrelevant Code", "url": "https://cwe.mitre.org/data/definitions/1164.html", "source": "index", "confidence": 0.8 }
+        ]
+      },
+      "aliases": ["unused variables", "dead variable"],
+      "keywords": ["variable never used", "unused state", "unused parameter"],
+      "solidity_signals": [],
+      "regex": [],
+      "regex_negative": [],
+      "anti_keywords": ["_unused", "silence warning via underscore"],
+      "refs": ["https://swcregistry.io/docs/SWC-131/"]
+    },
+    {
+      "id": "SWC-130",
+      "title": "Right-To-Left-Override control character (U+202E)",
+      "url": "https://swcregistry.io/docs/SWC-130/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-451", "title": "User Interface (UI) Misrepresentation of Critical Information", "url": "https://cwe.mitre.org/data/definitions/451.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["RTL override", "U+202E trick", "bidirectional override"],
+      "keywords": ["right-to-left override", "unicode control char", "filename spoofing"],
+      "solidity_signals": [],
+      "regex": ["\\u202E"],
+      "regex_negative": [],
+      "anti_keywords": ["unicode sanitizer", "bidirectional characters disallowed"],
+      "refs": ["https://swcregistry.io/docs/SWC-130/"]
+    },
+    {
+      "id": "SWC-129",
+      "title": "Typographical Error",
+      "url": "https://swcregistry.io/docs/SWC-129/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-480", "title": "Use of Incorrect Operator", "url": "https://cwe.mitre.org/data/definitions/480.html", "source": "index", "confidence": 0.8 }
+        ]
+      },
+      "aliases": ["typo", "copy-paste error"],
+      "keywords": ["misspelling leads to bug", "wrong identifier", "incorrect operator"],
+      "solidity_signals": [],
+      "regex": ["\\brequire\\s*\\(\\s*[a-zA-Z_]\\w*\\s*=\\s*[^\\)=]+\\)"],
+      "regex_negative": [],
+      "anti_keywords": ["linters", "slither finding fixed"],
+      "refs": ["https://swcregistry.io/docs/SWC-129/"]
+    },
+    {
+      "id": "SWC-128",
+      "title": "DoS With Block Gas Limit",
+      "url": "https://swcregistry.io/docs/SWC-128/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-400", "title": "Uncontrolled Resource Consumption", "url": "https://cwe.mitre.org/data/definitions/400.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["gas limit DoS", "unbounded loop DoS"],
+      "keywords": ["unbounded iteration", "too many iterations", "batch too large"],
+      "solidity_signals": ["for (", "while (", "array.length"],
+      "regex": ["for\\s*\\(", "while\\s*\\(", "\\.length"],
+      "regex_negative": ["for\\s*\\([^)]*;[^)]*;\\s*i\\s*\\+\\+\\)\\s*\\{[^}]*gasleft\\s*\\("],
+      "anti_keywords": ["pagination", "cap on loop", "gas estimate checked"],
+      "refs": ["https://swcregistry.io/docs/SWC-128/"]
+    },
+    {
+      "id": "SWC-127",
+      "title": "Arbitrary Jump with Function Type Variable",
+      "url": "https://swcregistry.io/docs/SWC-127/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-695", "title": "Use of Low-Level Functionality", "url": "https://cwe.mitre.org/data/definitions/695.html", "source": "index", "confidence": 0.8 }
+        ]
+      },
+      "aliases": ["function pointer jump", "arbitrary jump"],
+      "keywords": ["function type variable", "indirect call unsafe", "JUMP to user-controlled"],
+      "solidity_signals": ["function(", ".selector", "assembly { jump"],
+      "regex": ["delegatecall\\s*\\(", "assembly\\s*\\{[^}]*jump[^}]*\\}"],
+      "regex_negative": [],
+      "anti_keywords": ["whitelisted target", "internal function fixed"],
+      "refs": ["https://swcregistry.io/docs/SWC-127/"]
+    },
+    {
+      "id": "SWC-126",
+      "title": "Insufficient Gas Griefing",
+      "url": "https://swcregistry.io/docs/SWC-126/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-691", "title": "Insufficient Control Flow Management", "url": "https://cwe.mitre.org/data/definitions/691.html", "source": "index", "confidence": 0.8 }
+        ]
+      },
+      "aliases": ["insufficient gas griefing", "2300 stipend griefing"],
+      "keywords": ["grief with gas", "victim cannot receive", "send/transfer failure causes revert"],
+      "solidity_signals": [".transfer(", ".send(", "gasleft("],
+      "regex": ["\\.transfer\\s*\\(", "\\.send\\s*\\("],
+      "regex_negative": [],
+      "anti_keywords": ["pull payments", "withdraw pattern", "reentrancy guard + pull"],
+      "refs": ["https://swcregistry.io/docs/SWC-126/"]
+    },
+    {
+      "id": "SWC-125",
+      "title": "Incorrect Inheritance Order",
+      "url": "https://swcregistry.io/docs/SWC-125/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-696", "title": "Incorrect Behavior Order", "url": "https://cwe.mitre.org/data/definitions/696.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["wrong inheritance order", "linearization issue"],
+      "keywords": ["C3 linearization", "diamond inheritance", "base contract order"],
+      "solidity_signals": ["contract X is A, B"],
+      "regex": ["contract\\s+[A-Za-z_]\\w*\\s+is\\s+[A-Za-z_]\\w*(\\s*,\\s*[A-Za-z_]\\w*)+"],
+      "regex_negative": [],
+      "anti_keywords": ["explicit order justified", "solc warning addressed"],
+      "refs": ["https://swcregistry.io/docs/SWC-125/"]
+    },
+    {
+      "id": "SWC-124",
+      "title": "Write to Arbitrary Storage Location",
+      "url": "https://swcregistry.io/docs/SWC-124/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-123", "title": "Write-what-where Condition", "url": "https://cwe.mitre.org/data/definitions/123.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["arbitrary storage write", "sstore primitive misuse"],
+      "keywords": ["write-what-where", "storage corruption", "index controlled"],
+      "solidity_signals": ["assembly { sstore", ".delegatecall("],
+      "regex": ["assembly\\s*\\{[^}]*sstore", "\\.delegatecall\\s*\\("],
+      "regex_negative": [],
+      "anti_keywords": ["bounds checked index", "mapping key validated"],
+      "refs": ["https://swcregistry.io/docs/SWC-124/"]
+    },
+    {
+      "id": "SWC-123",
+      "title": "Requirement Violation",
+      "url": "https://swcregistry.io/docs/SWC-123/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-573", "title": "Improper Following of Specification by Caller", "url": "https://cwe.mitre.org/data/definitions/573.html", "source": "index", "confidence": 0.8 }
+        ]
+      },
+      "aliases": ["requirement violation", "missing require", "incorrect require"],
+      "keywords": ["precondition not enforced", "missing validation", "unchecked assumption"],
+      "solidity_signals": ["require(", "revert("],
+      "regex": [],
+      "regex_negative": [],
+      "anti_keywords": ["full input validation", "proper preconditions"],
+      "refs": ["https://swcregistry.io/docs/SWC-123/"]
+    },
+    {
+      "id": "SWC-122",
+      "title": "Lack of Proper Signature Verification",
+      "url": "https://swcregistry.io/docs/SWC-122/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-345", "title": "Insufficient Verification of Data Authenticity", "url": "https://cwe.mitre.org/data/definitions/345.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["improper signature verification", "weak signature checks"],
+      "keywords": ["missing signer check", "message not bound", "domain separation missing"],
+      "solidity_signals": ["ecrecover(", "ECDSA.recover("],
+      "regex": ["ecrecover\\s*\\(", "ECDSA\\.recover\\s*\\("],
+      "regex_negative": ["\\bEIP-712\\b", "\\bnonce\\b", "\\bchainId\\b"],
+      "anti_keywords": ["EIP-712 domain separator", "chainId bound", "nonce"],
+      "refs": ["https://swcregistry.io/docs/SWC-122/"]
+    },
+    {
+      "id": "SWC-121",
+      "title": "Missing Protection against Signature Replay Attacks",
+      "url": "https://swcregistry.io/docs/SWC-121/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-347", "title": "Improper Verification of Cryptographic Signature", "url": "https://cwe.mitre.org/data/definitions/347.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["signature replay", "replay attack"],
+      "keywords": ["nonce missing", "replay across chains", "no expiration"],
+      "solidity_signals": ["ecrecover(", "ECDSA.recover("],
+      "regex": ["ecrecover\\s*\\(", "ECDSA\\.recover\\s*\\("],
+      "regex_negative": ["\\bnonce\\b", "\\bdeadline\\b", "\\bchainId\\b", "\\bEIP-712\\b"],
+      "anti_keywords": ["nonce used", "deadline", "chainId included", "EIP-712"],
+      "refs": ["https://swcregistry.io/docs/SWC-121/"]
+    },
+    {
+      "id": "SWC-120",
+      "title": "Weak Sources of Randomness from Chain Attributes",
+      "url": "https://swcregistry.io/docs/SWC-120/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-330", "title": "Use of Insufficiently Random Values", "url": "https://cwe.mitre.org/data/definitions/330.html", "source": "index", "confidence": 0.95 }
+        ]
+      },
+      "aliases": ["predictable randomness", "insecure RNG", "on-chain randomness"],
+      "keywords": ["randomness from blockhash", "randomness from timestamp", "miner influence"],
+      "solidity_signals": ["blockhash(", "block.timestamp", "block.difficulty", "keccak256("],
+      "regex": ["keccak256\\s*\\(\\s*abi?\\.?(encodePacked\\s*\\()?\\s*(blockhash\\(|block\\.timestamp|block\\.difficulty)"],
+      "regex_negative": ["\\b(VRFCoordinator|VRFConsumerBase|requestRandomness|fulfillRandomness)\\b"],
+      "anti_keywords": ["VRF", "commit-reveal", "RANDAO", "oracle randomness"],
+      "refs": ["https://swcregistry.io/docs/SWC-120/"]
+    },
+    {
+      "id": "SWC-119",
+      "title": "Shadowing State Variables",
+      "url": "https://swcregistry.io/docs/SWC-119/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-710", "title": "Improper Adherence to Coding Standards", "url": "https://cwe.mitre.org/data/definitions/710.html", "source": "index", "confidence": 0.8 }
+        ]
+      },
+      "aliases": ["variable shadowing", "state shadowing"],
+      "keywords": ["variable shadows state", "name collision", "ambiguous reference"],
+      "solidity_signals": [],
+      "regex": [],
+      "regex_negative": [],
+      "anti_keywords": ["distinct names", "explicit this."],
+      "refs": ["https://swcregistry.io/docs/SWC-119/"]
+    },
+    {
+      "id": "SWC-118",
+      "title": "Incorrect Constructor Name",
+      "url": "https://swcregistry.io/docs/SWC-118/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-665", "title": "Improper Initialization", "url": "https://cwe.mitre.org/data/definitions/665.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["old-style constructor", "constructor name typo"],
+      "keywords": ["pre-0.4.22 constructor", "function named as contract", "initialization not called"],
+      "solidity_signals": ["constructor("],
+      "regex": ["\\bfunction\\s+[A-Za-z_]\\w*\\s*\\("],
+      "regex_negative": ["\\bconstructor\\s*\\("],
+      "anti_keywords": ["solidity >=0.4.22 with constructor keyword"],
+      "refs": ["https://swcregistry.io/docs/SWC-118/"]
+    },
+    {
+      "id": "SWC-117",
+      "title": "Signature Malleability",
+      "url": "https://swcregistry.io/docs/SWC-117/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-347", "title": "Improper Verification of Cryptographic Signature", "url": "https://cwe.mitre.org/data/definitions/347.html", "source": "index", "confidence": 0.95 }
+        ]
+      },
+      "aliases": ["ECDSA malleability", "malleable signatures"],
+      "keywords": ["s-value not canonical", "v not in {27,28}", "non-unique signature"],
+      "solidity_signals": ["ecrecover(", "ECDSA.recover("],
+      "regex": ["ecrecover\\s*\\(", "ECDSA\\.recover\\s*\\("],
+      "regex_negative": ["require\\s*\\(\\s*uint256\\(s\\)\\s*<=\\s*0x[0-9a-fA-F]+\\s*\\)", "\\bOpenZeppelin\\b.*\\bECDSA\\b"],
+      "anti_keywords": ["require(uint256(s) <= n/2)", "OpenZeppelin ECDSA"],
+      "refs": ["https://swcregistry.io/docs/SWC-117/"]
+    },
+    {
+      "id": "SWC-116",
+      "title": "Block values as a proxy for time",
+      "url": "https://swcregistry.io/docs/SWC-116/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-829", "title": "Inclusion of Functionality from Untrusted Control Sphere", "url": "https://cwe.mitre.org/data/definitions/829.html", "source": "index", "confidence": 0.8 }
+        ]
+      },
+      "aliases": ["timestamp dependence", "block number as time"],
+      "keywords": ["deadline uses block", "timelock via timestamp", "miner time manipulation"],
+      "solidity_signals": ["block.timestamp", "block.number", "now"],
+      "regex": ["\\bnow\\b", "block\\.timestamp", "block\\.number"],
+      "regex_negative": [],
+      "anti_keywords": ["oracle time", "off-chain time"],
+      "refs": ["https://swcregistry.io/docs/SWC-116/"]
+    },
+    {
+      "id": "SWC-115",
+      "title": "Authorization through tx.origin",
+      "url": "https://swcregistry.io/docs/SWC-115/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-477", "title": "Use of Obsolete Function", "url": "https://cwe.mitre.org/data/definitions/477.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["tx.origin auth", "origin-based authorization"],
+      "keywords": ["phishing via tx.origin", "never use tx.origin for auth"],
+      "solidity_signals": ["tx.origin"],
+      "regex": ["tx\\.origin"],
+      "regex_negative": ["msg\\.sender"],
+      "anti_keywords": ["msg.sender for authorization"],
+      "refs": ["https://swcregistry.io/docs/SWC-115/"]
+    },
+    {
+      "id": "SWC-114",
+      "title": "Transaction Order Dependence",
+      "url": "https://swcregistry.io/docs/SWC-114/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-362", "title": "Concurrent Execution using Shared Resource with Improper Synchronization ('Race Condition')", "url": "https://cwe.mitre.org/data/definitions/362.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["front-running", "race condition (TOD)"],
+      "keywords": ["transaction order dependence", "miner reordering", "MEV", "front-run", "front run", "approval race", "allowance front-run", "race"],
+      "solidity_signals": ["block.timestamp", "tx.gasprice"],
+      "regex": ["\\bapprove\\s*\\("],
+      "regex_negative": [],
+      "anti_keywords": ["commit-reveal scheme", "batching removes race"],
+      "refs": ["https://swcregistry.io/docs/SWC-114/"]
+    },
+    {
+      "id": "SWC-113",
+      "title": "DoS with Failed Call",
+      "url": "https://swcregistry.io/docs/SWC-113/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-703", "title": "Improper Check or Handling of Exceptional Conditions", "url": "https://cwe.mitre.org/data/definitions/703.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["DoS via failed send", "DoS on transfer"],
+      "keywords": ["loop over payees", "transfer in loop", "external call inside loop"],
+      "solidity_signals": [".transfer(", ".send(", ".call{value:"],
+      "regex": ["for\\s*\\([^)]*\\)\\s*\\{[^}]*\\.transfer\\s*\\(", "for\\s*\\([^)]*\\)\\s*\\{[^}]*\\.send\\s*\\("],
+      "regex_negative": [],
+      "anti_keywords": ["pull payments", "withdraw pattern"],
+      "refs": ["https://swcregistry.io/docs/SWC-113/"]
+    },
+    {
+      "id": "SWC-112",
+      "title": "Delegatecall to Untrusted Callee",
+      "url": "https://swcregistry.io/docs/SWC-112/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-829", "title": "Inclusion of Functionality from Untrusted Control Sphere", "url": "https://cwe.mitre.org/data/definitions/829.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["unsafe delegatecall", "untrusted implementation"],
+      "keywords": ["proxy storage collision", "implementation not trusted"],
+      "solidity_signals": ["delegatecall(", "DELEGATECALL"],
+      "regex": ["delegatecall\\s*\\("],
+      "regex_negative": [],
+      "anti_keywords": ["whitelist of implementations", "EIP-1967 slot"],
+      "refs": ["https://swcregistry.io/docs/SWC-112/"]
+    },
+    {
+      "id": "SWC-111",
+      "title": "Use of Deprecated Solidity Functions",
+      "url": "https://swcregistry.io/docs/SWC-111/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-477", "title": "Use of Obsolete Function", "url": "https://cwe.mitre.org/data/definitions/477.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["deprecated APIs", "legacy functions"],
+      "keywords": ["throw", "suicide", "callcode", "sha3"],
+      "solidity_signals": ["throw", "suicide(", "callcode(", "sha3("],
+      "regex": ["\\bthrow\\b", "\\bcallcode\\s*\\(", "\\bsha3\\s*\\("],
+      "regex_negative": ["\\bkeccak256\\s*\\(", "\\bselfdestruct\\s*\\("],
+      "anti_keywords": ["selfdestruct(", "keccak256("],
+      "refs": ["https://swcregistry.io/docs/SWC-111/"]
+    },
+    {
+      "id": "SWC-110",
+      "title": "Assert Violation",
+      "url": "https://swcregistry.io/docs/SWC-110/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-670", "title": "Always-Incorrect Control Flow Implementation", "url": "https://cwe.mitre.org/data/definitions/670.html", "source": "index", "confidence": 0.8 }
+        ]
+      },
+      "aliases": ["assert misuse", "assert used for input validation"],
+      "keywords": ["assert causes panic", "should use require for user errors"],
+      "solidity_signals": ["assert("],
+      "regex": ["\\bassert\\s*\\("],
+      "regex_negative": ["\\brequire\\s*\\("],
+      "anti_keywords": ["require for input validation"],
+      "refs": ["https://swcregistry.io/docs/SWC-110/"]
+    },
+    {
+      "id": "SWC-109",
+      "title": "Uninitialized Storage Pointer",
+      "url": "https://swcregistry.io/docs/SWC-109/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-824", "title": "Access of Uninitialized Pointer", "url": "https://cwe.mitre.org/data/definitions/824.html", "source": "index", "confidence": 0.85 }
+        ]
+      },
+      "aliases": ["uninitialized storage reference", "dangling storage pointer"],
+      "keywords": ["points to storage slot 0", "unexpected overwrite"],
+      "solidity_signals": ["storage"],
+      "regex": [],
+      "regex_negative": [],
+      "anti_keywords": ["memory keyword used", "explicit initialization"],
+      "refs": ["https://swcregistry.io/docs/SWC-109/"]
+    },
+    {
+      "id": "SWC-108",
+      "title": "State Variable Default Visibility",
+      "url": "https://swcregistry.io/docs/SWC-108/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-710", "title": "Improper Adherence to Coding Standards", "url": "https://cwe.mitre.org/data/definitions/710.html", "source": "index", "confidence": 0.8 }
+        ]
+      },
+      "aliases": ["default visibility (state)", "implicit public"],
+      "keywords": ["visibility not specified", "state variable visibility"],
+      "solidity_signals": ["uint x;", "mapping(", "struct"],
+      "regex": [],
+      "regex_negative": ["\\b(public|private|internal|external)\\b"],
+      "anti_keywords": ["public", "private", "internal", "external"],
+      "refs": ["https://swcregistry.io/docs/SWC-108/"]
+    },
+    {
+      "id": "SWC-107",
+      "title": "Reentrancy",
+      "url": "https://swcregistry.io/docs/SWC-107/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-841", "title": "Improper Enforcement of Behavioral Workflow", "url": "https://cwe.mitre.org/data/definitions/841.html", "source": "index", "confidence": 0.95 }
+        ]
+      },
+      "aliases": ["re-entrancy", "reentrant call", "recursive call"],
+      "keywords": ["checks-effects-interactions", "external call before state change", "reentrancy guard"],
+      "solidity_signals": [".call(", ".transfer(", ".send(", "ReentrancyGuard", "nonReentrant"],
+      "regex": ["\\.call\\s*\\(", "\\.send\\s*\\(", "\\.transfer\\s*\\("],
+      "regex_negative": ["\\bnonReentrant\\b", "checks\\s*-?\\s*effects\\s*-?\\s*interactions"],
+      "anti_keywords": ["nonReentrant", "checks-effects-interactions"],
+      "refs": ["https://swcregistry.io/docs/SWC-107/"]
+    },
+    {
+      "id": "SWC-106",
+      "title": "Unprotected SELFDESTRUCT Instruction",
+      "url": "https://swcregistry.io/docs/SWC-106/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-284", "title": "Improper Access Control", "url": "https://cwe.mitre.org/data/definitions/284.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["uncontrolled selfdestruct", "suicidal contract"],
+      "keywords": ["anyone can destroy contract", "missing onlyOwner on selfdestruct"],
+      "solidity_signals": ["selfdestruct("],
+      "regex": ["\\bselfdestruct\\s*\\("],
+      "regex_negative": [],
+      "anti_keywords": ["onlyOwner selfdestruct", "multisig approval"],
+      "refs": ["https://swcregistry.io/docs/SWC-106/"]
+    },
+    {
+      "id": "SWC-105",
+      "title": "Unprotected Ether Withdrawal",
+      "url": "https://swcregistry.io/docs/SWC-105/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-284", "title": "Improper Access Control", "url": "https://cwe.mitre.org/data/definitions/284.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["unauthorized withdrawal", "unprotected withdraw"],
+      "keywords": ["anyone can withdraw", "missing access control on withdraw"],
+      "solidity_signals": ["withdraw(", "transfer(", "send("],
+      "regex": ["\\bwithdraw\\s*\\("],
+      "regex_negative": [],
+      "anti_keywords": ["onlyOwner", "role-based access control"],
+      "refs": ["https://swcregistry.io/docs/SWC-105/"]
+    },
+    {
+    "id": "SWC-104",
+    "title": "Unchecked Call Return Value",
+    "url": "https://swcregistry.io/docs/SWC-104/",
+    "relationships": {
+        "cwe": [
+        {
+            "id": "CWE-252",
+            "title": "Unchecked Return Value",
+            "url": "https://cwe.mitre.org/data/definitions/252.html",
+            "source": "index",
+            "confidence": 0.95
+        }
+        ]
+    },
+    "aliases": ["unchecked return value", "uncaught error", "unchecked low-level call", "raw call not checked", "missing safeTransfer", "unsafe transfer", "erc20 return value not checked", "non-standard erc20 transfer"],
+    "keywords": ["unchecked call return", "return value not checked", "use of transfer instead of safeTransfer", "SafeERC20", "missing error handling"],
+    "solidity_signals": [".call(", ".delegatecall(", ".staticcall(", "transfer(", "transferFrom("],
+    "regex": [ "\\.call\\s*\\([^)]*\\)\\s*;[ \\t]*(?://.*)?$", "\\(bool\\s+success[^)]*\\)\\s*=\\s*[^;]*;[ \\t]*(?://.*)?$", "\\b(?:IERC20|ERC20)\\b[^\\n;]*\\.transfer\\s*\\([^;]*\\)\\s*;[ \\t]*(?://.*)?$", "\\b(?:IERC20|ERC20)\\b[^\\n;]*\\.transferFrom\\s*\\([^;]*\\)\\s*;[ \\t]*(?://.*)?$"],
+    "regex_negative": ["\\brequire\\s*\\([^;]*\\.call\\s*\\(", "\\bassert\\s*\\([^;]*\\.call\\s*\\(", "\\bif\\s*\\([^;]*success[^;]*\\)", "\\bsafeTransfer\\s*\\(", "\\bsafeTransferFrom\\s*\\(", "\\brequire\\s*\\([^;]*transfer\\s*\\(", "\\brequire\\s*\\([^;]*transferFrom\\s*\\("],
+    "anti_keywords": [ "require(success", "if (success)"],
+    "refs": [ "https://swcregistry.io/docs/SWC-104/"]
+    },
+    {
+      "id": "SWC-103",
+      "title": "Floating Pragma",
+      "url": "https://swcregistry.io/docs/SWC-103/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-664", "title": "Improper Control of a Resource Through its Lifetime", "url": "https://cwe.mitre.org/data/definitions/664.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["unlocked pragma", "floating compiler version"],
+      "keywords": ["pragma uses caret", "pragma uses >="],
+      "solidity_signals": ["pragma solidity"],
+      "regex": ["pragma\\s+solidity\\s*(\\^|>=)\\s*\\d+\\.\\d+\\.\\d+"],
+      "regex_negative": ["pragma\\s+solidity\\s+\\d+\\.\\d+\\.\\d+;"],
+      "anti_keywords": [],
+      "refs": ["https://swcregistry.io/docs/SWC-103/"]
+    },
+    {
+      "id": "SWC-102",
+      "title": "Outdated Compiler Version",
+      "url": "https://swcregistry.io/docs/SWC-102/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-937", "title": "Using Components with Known Vulnerabilities", "url": "https://cwe.mitre.org/data/definitions/937.html", "source": "index", "confidence": 0.85 }
+        ]
+      },
+      "aliases": ["old compiler", "outdated solc"],
+      "keywords": ["compiler version vulnerable", "use latest stable"],
+      "solidity_signals": ["pragma solidity"],
+      "regex": ["pragma\\s+solidity\\s*[^;]*0\\.4\\.\\d+"],
+      "regex_negative": ["pragma\\s+solidity\\s*\\^?0\\.8\\."],
+      "anti_keywords": ["solc 0.8.x"],
+      "refs": ["https://swcregistry.io/docs/SWC-102/"]
+    },
+    {
+      "id": "SWC-101",
+      "title": "Integer Overflow and Underflow",
+      "url": "https://swcregistry.io/docs/SWC-101/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-682", "title": "Incorrect Calculation", "url": "https://cwe.mitre.org/data/definitions/682.html", "source": "index", "confidence": 0.9 }
+        ]
+      },
+      "aliases": ["overflow", "underflow", "wraparound"],
+      "keywords": ["unchecked math", "pre-0.8 arithmetic"],
+      "solidity_signals": ["unchecked {", "+=", "-=", "*="],
+      "regex": ["\\bunchecked\\s*\\{", "(\\+|\\-|\\*)=\\s*[^;]+"],
+      "regex_negative": ["using\\s+SafeMath", "pragma\\s+solidity\\s*\\^?0\\.8\\."],
+      "anti_keywords": ["solidity ^0.8", "SafeMath"],
+      "refs": ["https://swcregistry.io/docs/SWC-101/"]
+    },
+    {
+      "id": "SWC-100",
+      "title": "Function Default Visibility",
+      "url": "https://swcregistry.io/docs/SWC-100/",
+      "relationships": {
+        "cwe": [
+          { "id": "CWE-710", "title": "Improper Adherence to Coding Standards", "url": "https://cwe.mitre.org/data/definitions/710.html", "source": "index", "confidence": 0.85 }
+        ]
+      },
+      "aliases": ["default public function", "implicit public"],
+      "keywords": ["function visibility not specified"],
+      "solidity_signals": ["function "],
+      "regex": ["function\\s+[A-Za-z_]\\w*\\s*\\("],
+      "regex_negative": ["\\b(public|external|internal|private)\\b"],
+      "anti_keywords": ["public", "external", "internal", "private"],
+      "refs": ["https://swcregistry.io/docs/SWC-100/"]
+    }
+  ]
+}
