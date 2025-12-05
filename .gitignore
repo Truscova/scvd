@@ -1,0 +1,35 @@
+# --- env files ---
+.env
+.env.*
+!.env.example   # keep a template if you use one
+
+# --- bytecode caches ---
+__pycache__/
+*.py[cod]
+*.$py.class
+
+# ensure this specific cache dir is ignored (explicit per your request)
+src/scvd/__pycache__/
+
+# --- venvs & tooling ---
+.venv/
+venv/
+.envrc
+.pytype/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- packaging/build artifacts ---
+build/
+dist/
+*.egg-info/
+
+# --- logs & local clutter ---
+*.log
+.cache/
+
+# --- OS-specific ---
+.DS_Store
+Thumbs.db

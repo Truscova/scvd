@@ -75,9 +75,57 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 import re
 
+try:
+    from .swc_matcher import SWCMatcher  
+except ImportError:
+    from swc_matcher import SWCMatcher
+
+
+def _resolve_swc_json() -> Path | None:
+    """
+    Resolve swc.json.
+    repo layout:
+      <repo>/
+        data/vocab/swc.json
+        src/scvd/normalize_report.py
+    """
+    here = Path(__file__).resolve().parent          # .../src/scvd
+    repo_root = here.parent.parent                  # .../   (go up: scvd -> src -> <repo>)
+    candidates = [
+        repo_root / "data" / "vocab" / "swc.json",  # <repo>/data/vocab/swc.json
+        here / "data" / "vocab" / "swc.json",       # in case of package
+        Path.cwd() / "data" / "vocab" / "swc.json", # running from repo root
+    ]
+
+    # Optional: packaged data fallback
+    try:
+        import importlib.resources as ir
+        with ir.as_file(ir.files("scvd.data.vocab") / "swc.json") as p:
+            candidates.append(p)
+    except Exception:
+        pass
+
+    for p in candidates:
+        if p.exists():
+            return p
+    return None
+
+
+# Initialize matcher (no CLI). If not found, keep pipeline working and warn once.
+# Highly unlikely that they swc.json file is missing but in case it is, we set it to None so normalization still runs
+try:
+    _swc_path = _resolve_swc_json()
+    if not _swc_path:
+        raise FileNotFoundError("Could not resolve swc.json in repo-root or package.")
+    _SWC = SWCMatcher(_swc_path)
+except Exception as e:
+    _SWC = None
+    print(f"[warn] SWC disabled: {e}", file=sys.stderr)
+
+
 
 USE_NOT_CRITICAL_AS_DISTINCT = False  # False => map NC to "Informational"
-COMMIT_RE = re.compile(r"`?([0-9a-f]{7,40})`?")
+COMMIT_RE = re.compile(r"`?([0-9a-fA-F]{7,40})`?")
 
 CANONICAL_SEVERITIES = {"Critical","High","Medium","Low","Informational"} | \
     ({"Not Critical"} if USE_NOT_CRITICAL_AS_DISTINCT else set())
@@ -250,12 +298,12 @@ def generate_scvd_records(
         sections = vuln.get("sections") or {}
 
         # Primary content fields
-        description_md = sections.get("description") or vuln.get("description")
-        impact_md = sections.get("impact")
-        recommendation_md = sections.get("recommendation")
-        poc_md = sections.get("poc")
-        other_md = sections.get("other")
-        fix_status_md = sections.get("fix_status")
+        description_md     = sections.get("description") or vuln.get("description")
+        impact_text        = sections.get("impact") or ""
+        recommendation_md  = sections.get("recommendation")
+        poc_text           = sections.get("poc") or ""
+        other_text         = sections.get("other") or ""
+        fix_status_md      = sections.get("fix_status")
 
         # Try to pull a commit hash from fix status (cheap, optional)
         fixed_commit = None
@@ -293,6 +341,55 @@ def generate_scvd_records(
         # Pick a repo for this vuln
         repo = choose_repo_for_vuln(repositories, page_start, target_path, markdown_for_full)
 
+
+        # Map the vulnerability to SWC / CWE tag``
+
+        # Scoring semantics:
+        # - Each SWC candidate earns points from keyword hits, solidity signals, regex matches, and
+        #   type-label priors. Negative regex/anti-keywords subtract points.
+        # - Higher is better. Typical range ~[-5, +10]. <= 0 means "noisy/weak" match.
+        # - We keep the top-K SWC whose score is within TOP_DELTA of the best score.
+
+        TOP_K = 2
+        TOP_DELTA = 1.0
+        winners = []
+        swc_ids: list[str] = []
+        cwe_ids: list[str] = []
+
+        if _SWC:
+            cands = _SWC.score(title, description_md or "", impact_text, poc_text, other_text, type_label=vtype)
+            if cands:
+                top_score = cands[0][1]
+                for swc_id, score, reasons, cwes in cands[:TOP_K]:
+                    if score >= top_score - TOP_DELTA and score > 0.0:
+                        winners.append({
+                            "id": swc_id,
+                            "score": round(score, 3),
+                            "reasons": reasons,
+                            "cwe": cwes
+                        })
+                        swc_ids.append(swc_id)
+                # union of CWE from winners (keep order, dedupe)
+                seen = set()
+                for w in winners:
+                    for cid in w["cwe"]:
+                        if cid not in seen:
+                            seen.add(cid)
+                            cwe_ids.append(cid)
+
+        # Optional: dedupe SWC IDs while preserving order
+        swc_ids = list(dict.fromkeys(swc_ids))
+
+        metadata_raw_aug = {
+            **(metadata or {}),
+            "Severity_normalized": severity,
+            "swc_candidates": winners,   # includes score + reasons for debugging
+            "swc_top_k": TOP_K,
+            "swc_top_delta": TOP_DELTA,
+        }
+
+                
+
         record: Dict[str, Any] = {
             # --- meta ---
             "schema_version": "0.1",
@@ -312,11 +409,11 @@ def generate_scvd_records(
             # --- structured content sections (as per schema) ---
             "sections": {
                 "description_md": description_md,
-                "impact_md": impact_md,
+                "impact_md": impact_text,
                 "recommendation_md": recommendation_md,
-                "poc_md": poc_md,
+                "poc_md": poc_text,
                 "fix_status_md": fix_status_md,
-                "other_md": other_md,
+                "other_md": other_text,
 
                 "full_markdown_body": vuln.get("markdown_body"),
                 "markdown_raw": vuln.get("markdown_raw"),
@@ -353,8 +450,8 @@ def generate_scvd_records(
 
             # --- taxonomy / classification ---
             "taxonomy": {
-                "swc": [],
-                "cwe": [],
+                "swc": swc_ids,
+                "cwe": cwe_ids,
                 "tags": [],
             },
 
@@ -383,7 +480,7 @@ def generate_scvd_records(
             },
 
             # --- raw metadata block from the report ---
-            "metadata_raw": {**metadata, "Severity_normalized": severity},
+            "metadata_raw": metadata_raw_aug,
         }
 
         records.append(record)
