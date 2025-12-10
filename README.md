@@ -36,7 +36,10 @@ pip install \
   requests \
   pandas \
   streamlit \
-  jsonschema
+  jsonschema \
+  torch \
+  transformers>=4.45 \
+  numpy
 ```
 
 * For PDF extraction:
@@ -463,6 +466,31 @@ You can then point the dashboard at:
 streamlit run dashboard.py -- --jsonl data/normalized/combined/all_findings.jsonl
 ```
 
+**Directory mode (recommended) - with dedup**
+
+```bash
+python -m scvd.run_pipeline \
+  --raw-dir data/raw \
+  --extracted-dir data/extracted \
+  --normalized-dir data/normalized \
+  --use-ollama \
+  --force \
+  --run-dedup \
+  --dedup-model Snowflake/snowflake-arctic-embed-l-v2.0 \
+  --dedup-sim-th 0.82 \
+  --dedup-hard-boost 0.10 \
+  --dedup-embed-cache disk \
+  --dedup-topk 5 \
+  -v
+```
+
+What this does
+
+- Produces `data/normalized/combined/all_findings.jsonl`
+- Runs the semantic dedup post-step and writes:`data/normalized/combined/all_findings.dedup.jsonl`
+- The dedup file adds `duplicate_of`, `dedup`, and `duplicates` fields
+
+
 ### 6.2 Single-file mode (debugging)
 
 ```bash
@@ -489,6 +517,25 @@ python -m scvd.run_pipeline \
   -v \
   --code4rena-repos data/raw/code4rena/repos.txt \
   --github-token-env GITHUB_TOKEN
+```
+
+or with deduplication it should be 
+```bash
+python -m scvd.run_pipeline \
+  --raw-dir data/raw \
+  --extracted-dir data/extracted \
+  --normalized-dir data/normalized \
+  --use-ollama \
+  --force \
+  --code4rena-repos data/raw/code4rena/repos.txt \
+  --github-token-env GITHUB_TOKEN \
+  --run-dedup \
+  --dedup-model Snowflake/snowflake-arctic-embed-l-v2.0 \
+  --dedup-sim-th 0.82 \
+  --dedup-hard-boost 0.10 \
+  --dedup-embed-cache disk \
+  --dedup-topk 5 \
+  -v
 ```
 
 **Outputs (mirrors the tree just like PDFs/MDs):**
@@ -519,6 +566,34 @@ python -m scvd.run_pipeline \
   --github-token-env GITHUB_TOKEN \
   -v
 ```
+
+or with deduplication it is:
+
+```bash
+python -m scvd.run_pipeline \
+  --code4rena-repos data/raw/code4rena/repos.txt \
+  --extracted-dir data/extracted \
+  --normalized-dir data/normalized \
+  --github-token-env GITHUB_TOKEN \
+  --run-dedup \
+  --dedup-model Snowflake/snowflake-arctic-embed-l-v2.0 \
+  --dedup-sim-th 0.82 \
+  --dedup-hard-boost 0.10 \
+  --dedup-embed-cache disk \
+  --dedup-topk 5 \
+  -v
+```
+> **Flags (summary)**
+>
+> * `--run-dedup` — enable the post-processing dedup pass
+> * `--dedup-model` — HF embedding model (default: `Snowflake/snowflake-arctic-embed-l-v2.0`)
+> * `--dedup-sim-th` — cosine similarity threshold (default: `0.82`)
+> * `--dedup-hard-boost` — additive boost if repo/commit/path match (default: `0.10`)
+> * `--dedup-embed-cache {none|disk}` — store computed embeddings on disk (recommended: `disk`)
+> * `--dedup-topk` — keep top-K candidate duplicates per record (default: `5`)
+
+---
+
 
 Outputs and combined corpus are written under the same `data/extracted` / `data/normalized` roots as above.
 
@@ -619,6 +694,117 @@ Import `scvd.postman_collection.json` into Postman.
 > Swagger UI examples troubleshooting: if examples don’t render, either (1) use OpenAPI `3.0.3` + `nullable`, or (2) keep `3.1.0` and replace `type: [string, "null"]` with `oneOf` and add a top-level `example:` under the media type.
 
 ---
+
+## 9. Deduplication (semantic duplicate detection)**
+
+This PoC includes an optional **post-processing** step that detects near-duplicate findings across reports and marks a **canonical** record.
+
+### 9.1 What it does
+
+* Computes embeddings for each finding using a local HF model
+  (default: `Snowflake/snowflake-arctic-embed-l-v2.0`).
+* Scores pairwise similarity with **cosine**.
+* Adds a small **hard boost** if repo/commit/path agree (we’ve found this hugely helpful).
+* Selects a **canonical** record per duplicate cluster and annotates:
+
+  * `duplicate_of` (on duplicates)
+  * `dedup` (decision metadata on every record)
+  * `duplicates` (top-K scored neighbors per record)
+
+> No vectors are written into your JSON. If `--dedup-embed-cache disk` is used, embeddings are cached locally under the embeddings root (default passed from `run_pipeline` as `--emb-root data`) to speed up subsequent runs.
+
+### 9.2 Running dedup directly (standalone)
+
+You can run it on any combined corpus:
+
+```bash
+python -m scvd.dedup.run_dedup \
+  --in data/normalized/combined/all_findings.jsonl \
+  --out data/normalized/combined/all_findings.dedup.jsonl \
+  --model Snowflake/snowflake-arctic-embed-l-v2.0 \
+  --sim-th 0.82 \
+  --hard-boost 0.10 \
+  --topk 5 \
+  --embed-cache disk \
+  --emb-root data
+```
+
+### 9.3 How the score is computed (simple + pragmatic)
+
+* **text_sim** = cosine(embedding_i, embedding_j)
+* **hard signals** (binary):
+
+  * `repo_match` = 1.0 if repo URL/org/name agree
+  * `commit_match` = 1.0 if same commit
+  * `path_match` = 1.0 if same `repo.relative_file`
+* **final score** = `text_sim + hard_boost * (repo_match + commit_match + path_match)`
+
+  * Clipped to `[0, 1]`
+  * Default `hard_boost = 0.10`
+* A pair is a **duplicate** if `final score >= sim_th` (default `0.82`).
+
+We also compute a `swc_overlap` (Jaccard) and include it in `duplicates.signals` for transparency; it’s not part of the default boost.
+
+### 9.4 Canonical selection
+
+For a group of mutual duplicates, the canonical record is the **first** in encounter order (stable across runs for the same input order). You can later swap this out to prefer older provenance or richer context.
+
+### 9.5 Output fields (added by dedup)
+
+On each SCVD record:
+
+```json
+{
+  "duplicate_of": "scvd_abc123"  // or null if canonical/unique
+}
+```
+
+```json
+{
+  "dedup": {
+    "decision": "canonical | duplicate | unique | uncertain",
+    "canonical_id": "scvd_abc123",
+    "model": "Snowflake/snowflake-arctic-embed-l-v2.0",
+    "sim_threshold": 0.82,
+    "hard_boost": 0.1,
+    "run_at": "2025-12-10T12:34:56Z"
+  },
+  "duplicates": [
+    {
+      "scvd_id": "scvd_def456",
+      "score": 0.91,
+      "signals": {
+        "text_sim": 0.86,
+        "swc_overlap": 1.0,
+        "repo_match": 1.0,
+        "commit_match": 1.0,
+        "path_match": 1.0
+      },
+      "shared": {
+        "repo": "https://github.com/acme/proj",
+        "commit": "deadbeef",
+        "path": "contracts/Token.sol"
+      }
+    }
+  ]
+}
+```
+
+### 9.6 Tuning & tips
+
+* **Model:** `Snowflake/snowflake-arctic-embed-l-v2.0` is robust, multilingual, and fast on GPU. You can swap to any HF text embedding model.
+* **Threshold:** raise `--dedup-sim-th` to cut false positives; lower it to catch more.
+* **Boosts:** if your data always includes code paths/commits, the default `0.10` boost is conservative — feel free to raise it.
+* **Caching:** `--dedup-embed-cache disk` is recommended on larger corpora; it avoids recomputing embeddings.
+
+### 9.7 GPU notes
+
+The default model fits comfortably and uses GPU automatically via `transformers` (no extra flags needed). You can pin a device with `CUDA_VISIBLE_DEVICES`.
+
+---
+
+
+
 
 ## License
 
