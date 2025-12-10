@@ -483,6 +483,24 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         help="Shortcut for --c4-state open.",
     )
 
+    # Dedup options
+    ap.add_argument("--run-dedup", action="store_true",
+                    help="Run semantic dedup on the combined JSONL after pipeline finishes.")
+    ap.add_argument("--dedup-model", default="snowflake-arctic-embed-l-v2.0",
+                    help="HF embedding model id for dedup.")
+    ap.add_argument("--dedup-sim-th", type=float, default=0.82,
+                    help="Cosine similarity threshold for duplicates.")
+    ap.add_argument("--dedup-hard-boost", type=float, default=0.10,
+                    help="Score boost when commit/path/repo strongly match.")
+    ap.add_argument("--dedup-embed-cache", choices=["none","disk"], default="none",
+                    help="Where to cache embeddings (default: none).")
+    ap.add_argument("--dedup-topk", type=int, default=5,
+                    help="Store top-K dedup candidates per record.")
+
+    ap.add_argument("--dedup-emb-root", default="data", help="Root dir for on-disk embedding cache.")
+
+
+
 
     return ap.parse_args(argv)
 
@@ -582,9 +600,29 @@ def main(argv: Optional[List[str]] = None) -> None:
 
         logger.info("Combined SCVD findings written to %s", combined_path)
 
+        # --- Dedup post-step (optional) ---
+        if args.run_dedup:
+            import subprocess
+            dedup_out = combined_path.with_suffix(".dedup.jsonl")
+            cmd = [
+                sys.executable, "-m", "scvd.dedup.run_dedup",
+                "--in", str(combined_path),
+                "--out", str(dedup_out),
+                "--emb-root", args.dedup_emb_root,
+                "--embed-cache", args.dedup_embed_cache,   # none|disk
+                "--model", args.dedup_model,               # default snowflake-arctic-embed-l-v2.0
+                "--sim-th", str(args.dedup_sim_th),
+                "--hard-boost", str(args.dedup_hard_boost),
+                "--topk", str(args.dedup_topk),
+            ]
+            logger.info("Running dedup: %s", " ".join(cmd))
+            subprocess.run(cmd, check=True)
+            logger.info("Dedup output: %s", dedup_out)
+
+
         # Validation of the combined file
         if not args.skip_validate and schema_path is not None:
-            validate_jsonl(combined_path, schema_path)
+            validate_jsonl(dedup_out if args.run_dedup else combined_path, schema_path)
 
         return
     
@@ -623,8 +661,28 @@ def main(argv: Optional[List[str]] = None) -> None:
                     for line in in_f:
                         out_f.write(line)
 
+        # --- Dedup post-step (optional) ---
+        if args.run_dedup:
+            import subprocess
+            dedup_out = combined_path.with_suffix(".dedup.jsonl")
+            cmd = [
+                sys.executable, "-m", "scvd.dedup.run_dedup",
+                "--in", str(combined_path),
+                "--out", str(dedup_out),
+                "--emb-root", args.dedup_emb_root,
+                "--embed-cache", args.dedup_embed_cache,   # none|disk
+                "--model", args.dedup_model,               # default snowflake-arctic-embed-l-v2.0
+                "--sim-th", str(args.dedup_sim_th),
+                "--hard-boost", str(args.dedup_hard_boost),
+                "--topk", str(args.dedup_topk),
+            ]
+            logger.info("Running dedup: %s", " ".join(cmd))
+            subprocess.run(cmd, check=True)
+            logger.info("Dedup output: %s", dedup_out)
+
+
         if not args.skip_validate and schema_path is not None:
-            validate_jsonl(combined_path, schema_path)
+            validate_jsonl(dedup_out if args.run_dedup else combined_path, schema_path)
         return
 
     # Single-file mode (fallback / debugging)
