@@ -1,50 +1,150 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SCVD Finding v0.1",
+  "description": "Schema for a single normalized SCVD finding record, including optional semantic deduplication outputs.",
   "type": "object",
   "required": ["schema_version", "scvd_id", "doc_id", "finding_index", "title", "provenance"],
+  "additionalProperties": false,
   "properties": {
-    "schema_version": { "type": "string", "const": "0.1" },
-    "scvd_id": { "type": "string", "minLength": 1 },
-    "doc_id": { "type": "string", "minLength": 1 },
-    "finding_index": { "type": ["integer", "string"] },
-    "page_start": { "type": ["integer", "null"] },
-    "title": { "type": "string", "minLength": 1 },
-    "short_summary": { "type": ["string", "null"] },
+    "schema_version": {
+      "type": "string",
+      "const": "0.1",
+      "description": "Version of the SCVD finding schema this record conforms to."
+    },
 
-    "description_md": { "type": ["string", "null"] },
-    "full_markdown": { "type": ["string", "null"] },
+    "scvd_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identifier for this finding within the SCVD dataset (e.g., doc-scoped UUID or hash)."
+    },
 
-    "severity": { "type": ["string", "null"] },
-    "difficulty": { "type": ["string", "null"] },
-    "type": { "type": ["string", "null"] },
-    "finding_id": { "type": ["string", "null"] },
+    "doc_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the source document/report this finding was extracted from. Typically derived from the file path."
+    },
+
+    "finding_index": {
+      "type": ["integer", "string"],
+      "description": "Index or label of the finding within the source document (kept as-is from the extractor)."
+    },
+
+    "page_start": {
+      "type": ["integer", "null"],
+      "description": "First page number where this finding appears in the source document, if known."
+    },
+
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Short human-readable title of the finding."
+    },
+
+    "short_summary": {
+      "type": ["string", "null"],
+      "description": "Optional 1–3 sentence summary of the finding."
+    },
+
+    "description_md": {
+      "type": ["string", "null"],
+      "description": "Primary description of the finding in Markdown (normalized)."
+    },
+
+    "full_markdown": {
+      "type": ["string", "null"],
+      "description": "Full Markdown content of the finding, if preserved separately from sections."
+    },
+
+    "severity": {
+      "type": ["string", "null"],
+      "description": "Severity label as stated by the source (e.g., High/Medium/Low/Info), if any."
+    },
+
+    "difficulty": {
+      "type": ["string", "null"],
+      "description": "Reported difficulty/likelihood of exploitation or remediation, if present."
+    },
+
+    "type": {
+      "type": ["string", "null"],
+      "description": "Finding category/type as stated by the source (free-form)."
+    },
+
+    "finding_id": {
+      "type": ["string", "null"],
+      "description": "Original identifier from the source report (e.g., 'H-01'), if any."
+    },
 
     "target": {
       "type": "object",
+      "description": "Targeted code or on-chain surface that the finding applies to.",
       "required": ["path"],
+      "additionalProperties": false,
       "properties": {
-        "path": { "type": ["string", "null"] },
-        "language": { "type": ["string", "null"] },
-        "chain": { "type": ["string", "null"] },
-        "contract_name": { "type": ["string", "null"] },
-        "contract_address": { "type": ["string", "null"] },
-        "function": { "type": ["string", "null"] },
-        "bytecode_hash": { "type": ["string", "null"] },
-        "caip_id": { "type": ["string", "null"] }
-      },
-      "additionalProperties": false
+        "path": {
+          "type": ["string", "null"],
+          "description": "File or artifact path within the repo (may be null if not applicable)."
+        },
+        "language": {
+          "type": ["string", "null"],
+          "description": "Programming language of the target file or contract."
+        },
+        "chain": {
+          "type": ["string", "null"],
+          "description": "Blockchain/network identifier (e.g., 'ethereum', 'polygon'), if relevant."
+        },
+        "contract_name": {
+          "type": ["string", "null"],
+          "description": "Contract name when the target is a smart contract source file."
+        },
+        "contract_address": {
+          "type": ["string", "null"],
+          "description": "Deployed contract address (checksum format preferred), if applicable."
+        },
+        "function": {
+          "type": ["string", "null"],
+          "description": "Function or method name affected, if specified."
+        },
+        "bytecode_hash": {
+          "type": ["string", "null"],
+          "description": "Hash of the compiled artifact/bytecode for anchoring, if available."
+        },
+        "caip_id": {
+          "type": ["string", "null"],
+          "description": "CAIP-style chain/account identifier for cross-chain references."
+        }
+      }
     },
 
     "repo": {
       "type": "object",
+      "description": "Repository coordinates for the code referenced by the finding.",
+      "additionalProperties": false,
       "properties": {
-        "url": { "type": ["string", "null"] },
-        "org": { "type": ["string", "null"] },
-        "name": { "type": ["string", "null"] },
-        "commit": { "type": ["string", "null"] },
-        "branch": { "type": ["string", "null"] },
-        "relative_file": { "type": ["string", "null"] },
+        "url": {
+          "type": ["string", "null"],
+          "description": "Repository URL (HTTPS)."
+        },
+        "org": {
+          "type": ["string", "null"],
+          "description": "Repository organization or owner."
+        },
+        "name": {
+          "type": ["string", "null"],
+          "description": "Repository name."
+        },
+        "commit": {
+          "type": ["string", "null"],
+          "description": "Commit SHA pinned by the report or inferred by extraction."
+        },
+        "branch": {
+          "type": ["string", "null"],
+          "description": "Branch name if the report references a branch."
+        },
+        "relative_file": {
+          "type": ["string", "null"],
+          "description": "Relative file path within the repo for the finding (often matches target.path)."
+        },
         "lines": {
           "anyOf": [
             { "type": "null" },
@@ -54,71 +154,262 @@
               "minItems": 2,
               "maxItems": 2
             }
-          ]
+          ],
+          "description": "Two-element array [start_line, end_line] if the report references a specific span."
         }
-      },
-      "additionalProperties": false
+      }
     },
 
     "taxonomy": {
       "type": "object",
+      "description": "Standardized tags and taxonomies mapped during normalization.",
+      "additionalProperties": false,
       "properties": {
-        "swc": { "type": "array", "items": { "type": "string" } },
-        "cwe": { "type": "array", "items": { "type": "string" } },
-        "tags": { "type": "array", "items": { "type": "string" } }
-      },
-      "additionalProperties": false
+        "swc": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of SWC identifiers (e.g., 'SWC-101')."
+        },
+        "cwe": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of CWE identifiers (e.g., 'CWE-352')."
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Additional normalized tags (free-form)."
+        }
+      }
     },
 
     "status": {
       "type": "object",
+      "description": "Lifecycle, remediation, and impact metadata captured from the source.",
+      "additionalProperties": false,
       "properties": {
-        "fix_status": { "type": ["string", "null"] },
-        "fixed_in_commit": { "type": ["string", "null"] },
-        "fixed_in_pr": { "type": "array", "items": { "type": "string" } },
-        "exploited_in_the_wild": { "type": ["boolean", "null"] },
-        "cvss": { "type": ["string", "number", "object", "null"] },
-        "bounty_reference": { "type": ["string", "null"] },
-
-        "fix_status_text_md": { "type": ["string", "null"] }
-      },
-      "additionalProperties": false
+        "fix_status": {
+          "type": ["string", "null"],
+          "description": "Remediation status as reported (e.g., 'Fixed', 'Acknowledged', 'WontFix')."
+        },
+        "fixed_in_commit": {
+          "type": ["string", "null"],
+          "description": "Commit SHA containing the fix, if provided."
+        },
+        "fixed_in_pr": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of PR URLs that contain the fix."
+        },
+        "exploited_in_the_wild": {
+          "type": ["boolean", "null"],
+          "description": "True if known to be exploited in the wild; false if known not exploited; null if unknown."
+        },
+        "cvss": {
+          "type": ["string", "number", "object", "null"],
+          "description": "CVSS score or vector as provided by the source; may be a number, string vector, object, or null."
+        },
+        "bounty_reference": {
+          "type": ["string", "null"],
+          "description": "Reference to a bounty payout or issue, if applicable."
+        },
+        "fix_status_text_md": {
+          "type": ["string", "null"],
+          "description": "Markdown note describing the fix status in the report's own words."
+        }
+      }
     },
 
-    "references": { "type": "array", "items": { "type": "string" } },
+    "references": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "External links (commits, issues, posts, docs) referenced by this finding."
+    },
 
     "provenance": {
       "type": "object",
+      "description": "Timestamps, tools, and versions used during extraction and normalization.",
       "required": ["scvd_normalized_at", "scvd_normalizer_version"],
+      "additionalProperties": false,
       "properties": {
-        "source_pdf": { "type": ["string", "null"] },
-        "source_mtime": { "type": ["string", "null"] },
-        "report_extracted_at": { "type": ["string", "null"] },
-        "report_extractor_version": { "type": ["string", "null"] },
-        "report_extraction_tool": { "type": ["string", "null"] },
-        "scvd_normalized_at": { "type": "string" },
-        "scvd_normalizer_version": { "type": "string" }
-      },
-      "additionalProperties": false
+        "source_pdf": {
+          "type": ["string", "null"],
+          "description": "Original PDF filename, if the source was a PDF."
+        },
+        "source_mtime": {
+          "type": ["string", "null"],
+          "description": "Last modification timestamp of the source file as observed during extraction."
+        },
+        "report_extracted_at": {
+          "type": ["string", "null"],
+          "description": "ISO-8601 timestamp when the report was extracted to JSON."
+        },
+        "report_extractor_version": {
+          "type": ["string", "null"],
+          "description": "Version string of the extractor tool or pipeline used."
+        },
+        "report_extraction_tool": {
+          "type": ["string", "null"],
+          "description": "Name/ID of the extraction tool (e.g., 'ollama:qwen3:8b')."
+        },
+        "scvd_normalized_at": {
+          "type": "string",
+          "description": "ISO-8601 timestamp when normalization produced this record."
+        },
+        "scvd_normalizer_version": {
+          "type": "string",
+          "description": "Version label of the normalization logic (e.g., 'poc-0.1')."
+        }
+      }
     },
 
-    "metadata_raw": { "type": ["object", "null"] },
+    "metadata_raw": {
+      "type": ["object", "null"],
+      "description": "Optional raw metadata captured verbatim from the source extraction phase."
+    },
 
     "sections": {
       "type": "object",
+      "description": "Structured Markdown sections, when the report provided them.",
+      "additionalProperties": false,
       "properties": {
-        "description_md": { "type": ["string", "null"] },
-        "impact_md": { "type": ["string", "null"] },
-        "recommendation_md": { "type": ["string", "null"] },
-        "poc_md": { "type": ["string", "null"] },
-        "fix_status_md": { "type": ["string", "null"] },
-        "other_md": { "type": ["string", "null"] },
+        "description_md": {
+          "type": ["string", "null"],
+          "description": "Problem description section in Markdown."
+        },
+        "impact_md": {
+          "type": ["string", "null"],
+          "description": "Impact/risks section in Markdown."
+        },
+        "recommendation_md": {
+          "type": ["string", "null"],
+          "description": "Recommended remediation/mitigation in Markdown."
+        },
+        "poc_md": {
+          "type": ["string", "null"],
+          "description": "Proof-of-concept section in Markdown."
+        },
+        "fix_status_md": {
+          "type": ["string", "null"],
+          "description": "Detailed fix status notes in Markdown."
+        },
+        "other_md": {
+          "type": ["string", "null"],
+          "description": "Any other relevant section preserved in Markdown."
+        },
+        "full_markdown_body": {
+          "type": ["string", "null"],
+          "description": "Entire Markdown body for the finding if assembled as a single blob."
+        },
+        "markdown_raw": {
+          "type": ["string", "null"],
+          "description": "Unprocessed Markdown snippet as extracted from the source."
+        }
+      }
+    },
 
-        "full_markdown_body": { "type": ["string", "null"] },
-        "markdown_raw": { "type": ["string", "null"] }
-      },
-      "additionalProperties": false
+    "duplicate_of": {
+      "type": ["string", "null"],
+      "description": "If this record is judged to be a duplicate, the scvd_id of the canonical record. Null if canonical/unique."
+    },
+
+    "dedup": {
+      "type": "object",
+      "description": "Metadata about the deduplication decision and parameters used.",
+      "additionalProperties": false,
+      "properties": {
+        "decision": {
+          "type": ["string", "null"],
+          "enum": ["canonical", "duplicate", "unique", "uncertain", null],
+          "description": "Dedup decision for this record relative to other records."
+        },
+        "canonical_id": {
+          "type": ["string", "null"],
+          "description": "If decision is 'duplicate', the scvd_id of the canonical record."
+        },
+        "model": {
+          "type": ["string", "null"],
+          "description": "Embedding model or approach used for semantic similarity (e.g., 'snowflake-arctic-embed-l-v2.0')."
+        },
+        "sim_threshold": {
+          "type": ["number", "null"],
+          "description": "Cosine similarity threshold used to classify duplicates."
+        },
+        "hard_boost": {
+          "type": ["number", "null"],
+          "description": "Score boost applied when strong repo/commit/path signals match."
+        },
+        "run_at": {
+          "type": ["string", "null"],
+          "description": "ISO-8601 timestamp when dedup was executed."
+        }
+      }
+    },
+
+    "duplicates": {
+      "type": "array",
+      "description": "Top candidate duplicates for this record, ordered by descending score.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["scvd_id", "score"],
+        "properties": {
+          "scvd_id": {
+            "type": "string",
+            "description": "Identifier of the candidate duplicate finding."
+          },
+          "score": {
+            "type": "number",
+            "description": "Final combined similarity score after any boosts."
+          },
+          "signals": {
+            "type": "object",
+            "description": "Breakdown of individual similarity signals used to compute the final score.",
+            "additionalProperties": false,
+            "properties": {
+              "text_sim": {
+                "type": ["number", "null"],
+                "description": "Cosine similarity of text embeddings (0–1)."
+              },
+              "swc_overlap": {
+                "type": ["number", "null"],
+                "description": "Jaccard overlap of SWC tags (0–1)."
+              },
+              "repo_match": {
+                "type": ["number", "null"],
+                "description": "1.0 if repositories match strongly; 0.0 otherwise."
+              },
+              "commit_match": {
+                "type": ["number", "null"],
+                "description": "1.0 if commit SHAs match; 0.0 otherwise."
+              },
+              "path_match": {
+                "type": ["number", "null"],
+                "description": "1.0 if relative file paths match; 0.0 otherwise."
+              }
+            }
+          },
+          "shared": {
+            "type": "object",
+            "description": "Convenience snapshot of shared coordinates for human inspection.",
+            "additionalProperties": false,
+            "properties": {
+              "repo": {
+                "type": ["string", "null"],
+                "description": "Repository URL when both records reference the same repo."
+              },
+              "commit": {
+                "type": ["string", "null"],
+                "description": "Commit SHA when both records reference the same commit."
+              },
+              "path": {
+                "type": ["string", "null"],
+                "description": "Relative file path when both records reference the same file."
+              }
+            }
+          }
+        }
+      }
     }
-  },
-  "additionalProperties": false
+  }
 }
