@@ -422,6 +422,26 @@ python validate_scvd.py all_findings.jsonl
 streamlit run dashboard.py -- --jsonl all_findings.jsonl
 ```
 
+### 5.3 Convert-only: JSON(L) → CSV
+
+You can export CSV from **any** JSONL or a single **JSON array** file without running the full pipeline:
+
+```bash
+python -m scvd.run_pipeline \
+  --export-csv \
+  --jsonl-in path/to/findings.dedup.jsonl \
+  --csv-out path/to/findings.dedup.csv
+```
+
+Optionally select a tidy subset of columns:
+
+```bash
+python -m scvd.run_pipeline \
+  --export-csv \
+  --jsonl-in path/to/findings.jsonl \
+  --csv-fields "scvd_id,title,severity.level,target.chain,repo.url"
+```
+
 ---
 
 ## 6. `run_pipeline.py` (end-to-end runner)
@@ -592,10 +612,66 @@ python -m scvd.run_pipeline \
 > * `--dedup-embed-cache {none|disk}` — store computed embeddings on disk (recommended: `disk`)
 > * `--dedup-topk` — keep top-K candidate duplicates per record (default: `5`)
 
----
-
 
 Outputs and combined corpus are written under the same `data/extracted` / `data/normalized` roots as above.
+
+### 6.5 CSV export (combined or arbitrary JSON/JSONL)
+
+The pipeline can export a CSV for spreadsheets/BI tools. It works in **directory/C4 modes** (using the combined or deduped corpus) or in a **convert-only** mode where you point to any JSONL/JSON file.
+
+**Directory mode → combined → CSV (default source)**
+
+```bash
+python -m scvd.run_pipeline \
+  --raw-dir data/raw \
+  --export-csv
+# Writes:
+#   JSONL: data/normalized/combined/all_findings.jsonl
+#   CSV:   data/normalized/combined/all_findings.csv
+```
+
+**With dedup (CSV from dedup by default)**
+
+```bash
+python -m scvd.run_pipeline \
+  --raw-dir data/raw \
+  --run-dedup \
+  --export-csv
+# Source = all_findings.dedup.jsonl → all_findings.dedup.csv
+```
+
+**C4-only mode → combined → CSV**
+
+```bash
+python -m scvd.run_pipeline \
+  --code4rena-repos data/raw/code4rena/repos.txt \
+  --export-csv
+```
+
+**Convert-only (any JSONL/JSON file → CSV)**
+
+```bash
+python -m scvd.run_pipeline \
+  --export-csv \
+  --jsonl-in path/to/whatever.jsonl \
+  --csv-out out/whatever.csv
+```
+
+**Pick specific columns**
+
+```bash
+python -m scvd.run_pipeline \
+  --export-csv \
+  --jsonl-in data/normalized/combined/all_findings.jsonl \
+  --csv-fields "scvd_id,title,severity.level,taxonomy.swc,target.chain,contract_address,provenance.source_url"
+```
+
+**Flags (CSV)**
+
+* `--export-csv` – enable CSV export
+* `--jsonl-in` – explicit source JSONL/JSON (overrides combined/dedup default)
+* `--csv-out` – CSV output path (default: same as **source** with `.csv`)
+* `--csv-fields` – comma-separated dotted keys; if omitted, exports all flattened keys
 
 ---
 
