@@ -39,6 +39,8 @@ import logging
 import sys, os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import csv
+
 
 # Use relative imports inside the package
 from .extract_report import process_single_pdf, process_single_markdown, build_c4_report, load_repo_list, make_github_session
@@ -187,6 +189,57 @@ def mapped_output_paths(
     }
 
 
+# --------------- JSONL to CSV ------------------------#
+
+def _to_scalar(value: Any) -> Any:
+    """
+    Ensure a CSV-friendly scalar:
+      - keep None/str/int/float/bool as-is
+      - JSON-encode lists/dicts for a single cell
+    """
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    return json.dumps(value, ensure_ascii=False)
+
+def flatten_record(obj: Any, prefix: str = "") -> Dict[str, Any]:
+    """
+    Flatten nested dicts into dotted keys.
+    Lists/dicts are JSON-encoded so they live in one cell.
+    """
+    flat: Dict[str, Any] = {}
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            key = f"{prefix}{k}" if not prefix else f"{prefix}.{k}"
+            # If next is dict, recurse; if list, encode as scalar.
+            if isinstance(v, dict):
+                flat.update(flatten_record(v, key))
+            elif isinstance(v, list):
+                flat[key] = _to_scalar(v)
+            else:
+                flat[key] = _to_scalar(v)
+    else:
+        # Non-dict root: store as a single column "value"
+        flat[prefix or "value"] = _to_scalar(obj)
+    return flat
+
+def jsonl_to_csv(jsonl_path: Path, csv_path: Path, fields: Optional[List[str]] = None) -> None:
+    rows, header_set = [], set()
+    for obj in _iter_objects_from_file(jsonl_path):
+        flat = flatten_record(obj)
+        rows.append(flat)
+        if fields is None:
+            header_set.update(flat.keys())
+    header = fields if fields else sorted(header_set)
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    with csv_path.open("w", encoding="utf-8", newline="") as out_f:
+        writer = csv.DictWriter(out_f, fieldnames=header, extrasaction="ignore")
+        writer.writeheader()
+        for r in rows:
+            writer.writerow({k: r.get(k, "") for k in header})
+
+
+
+
 # ---------------- Per-file processing ---------------- #
 
 def run_for_report(
@@ -306,6 +359,24 @@ def run_for_report(
         validate_jsonl(scvd_path, schema_path)
 
     return scvd_path
+
+
+def _iter_objects_from_file(p: Path):
+    with p.open(encoding="utf-8") as f:
+        prefix = f.read(4096)
+        head = prefix.lstrip()
+        f.seek(0)
+        if head.startswith('['):
+            # JSON array file
+            arr = json.load(f)
+            for obj in arr:
+                yield obj
+        else:
+            # JSONL (one JSON object per line)
+            for line in f:
+                line = line.strip()
+                if line:
+                    yield json.loads(line)
 
 
 
@@ -499,6 +570,27 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
 
     ap.add_argument("--dedup-emb-root", default="data", help="Root dir for on-disk embedding cache.")
 
+    ap.add_argument(
+    "--jsonl-in",
+    help="Path to an existing JSONL/JSON file to export as CSV (e.g. all_findings.dedup.jsonl)."
+    )
+
+    ap.add_argument(
+        "--export-csv",
+        action="store_true",
+        help="Also export the combined JSONL (or dedup output) as CSV."
+    )
+    ap.add_argument(
+        "--csv-out",
+        help="CSV output path. Default: same as combined JSONL, with .csv extension."
+    )
+    ap.add_argument(
+        "--csv-fields",
+        help="Comma-separated dotted keys to include (e.g. 'scvd_id,title,severity.level,target.chain'). "
+             "If omitted, a flattened union of all keys is used."
+    )
+
+
 
 
 
@@ -515,6 +607,22 @@ def main(argv: Optional[List[str]] = None) -> None:
     logger = setup_logger(args.verbose)
 
     schema_path = Path(args.schema) if not args.skip_validate else None
+
+
+        # Convert-only mode: allow CSV export from an arbitrary JSON/JSONL file
+    if args.export_csv and args.jsonl_in and not (args.raw_dir or args.code4rena_repos or args.input):
+        source = Path(args.jsonl_in)
+        if not source.exists():
+            logger.error("Input file for CSV export not found: %s", source)
+            raise SystemExit(2)
+        csv_path = Path(args.csv_out) if args.csv_out else source.with_suffix(".csv")
+        fields = [s.strip() for s in args.csv_fields.split(",")] if args.csv_fields else None
+        logger.info("Exporting CSV from %s -> %s", source, csv_path)
+        jsonl_to_csv(source, csv_path, fields=fields)
+        logger.info("CSV written: %s", csv_path)
+        return
+
+
 
     if args.c4_open_only:
         args.c4_state = "open"
@@ -619,6 +727,20 @@ def main(argv: Optional[List[str]] = None) -> None:
             subprocess.run(cmd, check=True)
             logger.info("Dedup output: %s", dedup_out)
 
+        # Pick source for CSV: explicit --jsonl-in beats dedup, which beats combined
+        source = Path(args.jsonl_in) if args.jsonl_in else (dedup_out if args.run_dedup else combined_path)
+
+        if args.export_csv:
+            if args.jsonl_in and not source.exists():
+                logger.error("Input file for CSV export not found: %s", source)
+                raise SystemExit(2)
+            csv_path = Path(args.csv_out) if args.csv_out else source.with_suffix(".csv")
+            fields = [s.strip() for s in args.csv_fields.split(",")] if args.csv_fields else None
+            logger.info("Exporting CSV from %s -> %s", source, csv_path)
+            jsonl_to_csv(source, csv_path, fields=fields)
+            logger.info("CSV written: %s", csv_path)
+
+
 
         # Validation of the combined file
         if not args.skip_validate and schema_path is not None:
@@ -679,6 +801,20 @@ def main(argv: Optional[List[str]] = None) -> None:
             logger.info("Running dedup: %s", " ".join(cmd))
             subprocess.run(cmd, check=True)
             logger.info("Dedup output: %s", dedup_out)
+
+        # Pick source for CSV: explicit --jsonl-in beats dedup, which beats combined
+        source = Path(args.jsonl_in) if args.jsonl_in else (dedup_out if args.run_dedup else combined_path)
+
+        if args.export_csv:
+            if args.jsonl_in and not source.exists():
+                logger.error("Input file for CSV export not found: %s", source)
+                raise SystemExit(2)
+            csv_path = Path(args.csv_out) if args.csv_out else source.with_suffix(".csv")
+            fields = [s.strip() for s in args.csv_fields.split(",")] if args.csv_fields else None
+            logger.info("Exporting CSV from %s -> %s", source, csv_path)
+            jsonl_to_csv(source, csv_path, fields=fields)
+            logger.info("CSV written: %s", csv_path)
+
 
 
         if not args.skip_validate and schema_path is not None:
