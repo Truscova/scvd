@@ -1,0 +1,10 @@
+# ignore everything by default
+**
+
+# include only what we need
+!api/
+!data/normalized/combined/all_findings.jsonl
+!data/snapshots/
+!openapi.yaml
+!requirements.txt
+!Dockerfile

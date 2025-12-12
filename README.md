@@ -693,6 +693,84 @@ Import `scvd.postman_collection.json` into Postman.
 
 > Swagger UI examples troubleshooting: if examples don’t render, either (1) use OpenAPI `3.0.3` + `nullable`, or (2) keep `3.1.0` and replace `type: [string, "null"]` with `oneOf` and add a top-level `example:` under the media type.
 
+
+### 8.7 Public read-only API (Cloud Run) — `https://api.scvd.dev`
+
+The same FastAPI app is deployed read-only on Google Cloud Run and fronted by the custom domain **api.scvd.dev**.
+
+**Base URL**
+
+```
+https://api.scvd.dev
+```
+
+**Auth**
+
+* Public by default.
+* If the service is started with `SCVD_API_KEY`, every request must include:
+
+  ```
+  X-API-Key: <your-key>
+  ```
+
+**CORS**
+
+* Enabled for all origins (read-only).
+
+**Key endpoints**
+
+* `GET /health` – quick status and loaded record count
+* `GET /findings` – list with filters (`q`, `severity`, `swc`, `cwe`, `doc_id`, `chain`, `repo`, `since`, `until`, `sort`, `order`, `limit`, `cursor`)
+* `GET /findings/{scvd_id}` – fetch one record
+* `GET /stats` – summary counters and top SWC
+* `GET /snapshots` – list monthly JSONL snapshots
+* `GET /snapshots/{period}` – download a snapshot (streaming JSON Lines)
+* Docs: `GET /docs` (Swagger), `GET /redoc`, raw spec at `GET /openapi.json`
+
+**Examples**
+
+```bash
+# health
+curl https://api.scvd.dev/health
+
+# first page of Medium findings
+curl "https://api.scvd.dev/findings?severity=Medium&limit=5" | jq .
+
+# free-text search
+curl "https://api.scvd.dev/findings?q=reentrancy&limit=5" | jq .
+
+# follow cursor
+NEXT=$(curl -i -s "https://api.scvd.dev/findings?limit=1" \
+  | awk -F': ' '/X-Next-Cursor/{print $2}' | tr -d '\r')
+curl "https://api.scvd.dev/findings?limit=1&cursor=$NEXT" | jq .
+
+# stats for a time range
+curl "https://api.scvd.dev/stats?since=2025-11-01T00:00:00Z&until=2025-12-01T00:00:00Z" | jq .
+```
+
+**OpenAPI in Postman**
+
+* Import from URL: `https://api.scvd.dev/openapi.json`
+* Or generate a collection via CLI:
+
+  ```bash
+  npx -y openapi-to-postmanv2 \
+    -s https://api.scvd.dev/openapi.json \
+    -o scvd.postman_collection.json \
+    -p -O folderStrategy=Tags
+  ```
+
+**Rolling out new data**
+
+* The service reads `SCVD_DATA_JSONL` (default `data/normalized/combined/all_findings.jsonl`) at startup.
+* To publish new data:
+
+  1. build & push a new image with the updated JSONL,
+  2. deploy a new revision of the same Cloud Run service.
+* Your domain mapping to `api.scvd.dev` stays the same.
+
+
+
 ---
 
 ## 9. Deduplication (semantic duplicate detection)**
@@ -802,11 +880,3 @@ On each SCVD record:
 The default model fits comfortably and uses GPU automatically via `transformers` (no extra flags needed). You can pin a device with `CUDA_VISIBLE_DEVICES`.
 
 ---
-
-
-
-
-## License
-
-* Schema and code in this repo are provided under the license(s) noted in the repository (see `LICENSE` if present).
-* Example data and monthly snapshots are intended for experimentation and may include third‑party content—verify redistribution rights before publishing outside your lab/test setup.
